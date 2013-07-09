@@ -1,0 +1,30 @@
+# probes is a dictionary, with each key being the probe number, and each
+# value being a list of pairs (i, j) indicating that the given probe has
+# channel i connected to channel j
+
+probes = {
+        # Probe 1
+        1:[
+                (0, 7), (0, 1),
+                (1, 7), (6, 7),
+                (1, 6), (1, 2),
+                (2, 6), (5, 6),
+                (2, 5), (2, 3),
+                (3, 5), (5, 4),
+                (3, 4), 
+                ]
+        }
+
+# For each channel index: (x, y) coordinates of that channel (in any unit).
+geometry = {
+    0: (0, 0),
+    1: (5, 10),
+    2: (-6, 20),
+    3: (7, 30),
+    4: (-8, 40),
+    5: (9, 50),
+    6: (-10, 60),
+    7: (11, 70),
+    
+}
+
