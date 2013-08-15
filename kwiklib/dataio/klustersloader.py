@@ -20,8 +20,8 @@ from tools import (load_text, normalize,
     first_row, load_binary_memmap)
 from selection import (select, select_pairs, get_spikes_in_clusters,
     get_some_spikes_in_clusters, get_some_spikes, get_indices)
-# from kwiklib import SETTINGS
-    register, unregister)
+from kwiklib.utils.logger import (register, unregister, FileLogger, 
+    debug, info, warn)
 from kwiklib.utils.colors import COLORS_COUNT, generate_colors
 
 

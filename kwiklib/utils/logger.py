@@ -140,6 +140,8 @@ class FileLogger(Logger):
 # -----------------------------------------------------------------------------
 # Global variables
 # -----------------------------------------------------------------------------
+LOGGERS = {}
+
 def register(logger):
     name = logger.name
     if name not in LOGGERS:

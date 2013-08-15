@@ -14,7 +14,7 @@ import shutil
 from kwiklib.utils.colors import COLORS_COUNT
 from kwiklib.dataio import (save_binary, save_text, check_dtype, 
     check_shape, save_cluster_info, save_group_info)
-from kwiklib.stats.cache import IndexedMatrix
+# from kwiklib.stats.cache import IndexedMatrix
 import kwiklib.utils.logger as log
 
 
@@ -93,8 +93,9 @@ def create_correlograms(clusters, ncorrbins):
     data = np.random.rand(*shape)
     data[0, 0] /= 10
     data[1, 1] *= 10
-    return IndexedMatrix(clusters, shape=shape,
-        data=data)
+    # return IndexedMatrix(clusters, shape=shape,
+        # data=data)
+    return data
     
 def create_baselines(clusters):
     baselines = np.clip(np.random.rand(len(clusters), len(clusters)), .75, 1)
