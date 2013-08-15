@@ -35,18 +35,22 @@ def test_params_py():
     assert params['VAR4'] == {'key1': 'value1', 'key2': 4.56}
     assert params['VAR5'] == [1, 2, 3]
     
+def assert_params(params):
+    assert params['freq'] == 20000.
+    assert params['nsamples'] == 20
+    assert params['fetdim'] == 3
+    assert params['raw_data_files'] == ['myfile1.ns5', 'myfile2.ns5']
+    
 def test_params_json_kwik():
     params_py = """
     SAMPLING_FREQUENCY = 20000.
-    WAVEFORMS_NSAMPLES = 32
+    WAVEFORMS_NSAMPLES = 20
     FETDIM = 3
+    RAW_DATA_FILES = ['myfile1.ns5', 'myfile2.ns5']
     """.replace('    ', '')
     params_json = paramspy_to_json(params_py)
     params = load_params_json(params_json)
-    
-    assert params['freq'] == 20000.
-    assert params['nsamples'] == 32
-    assert params['fetdim'] == 3
+    assert_params(params)
     
 def test_params_json_spikedetekt():
     params_py = """
@@ -54,12 +58,9 @@ def test_params_json_spikedetekt():
     T_BEFORE = .0005 # time before peak in extracted spike
     T_AFTER = .0005 # time after peak in extracted spike
     FPC = 3
+    RAW_DATA_FILES = ['myfile1.ns5', 'myfile2.ns5']
     """.replace('    ', '')
     params_json = paramspy_to_json(params_py)
     params = load_params_json(params_json)
-    
-    assert params['freq'] == 20000.
-    assert params['nsamples'] == 20
-    assert params['fetdim'] == 3
-    
+    assert_params(params)
     

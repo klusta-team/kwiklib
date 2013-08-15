@@ -78,6 +78,9 @@ def get_fetdim(params):
     else:
         return params['FPC']
         
+def get_raw_data_files(params):
+    return params.get('RAW_DATA_FILES', [])
+        
 def load_params_json(params_json):
     if not params_json:
         return None
@@ -87,6 +90,7 @@ def load_params_json(params_json):
     params['freq'] = get_freq(params_dict)
     params['nsamples'] = get_nsamples(params_dict, params['freq'])
     params['fetdim'] = get_fetdim(params_dict)
+    params['raw_data_files'] = get_raw_data_files(params_dict)
     
     return params
     
