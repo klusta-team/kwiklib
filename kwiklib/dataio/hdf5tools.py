@@ -186,7 +186,7 @@ def create_hdf5_files(filename, klusters_data):
         file.setNodeAttr('/metadata', 'PRB_JSON', probe_text)
     
         # Read the old XML metadata and save the JSON parameters string.
-        params_text = params_to_json(klusters_data['metadata'])
+        params_text = paramsxml_to_json(klusters_data['metadata'])
         file.setNodeAttr('/metadata', 'PRM_JSON', params_text)
     
         # Get the list of shanks.
