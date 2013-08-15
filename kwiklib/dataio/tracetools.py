@@ -8,7 +8,9 @@ import os
 import tables
 import numpy as np
 
+from hdf5tools import write_metadata
 from tools import MemMappedArray
+from probe import load_probe_json
 
 
 # -----------------------------------------------------------------------------
@@ -20,12 +22,14 @@ def create_kwd(filename_kwd):
     file_kwd.setNodeAttr('/', 'VERSION', 1)
     return file_kwd
 
-def write_metadata(file_kwd, metadata):
-    # TODO
-    pass
+def write_raw_data(file_kwd, filename_dat, nchannels, datatype=None):
+    if datatype is None:
+        datatype = np.int16
+    # Wa can infer the total number of samples from the file size and the
+    # data type size.
+    nsamples = (os.path.getsize(filename_dat) // 
+        (nchannels * np.dtype(datatype).itemsize))
     
-def write_raw_data(file_kwd, filename_dat, nchannels, 
-        nsamples=None):
     # Create the EArray.
     data = file_kwd.createEArray('/', 'data', tables.Int16Atom(), 
         (0, nchannels), expectedrows=nsamples)
@@ -50,14 +54,13 @@ def close_kwd(file_kwd):
     file_kwd.flush()
     file_kwd.close()
     
-def dat_to_kwd(filename_dat, filename_kwd, nchannels, nsamples=None,
-        metadata=None):
+def dat_to_kwd(filename_dat, filename_kwd, nchannels, params_json='',
+        probe_json=''):
     if os.path.exists(filename_kwd):
         return
     file_kwd = create_kwd(filename_kwd)
-    # TODO
-    write_metadata(file_kwd, metadata)
-    write_raw_data(file_kwd, filename_dat, nchannels, nsamples=None)
+    write_metadata(file_kwd, params_json, probe_json)
+    write_raw_data(file_kwd, filename_dat, nchannels)
     
     close_kwd(file_kwd)
     

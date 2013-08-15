@@ -19,7 +19,7 @@ from tools import MemMappedText, MemMappedBinary
 
 
 # -----------------------------------------------------------------------------
-# Probe file functions
+# Params file functions
 # -----------------------------------------------------------------------------
 def paramsxml_to_json(metadata_xml):
     """Convert PARAMS from XML to JSON."""
@@ -42,14 +42,14 @@ def paramspy_to_json(metadata_py):
 
 
 # -----------------------------------------------------------------------------
-# Probe parse functions
+# Params parse functions
 # -----------------------------------------------------------------------------
 def get_freq(params):
     # Kwik format.
     if 'SAMPLING_FREQUENCY' in params:
         return float(params['SAMPLING_FREQUENCY'])
     # Or SpikeDetekt format.
-    else:
+    elif 'SAMPLERATE' in params:
         return float(params['SAMPLERATE'])
 
 def get_nsamples(params, freq):
@@ -63,7 +63,7 @@ def get_nsamples(params, freq):
         else:
             return int(params['WAVEFORMS_NSAMPLES'])
     # or SpikeDetekt format.
-    else:
+    elif 'T_BEFORE' in params and 'T_AFTER' in params:
         return int(freq * (float(params['T_BEFORE']) + float(params['T_AFTER'])))
 
 def get_fetdim(params):
@@ -75,12 +75,19 @@ def get_fetdim(params):
         else:
             return int(params['FETDIM'])
     # or SpikeDetekt format.
-    else:
+    elif 'FPC' in params:
         return params['FPC']
-        
+
 def get_raw_data_files(params):
-    return params.get('RAW_DATA_FILES', [])
-        
+    files = params.get('RAW_DATA_FILES', [])
+    if isinstance(files, basestring):
+        return [files]
+    else:
+        return files
+
+def get_probe_file(params):
+    return params.get('PRB_FILE', '')
+
 def load_params_json(params_json):
     if not params_json:
         return None
@@ -91,9 +98,21 @@ def load_params_json(params_json):
     params['nsamples'] = get_nsamples(params_dict, params['freq'])
     params['fetdim'] = get_fetdim(params_dict)
     params['raw_data_files'] = get_raw_data_files(params_dict)
+    params['probe_file'] = get_probe_file(params_dict)
     
     return params
+
+def params_to_json(params):
     
+    params_ns = {}
+    params_ns['SAMPLING_FREQUENCY'] = params['freq']
+    params_ns['WAVEFORMS_NSAMPLES'] = params['nsamples']
+    params_ns['FETDIM'] = params['fetdim']
+    params_ns['RAW_DATA_FILES'] = params['raw_data_files']
+    params_ns['PRB_FILE'] = params['probe_file']
+    
+    return json.dumps(params_ns)
+
 def load_prm(prm_filename):
     with open(prm_filename, 'r') as f:
         params_text = f.read()

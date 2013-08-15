@@ -12,7 +12,7 @@ import numpy.random as rnd
 import pandas as pd
 
 from kwiklib.dataio import (paramsxml_to_json, paramspy_to_json, 
-    load_params_json)
+    load_params_json, params_to_json)
 
 
 # -----------------------------------------------------------------------------
@@ -40,6 +40,19 @@ def assert_params(params):
     assert params['nsamples'] == 20
     assert params['fetdim'] == 3
     assert params['raw_data_files'] == ['myfile1.ns5', 'myfile2.ns5']
+
+def test_params_json():
+    params_py = """
+    SAMPLING_FREQUENCY = 20000.
+    WAVEFORMS_NSAMPLES = 20
+    FETDIM = 3
+    PRB_FILE = 'myprobe.probe'
+    RAW_DATA_FILES = ['myfile1.ns5', 'myfile2.ns5']
+    """.replace('    ', '')
+    params_json = paramspy_to_json(params_py)
+    params = load_params_json(params_json)
+    params_json2 = params_to_json(params)
+    assert params_json == params_json2
     
 def test_params_json_kwik():
     params_py = """

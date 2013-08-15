@@ -115,6 +115,7 @@ def load_probe_json(probe_json):
     probe['channels_alive'] = sorted(map(int, set(probe['channels']) - 
         set(probe['dead_channels'])))
     probe['nchannels_alive'] = len(probe['channels_alive'])
+    probe['shanks'] = []
     # Process all shanks.
     for shank_dict in probe_dict['shanks']:
         # Find alive channels.
@@ -131,7 +132,10 @@ def load_probe_json(probe_json):
                     for key in sorted(shank_dict['geometry'].keys())
                         if key not in probe['dead_channels']], 
                 dtype=np.float32)
-        probe[shank_dict['shank_index']] = shank_dict
+        shank_index = shank_dict['shank_index']
+        probe[shank_index] = shank_dict
+        probe['shanks'].append(shank_index)
+    probe['shanks'] = sorted(probe['shanks'])
     return probe
     
 

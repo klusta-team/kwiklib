@@ -42,8 +42,7 @@ def test_kwd_1():
     filename_kwd = os.path.join(dir, 'test.kwd')
     
     # Convert the DAT file in KWD.
-    dat_to_kwd(filename_dat, filename_kwd, nchannels, 
-        nsamples=nsamples)
+    dat_to_kwd(filename_dat, filename_kwd, nchannels)
     
     # Load DAT file (memmap).
     dat = read_dat(filename_dat, nchannels)

@@ -14,7 +14,7 @@ from collections import OrderedDict
 import numpy as np
 import matplotlib.pyplot as plt
 
-from probe import probe_to_json, all_to_all_probe
+from probe import probe_to_json, all_to_all_probe, load_probe_json
 from params import paramsxml_to_json
 from klustersloader import (find_filenames, find_index, read_xml,
     filename_to_triplet, triplet_to_filename, find_indices,
@@ -136,6 +136,7 @@ def open_klusters(filename):
     metadata['shanks'] = sorted(shanks)
     
     klusters_data['metadata'] = metadata
+    klusters_data['shanks'] = shanks
     klusters_data['filenames'] = filenames
 
     # Load probe file.
@@ -158,45 +159,45 @@ def open_klusters(filename):
 
     return klusters_data
 
+def write_metadata(file, params_json='', probe_json=''):
+    assert file.isopen
+    
+    # Create the group only if necessary.
+    if '/metadata' not in file:
+        file.createGroup('/', 'metadata')
+
+    # Put the version number.
+    file.setNodeAttr('/', 'VERSION', 1)
+
+    file.setNodeAttr('/metadata', 'PRB_JSON', probe_json)
+    file.setNodeAttr('/metadata', 'PRM_JSON', params_json)
+
+    # Get and set the list of shanks.
+    probe = load_probe_json(probe_json)
+    if probe:
+        shanks = np.unique(probe['shanks'])
+    else:
+        shanks = np.zeros(0, dtype=np.int32)
+    file.setNodeAttr('/metadata', 'SHANKS', shanks)
+    
 def create_hdf5_files(filename, klusters_data):
     hdf5 = {}
     
     hdf5_filenames = find_hdf5_filenames(filename)
     
-    # Get the data corresponding to the first shank.
-    # klusters_data_first = klusters_data.itervalues().next()
-    
     # Create the HDF5 file.
     hdf5['kwik'] = tables.openFile(hdf5_filenames['hdf5_kwik'], mode='w')
     
-    # Metadata.
+    # Write metadata.
     for file in [hdf5['kwik']]:#, hdf5['raw.kwd']]:
-        file.createGroup('/', 'metadata')
-    
-        # Put the version number.
-        file.setNodeAttr('/', 'VERSION', 1)
-    
-        # Get the old probe information, convert it to JSON, and save it in
-        # /metadata
-        # if 'probe' in klusters_data:
-        # WARNING: the .probe file is mandatory.
-        probe_text = probe_to_json(klusters_data['probe'])
-        # else:
-            # probe_text = ''
-        file.setNodeAttr('/metadata', 'PRB_JSON', probe_text)
-    
-        # Read the old XML metadata and save the JSON parameters string.
-        params_text = paramsxml_to_json(klusters_data['metadata'])
-        file.setNodeAttr('/metadata', 'PRM_JSON', params_text)
-    
-        # Get the list of shanks.
-        shanks = sorted([key for key in klusters_data.keys() 
-            if isinstance(key, (int, long))])
-        file.setNodeAttr('/metadata', 'SHANKS', np.unique(shanks))
+        write_metadata(file, 
+            probe_json=probe_to_json(klusters_data['probe']), 
+            params_json=paramsxml_to_json(klusters_data['metadata']))
 
     file = hdf5['kwik']
     file.createGroup('/', 'shanks')
     
+    shanks = klusters_data['shanks']
     # Create groups and tables for each shank.
     for shank in shanks:
         data = klusters_data[shank]
