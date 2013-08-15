@@ -2,6 +2,7 @@
 # Imports
 # -----------------------------------------------------------------------------
 import argparse
+import os
 import sys
 import re
 
@@ -20,6 +21,12 @@ Kwik format.
 
 
 # -----------------------------------------------------------------------------
+# Conversion functions
+# -----------------------------------------------------------------------------
+
+
+
+# -----------------------------------------------------------------------------
 # Main function
 # -----------------------------------------------------------------------------
 def main():
@@ -28,7 +35,13 @@ def main():
                        help='the PRM file, containing all parameters')
 
     args = parser.parse_args()
-    print(args.prm)
+    
+    assert len(args.prm) == 1
+    
+    prm_filename = os.path.abspath(args.prm[0])
+    if not os.path.exists(prm_filename):
+        raise IOError("The PRM file '{0:s}' does not exist.".format(prm_filename))
+    
 
 if __name__ == '__main__':
     main()
