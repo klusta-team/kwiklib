@@ -21,7 +21,7 @@ from tools import MemMappedText, MemMappedBinary
 # -----------------------------------------------------------------------------
 # Probe file functions
 # -----------------------------------------------------------------------------
-def params_to_json(metadata_xml):
+def paramsxml_to_json(metadata_xml):
     """Convert PARAMS from XML to JSON."""
     shanks = metadata_xml['shanks']
     params = dict(
@@ -33,6 +33,13 @@ def params_to_json(metadata_xml):
     )
     return json.dumps(params, indent=4)
 
+def paramspy_to_json(metadata_py):
+    """metadata_py is a string containing Python code where each line is
+    VARNAME = VALUE"""
+    metadata = {}
+    exec metadata_py in {}, metadata
+    return json.dumps(metadata)
+    
 def load_params_json(params_json):
     if not params_json:
         return None

@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probe import probe_to_json, all_to_all_probe
-from params import params_to_json
+from params import paramsxml_to_json
 from klustersloader import (find_filenames, find_index, read_xml,
     filename_to_triplet, triplet_to_filename, find_indices,
     find_hdf5_filenames, find_filename, find_any_filename, 
@@ -188,7 +188,7 @@ def create_hdf5_files(filename, klusters_data):
     file.setNodeAttr('/metadata', 'PRB_JSON', probe_text)
     
     # Read the old XML metadata and save the JSON parameters string.
-    params_text = params_to_json(klusters_data['metadata'])
+    params_text = paramsxml_to_json(klusters_data['metadata'])
     file.setNodeAttr('/metadata', 'PRM_JSON', params_text)
     
     # Get the list of shanks.
