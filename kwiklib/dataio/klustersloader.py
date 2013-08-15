@@ -781,8 +781,8 @@ class MemoryLoader(Loader):
     # ---------------
     def read(self, nsamples=None, nchannels=None, fetdim=None,
             freq=None, probe=None, features=None, clusters=None,
-            cluster_info=None, group_info=None, masks=None,
-            waveforms=None):
+            cluster_info=None, group_info=None, channel_info=None,
+            channel_group_info=None, masks=None, waveforms=None):
         self.read_metadata(nsamples=nsamples, nchannels=nchannels,
             fetdim=fetdim, freq=freq)
         self.read_probe(probe)

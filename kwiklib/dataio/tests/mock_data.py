@@ -26,7 +26,9 @@ nspikes = 1000
 nclusters = 20
 nextrafet = 1
 ngroups = 4
+nchannelgroups = 4
 cluster_offset = 2
+channel_offset = 2
 nsamples = 20
 ncorrbins = 100
 corrbin = .001
@@ -70,7 +72,9 @@ def create_clusters(nspikes, nclusters, cluster_offset=cluster_offset):
     # Add shift in cluster indices to test robustness.
     return rnd.randint(size=nspikes, low=cluster_offset, 
         high=nclusters + cluster_offset)
-    
+
+######
+# ClusterView
 def create_cluster_colors(nclusters):
     return np.mod(np.arange(nclusters, dtype=np.int32), COLORS_COUNT) + 1
    
@@ -83,7 +87,25 @@ def create_group_names(ngroups):
 def create_cluster_groups(nclusters):
     return np.array(np.random.randint(size=nclusters, low=0, high=4), 
         dtype=np.int32)
+
+# ChannelView
+def create_channel_names(nchannels):
+    return ["Channel {0:d}".format(channel) for channel in xrange(nchannels)]
+
+def create_channel_colors(nchannels):
+    return np.mod(np.arange(nchannels, dtype=np.int32), COLORS_COUNT) + 1
     
+def create_channel_group_names(nchannelgroups):
+    return ["Group {0:d}".format(channelgroup) for channelgroup in xrange(nchannelgroups)]
+
+def create_channel_groups(nchannels):
+    return np.array(np.random.randint(size=nchannels, low=0, high=4), 
+        dtype=np.int32)
+    
+def create_channel_group_colors(nchannelgroups):
+    return np.mod(np.arange(nchannelgroups, dtype=np.int32), COLORS_COUNT) + 1
+######
+
 def create_masks(nspikes, nchannels, fetdim):
     return np.clip(rnd.rand(nspikes, nchannels * fetdim + 1) * 1.5, 0, 1)
     
@@ -203,6 +225,22 @@ def setup():
             {'color': group_colors, 
              'name': group_names}, 
          index=np.arange(ngroups))
+         
+    # channel_colors = create_channel_colors(nchannels)
+    # channel_groups = create_channel_groups(nchannels)
+    # channel_names = create_channel_names(nchannels)
+    # channel_info = pd.DataFrame(
+    #      {'color': channel_colors, 
+    #       'group': channel_groups}, 
+    #   dtype=np.int32,
+    #   index=np.unique(channels))
+    # 
+    # channel_group_colors = create_channel_group_colors(ngroups)
+    # channel_group_names = create_channel_group_names(ngroups)
+    # channel_group_info = pd.DataFrame(
+    #      {'color': channel_group_colors, 
+    #       'name': channel_group_names}, 
+    #   index=np.arange(ngroups))
          
     masks = create_masks(nspikes, nchannels, fetdim)
     xml = create_xml(nchannels, nsamples, fetdim)
