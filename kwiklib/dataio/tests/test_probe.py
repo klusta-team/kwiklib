@@ -23,9 +23,6 @@ def test_probe_1():
     probe_json = probe_to_json(probe_ns)
     probe = json.loads(probe_json)
     
-    assert probe['nchannels'] == 7
-    assert probe['dead_channels'] == []
-    
     assert np.array_equal(probe['shanks'][0]['graph'], graph[1])
     assert np.array_equal(probe['shanks'][1]['graph'], graph[2])
 

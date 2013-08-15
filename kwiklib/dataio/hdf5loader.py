@@ -171,7 +171,10 @@ class HDF5Loader(Loader):
         
     def read_nchannels(self):
         """Read the number of alive channels from the probe file."""
-        self.nchannels = len(self.probe[self.shank]['channels_alive'])
+        channels = self.probe[self.shank]['channels']
+        channels_dead = self.params['dead_channels']
+        channels_alive = sorted(set(channels) - set(channels_dead))
+        self.nchannels = len(channels_alive)
         
     def read_fetdim(self):
         if self.fetdim is None:
