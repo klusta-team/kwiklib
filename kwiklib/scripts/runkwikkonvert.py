@@ -47,7 +47,8 @@ def main():
     # Parse the PRM file.
     params = load_prm(prm_filename)
     
-    
+    # Get the raw data files.
+    files = params['raw_data_files']
     
     dat_to_kld(filename_dat, filename_kld, nchannels, nsamples=None,
         metadata=None):
