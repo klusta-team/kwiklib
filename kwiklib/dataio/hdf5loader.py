@@ -62,7 +62,7 @@ class HDF5Loader(Loader):
         """Open a HDF5 kwik file."""
         
         if not os.path.exists(self.filename_kwik):
-            klusters_to_hdf5(filename, self.klusters_to_hdf5_progress_report)
+            klusters_to_hdf5(self.filename, self.klusters_to_hdf5_progress_report)
         
         self.initialize_logfile()
         # Load the similarity measure chosen by the user in the preferences
