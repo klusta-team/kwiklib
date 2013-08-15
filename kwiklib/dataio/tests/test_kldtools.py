@@ -11,8 +11,9 @@ import pandas as pd
 import tables as tb
 
 from kwiklib.dataio import (save_binary, create_kld, write_raw_data, 
-    close_kld, dat_to_kld, read_dat)
-from kwiklib.dataio.tests import create_rawdata, duration, freq, nchannels
+    close_kld, dat_to_kld, read_dat, )
+from kwiklib.dataio.tests import (create_rawdata, duration, freq, nchannels,
+    TEST_FOLDER)
 
 # -----------------------------------------------------------------------------
 # Test fixtures
@@ -21,7 +22,7 @@ nsamples = int(duration * freq)
 
 def setup():
     # Create mock directory if needed.
-    dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mockdata')
+    dir = TEST_FOLDER
     if not os.path.exists(dir):
         os.mkdir(dir)
         
@@ -36,7 +37,7 @@ def setup():
 # -----------------------------------------------------------------------------
 def test_kld_1():
     # Open the mock data.
-    dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mockdata')
+    dir = TEST_FOLDER
     filename_dat = os.path.join(dir, 'test.dat')
     filename_kld = os.path.join(dir, 'test.kld')
     

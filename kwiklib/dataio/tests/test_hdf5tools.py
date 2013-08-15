@@ -15,7 +15,7 @@ import tables
 from kwiklib.dataio.tests.mock_data import (
     freq, nspikes, nclusters, nsamples, nchannels, fetdim, duration,
     create_waveforms, create_features, create_clusters, create_cluster_colors,
-    create_masks, create_xml, create_probe,
+    create_masks, create_xml, create_probe, TEST_FOLDER, 
     )
 from kwiklib.dataio import HDF5Writer
 from kwiklib.dataio import (KlustersLoader, read_clusters, save_clusters,
@@ -36,7 +36,7 @@ def setup():
     
     
     # Create mock directory if needed.
-    dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mockdata')
+    dir = TEST_FOLDER
     if not os.path.exists(dir):
         os.mkdir(dir)
         
@@ -65,7 +65,7 @@ def setup():
 # Tests
 # -----------------------------------------------------------------------------
 def test_hdf5():
-    dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mockdata')
+    dir = TEST_FOLDER
     filename = os.path.join(dir, 'test.xml')
     
     # Convert in HDF5.

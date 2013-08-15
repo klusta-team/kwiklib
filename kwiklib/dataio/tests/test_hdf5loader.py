@@ -12,7 +12,7 @@ import shutil
 from nose.tools import with_setup
 
 from kwiklib.dataio.tests.mock_data import (
-                            nspikes, nclusters, nsamples, nchannels, fetdim)
+    TEST_FOLDER, nspikes, nclusters, nsamples, nchannels, fetdim)
 from kwiklib.dataio import (HDF5Loader, HDF5Writer, select, get_indices,
     check_dtype, check_shape, get_array, load_text, KlustersLoader,
     klusters_to_hdf5
@@ -29,7 +29,7 @@ def normalize_inplace(x):
 # -----------------------------------------------------------------------------
 def test_hdf5_loader1():
     # Open the mock data.
-    dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mockdata')
+    dir = TEST_FOLDER
     filename = os.path.join(dir, 'test.xml')
     
     global nspikes

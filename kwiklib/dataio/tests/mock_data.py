@@ -10,11 +10,11 @@ import numpy as np
 import numpy.random as rnd
 import pandas as pd
 import shutil
+import tempfile
 
 from kwiklib.utils.colors import COLORS_COUNT
 from kwiklib.dataio import (save_binary, save_text, check_dtype, 
     check_shape, save_cluster_info, save_group_info)
-# from kwiklib.stats.cache import IndexedMatrix
 import kwiklib.utils.logger as log
 
 
@@ -34,6 +34,10 @@ nchannels = 32
 fetdim = 3
 duration = 1.
 freq = 20000.
+
+TEST_FOLDER = os.path.join(tempfile.gettempdir(), 'kwik')
+if not os.path.exists(TEST_FOLDER):
+    os.mkdir(TEST_FOLDER)
 
 
 # -----------------------------------------------------------------------------
@@ -173,9 +177,9 @@ def setup():
     # log.debug("Creating mock data for dataio subpackage.")
     
     # Create mock directory if needed.
-    dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mockdata')
-    if not os.path.exists(dir):
-        os.mkdir(dir)
+    dir = TEST_FOLDER
+    # if not os.path.exists(dir):
+        # os.mkdir(dir)
     # else:
         # # No need to recreate the files.
         # return
@@ -218,11 +222,15 @@ def setup():
     save_text(os.path.join(dir, 'test.xml'), xml)
     save_text(os.path.join(dir, 'test.probe'), probe)
     
+    # import time
+    # print dir
+    # time.sleep(5)
+    
 def teardown():
     # log.debug("Erasing mock data for dataio subpackage.")
     
     # Erase the temporary data directory.
-    dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mockdata')
+    dir = TEST_FOLDER
     # if os.path.exists(dir):
         # shutil.rmtree(dir, ignore_errors=True)
     # Erase the contents instead, otherwise run into Access denied errors
