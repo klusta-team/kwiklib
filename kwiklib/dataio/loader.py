@@ -301,6 +301,46 @@ class Loader(QtCore.QObject):
         sizes = pd.Series(self.counter, dtype=np.int32)
         return select(sizes, clusters)
     
+    # Access to the data: channels
+    # ----------------------------
+    def get_channel_colors(self, channels=None, can_override=True,
+            ):
+        if channels is None:
+            channels = self.channels_selected
+        if can_override and self.override_color:
+            channel_group_colors = get_array(self.get_channel_group_colors('all'))
+            channel_groups = get_array(self.get_channel_groups('all'))
+            colors = pd.Series(channel_group_colors[channel_groups], 
+                index=self.get_channels_unique())
+        else:
+            colors = self.channel_colors
+        return select(colors, channels)
+
+    def get_channel_color(self, channel):
+        try:
+            return select(self.channel_colors, channel)
+        except IndexError:
+            return 0
+            
+    def get_channel_names(self, channels=None):
+        return select(self.channel_names, channels)
+
+    def get_channel_groups(self, channels=None):
+        if channels is None:
+            channels = self.channels_selected
+        return select(self.channel_groups, channels)
+
+    def get_channel_group_colors(self, channel_groups=None):
+        return select(self.channel_group_colors, channel_groups)
+
+    def get_channel_group_names(self, channel_groups=None):
+        return select(self.channel_group_names, channel_groups)
+
+    def get_channel_sizes(self, channels=None):
+        if channels is None:
+            channels = self.channels_selected
+        sizes = pd.Series(self.counter, dtype=np.int32)
+        return select(sizes, channels)
         
     # Access to the data: misc
     # ------------------------
