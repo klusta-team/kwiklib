@@ -8,7 +8,8 @@ import re
 
 import numpy as np
 
-from kwiklib.dataio import paramspy_to_json, load_params_json, load_prm
+from kwiklib.dataio import (paramspy_to_json, load_params_json, load_prm, 
+    params_to_json, load_prb)
 
 
 # -----------------------------------------------------------------------------
@@ -65,18 +66,19 @@ def main():
     
     # Get the probe file.
     prb_filename = get_abs_path(params['probe_file'], dir)
-    if not prb_filename:
+    if not params['probe_file']:
         raise IOError("You need to specify in the PRM file the path to the PRB file.")
     elif not os.path.exists(prb_filename):
         raise IOError("The PRB file '{0:s}' does not exist.".format(prb_filename))
+    probe_json = load_prb(prb_filename)
     
     # Get the raw data files.
     files = params['raw_data_files']
     files = [get_abs_path(file, dir) for file in files]
     
-    print prm_filename
-    print prb_filename
-    print files
+    # print files
+    # print params_json
+    # print probe_json
     
     # for file in files:
         # convert_raw_file(file, params_json=params_json, probe_json=probe_json)

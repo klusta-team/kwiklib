@@ -123,7 +123,6 @@ def load_prm(prm_filename):
     except:
         params_json = params_text
     # Parse the JSON parameters file.
-    params = load_params_json(params_json)
-    return params
+    return load_params_json(params_json)
     
 

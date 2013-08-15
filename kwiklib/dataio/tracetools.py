@@ -10,7 +10,6 @@ import numpy as np
 
 from hdf5tools import write_metadata
 from tools import MemMappedArray
-from probe import load_probe_json
 
 
 # -----------------------------------------------------------------------------

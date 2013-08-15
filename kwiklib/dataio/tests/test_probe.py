@@ -18,7 +18,7 @@ from kwiklib.dataio import probe_to_json, load_probe_json
 # -----------------------------------------------------------------------------
 def test_probe_1():
     graph = {1: [(0, 1), (0, 2), (1, 2), (1, 3)],
-                           2: [(7, 4), (7, 5), (4, 5)]}
+             2: [(7, 4), (7, 5), (4, 5)]}
     probe_ns = {'probes': graph}
     probe_json = probe_to_json(probe_ns)
     probe = json.loads(probe_json)
@@ -31,7 +31,7 @@ def test_probe_1():
 
 def test_probe_2():
     graph = {1: [(0, 1), (0, 2), (1, 2), (1, 3)],
-                           2: [(7, 4), (7, 5), (4, 5)]}
+             2: [(7, 4), (7, 5), (4, 5)]}
     probe_ns = {'probes': graph}
     probe_json = probe_to_json(probe_ns)
     probe = load_probe_json(probe_json)

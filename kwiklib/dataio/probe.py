@@ -138,6 +138,11 @@ def load_probe_json(probe_json):
     probe['shanks'] = sorted(probe['shanks'])
     return probe
     
-
+def load_prb(prb_filename):
+    with open(prb_filename, 'r') as f:
+        probe_json = f.read()
+    # Parse the JSON parameters file.
+    return load_probe_json(probe_json)
+    
     
 
