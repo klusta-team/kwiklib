@@ -213,8 +213,8 @@ class HDF5Loader(Loader):
         # Getting the colors from the KLA file, or creating them.
         # kla = load_kla_json(self.kla_json)
         if self.kla:
-            cluster_colors = self.kla[self.shank]['cluster_colors']
-            group_colors = self.kla[self.shank]['group_colors']
+            cluster_colors = self.kla['shanks'][self.shank]['cluster_colors']
+            group_colors = self.kla['shanks'][self.shank]['group_colors']
         else:
             cluster_colors = generate_colors(len(clusters))
             group_colors = generate_colors(len(groups))
@@ -490,7 +490,8 @@ class HDF5Loader(Loader):
         
         # Update the KLA file.
         # --------------------
-        kla = {
+        kla={}
+        kla['shanks'] = {
             shank: dict(
                 cluster_colors=self.cluster_info['color'],
                 group_colors=self.group_info['color'],

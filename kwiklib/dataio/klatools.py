@@ -21,7 +21,8 @@ def kla_to_json(kla_dict):
     """Convert a KLA dictionary to JSON.
     cluster_colors and group_colors are pandas.Series objects."""
     kla_full = {}
-    for shank, kla in kla_dict.iteritems():
+    kla_full['shanks'] = []
+    for shank, kla in kla_dict['shanks'].iteritems():
         cluster_colors = kla['cluster_colors']
         group_colors = kla['group_colors']
         clusters = get_indices(cluster_colors)
@@ -31,8 +32,9 @@ def kla_to_json(kla_dict):
                 for cluster in clusters],
             groups_of_clusters=[{'group': str(group), 'color': str(group_colors[group])}
                 for group in groups],
+            shank_index=shank
         )
-        kla_full[shank] = kla_shank
+        kla_full['shanks'].append(kla_shank)
     return json.dumps(kla_full, indent=4)
 
 def load_kla_json(kla_json):
@@ -40,17 +42,19 @@ def load_kla_json(kla_json):
     if not kla_json:
         return None
     kla_dict = json.loads(kla_json)
-
-    shank_all = {}
+    auxdata = {}
+    auxdata['shanks'] = {}
     
     # load list of cluster and group colors for each shank
-    for shank, kla in kla_dict.iteritems():
-        cluster_colors = [int(o['color']) for o in kla['clusters']]
-        group_colors = [int(o['color']) for o in kla['groups_of_clusters']]
-        shank_all[int(shank)] = dict(cluster_colors=cluster_colors, 
-            group_colors=group_colors,)
+    if kla_dict['shanks']:
+        for kla in kla_dict['shanks']:
+            shank = kla['shank_index']
+            cluster_colors = [int(o['color']) for o in kla['clusters']]
+            group_colors = [int(o['color']) for o in kla['groups_of_clusters']]
+            auxdata['shanks'][int(kla['shank_index'])] = dict(cluster_colors=cluster_colors, 
+                group_colors=group_colors,)
         
-    return shank_all
+    return auxdata
     
 def write_kla(filename_kla, kla):
     kla_json = kla_to_json(kla)

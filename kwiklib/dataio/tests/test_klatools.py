@@ -17,7 +17,8 @@ from kwiklib.dataio import kla_to_json, load_kla_json
 # KLA tests
 # -----------------------------------------------------------------------------
 def test_kla_1():
-    kla = {1: {'cluster_colors': [1, 2, 5],
+    kla = {}
+    kla['shanks'] = {1: {'cluster_colors': [1, 2, 5],
                'group_colors': [4],},
            2: {'cluster_colors': [6],
                'group_colors': [1, 3],}
@@ -27,5 +28,5 @@ def test_kla_1():
     
     for shank in (1, 2):
         for what in ('cluster_colors', 'cluster_colors'):
-            assert kla2[shank][what] == kla[shank][what]
+            assert kla2['shanks'][shank][what] == kla['shanks'][shank][what]
     

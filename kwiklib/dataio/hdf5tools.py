@@ -170,32 +170,33 @@ def create_hdf5_files(filename, klusters_data):
     hdf5['klx'] = tables.openFile(hdf5_filenames['hdf5_klx'], mode='w')
     
     # Metadata.
-    # for file in [hdf5['klx'], hdf5['wave_file']]:
+    for file in [hdf5['klx']]:#, hdf5['raw.kld']]:
+        file.createGroup('/', 'metadata')
+    
+        # Put the version number.
+        file.setNodeAttr('/', 'VERSION', 1)
+    
+        # Get the old probe information, convert it to JSON, and save it in
+        # /metadata
+        # if 'probe' in klusters_data:
+        # WARNING: the .probe file is mandatory.
+        probe_text = probe_to_json(klusters_data['probe'])
+        # else:
+            # probe_text = ''
+        file.setNodeAttr('/metadata', 'PRB_JSON', probe_text)
+    
+        # Read the old XML metadata and save the JSON parameters string.
+        params_text = params_to_json(klusters_data['metadata'])
+        file.setNodeAttr('/metadata', 'PRM_JSON', params_text)
+    
+        # Get the list of shanks.
+        shanks = sorted([key for key in klusters_data.keys() 
+            if isinstance(key, (int, long))])
+        file.setNodeAttr('/metadata', 'SHANKS', np.unique(shanks))
+
     file = hdf5['klx']
     file.createGroup('/', 'shanks')
-    file.createGroup('/', 'metadata')
     
-    # Put the version number.
-    file.setNodeAttr('/', 'VERSION', 1)
-    
-    # Get the old probe information, convert it to JSON, and save it in
-    # /metadata
-    # if 'probe' in klusters_data:
-    # WARNING: the .probe file is mandatory.
-    probe_text = probe_to_json(klusters_data['probe'])
-    # else:
-        # probe_text = ''
-    file.setNodeAttr('/metadata', 'PRB_JSON', probe_text)
-    
-    # Read the old XML metadata and save the JSON parameters string.
-    params_text = params_to_json(klusters_data['metadata'])
-    file.setNodeAttr('/metadata', 'PRM_JSON', params_text)
-    
-    # Get the list of shanks.
-    shanks = sorted([key for key in klusters_data.keys() 
-        if isinstance(key, (int, long))])
-    file.setNodeAttr('/metadata', 'SHANKS', np.unique(shanks))
-            
     # Create groups and tables for each shank.
     for shank in shanks:
         data = klusters_data[shank]
@@ -346,7 +347,8 @@ class HDF5Writer(object):
                 len(self.shanks))
         
     def write_kla(self):
-        kla = {
+        kla = {}
+        kla['shanks'] = {
             shank: dict(
                 cluster_colors=self.klusters_data[shank]['acluinfo']['color'],
                 group_colors=self.klusters_data[shank]['groupinfo']['color'],
