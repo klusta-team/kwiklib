@@ -107,20 +107,9 @@ def load_probe_json(probe_json):
         return None
     probe_dict = json.loads(probe_json)
     probe = {}
-    # probe['nchannels'] = int(probe_dict['nchannels'])
-    # probe['dead_channels'] = map(int, probe_dict['dead_channels'])
-    # # List of all channels.
-    # probe['channels'] = sorted(map(int, probe_dict['channel_names'].keys()))
-    # # List of alive channels.
-    # probe['channels_alive'] = sorted(map(int, set(probe['channels']) - 
-        # set(probe['dead_channels'])))
-    # probe['nchannels_alive'] = len(probe['channels_alive'])
     probe['shanks'] = []
     # Process all shanks.
     for shank_dict in probe_dict['shanks']:
-        # # Find alive channels.
-        # shank_dict['channels_alive'] = sorted(map(int, set(shank_dict['channels']) - 
-            # set(probe['dead_channels'])))
         # Convert the geometry dictionary into an array.
         if 'geometry' in shank_dict:
             # Convert the keys from strings to integers.
@@ -130,13 +119,12 @@ def load_probe_json(probe_json):
             shank_dict['geometry_array'] = np.array(
                 [shank_dict['geometry'][key] 
                     for key in sorted(shank_dict['geometry'].keys())
-                        # if key not in probe['dead_channels']
                             ], 
                 dtype=np.float32)
         shank_index = shank_dict['shank_index']
         probe[shank_index] = shank_dict
         probe['shanks'].append(shank_index)
-    probe['shanks'] = sorted(probe['shanks'])
+    probe['shanks_list'] = sorted(probe['shanks'])
     return probe
     
 def load_prb(prb_filename):

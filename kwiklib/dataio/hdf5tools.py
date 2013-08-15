@@ -175,7 +175,7 @@ def write_metadata(file, params_json='', probe_json=''):
     # Get and set the list of shanks.
     probe = load_probe_json(probe_json)
     if probe:
-        shanks = np.unique(probe['shanks'])
+        shanks = np.unique(probe['shanks_list'])
     else:
         shanks = np.zeros(0, dtype=np.int32)
     file.setNodeAttr('/metadata', 'SHANKS', shanks)

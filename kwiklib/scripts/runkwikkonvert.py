@@ -63,6 +63,8 @@ def main():
     # Parse the PRM file.
     params = load_prm(prm_filename)
     params_json = params_to_json(params)
+    nchannels = params['nchannels']
+    print nchannels
     
     # Get the probe file.
     prb_filename = get_abs_path(params['probe_file'], dir)
@@ -70,7 +72,8 @@ def main():
         raise IOError("You need to specify in the PRM file the path to the PRB file.")
     elif not os.path.exists(prb_filename):
         raise IOError("The PRB file '{0:s}' does not exist.".format(prb_filename))
-    probe_json = load_prb(prb_filename)
+    with open(prb_filename, 'r') as f:
+        probe_json = f.read()
     
     # Get the raw data files.
     files = params['raw_data_files']
