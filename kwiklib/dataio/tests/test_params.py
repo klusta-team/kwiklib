@@ -36,6 +36,7 @@ def test_params_py():
     assert params['VAR5'] == [1, 2, 3]
     
 def assert_params(params):
+    assert params['nchannels'] == 32
     assert params['freq'] == 20000.
     assert params['nsamples'] == 20
     assert params['fetdim'] == 3
@@ -45,6 +46,7 @@ def assert_params(params):
 
 def test_params_json():
     params_py = """
+    NCHANNELS = 32
     SAMPLING_FREQUENCY = 20000.
     WAVEFORMS_NSAMPLES = 20
     FETDIM = 3
@@ -59,6 +61,7 @@ def test_params_json():
     
 def test_params_json_kwik():
     params_py = """
+    NCHANNELS = 32
     SAMPLING_FREQUENCY = 20000.
     WAVEFORMS_NSAMPLES = 20
     FETDIM = 3
@@ -71,6 +74,7 @@ def test_params_json_kwik():
     
 def test_params_json_spikedetekt():
     params_py = """
+    NCHANNELS = 32
     SAMPLERATE = 20000.
     T_BEFORE = .0005 # time before peak in extracted spike
     T_AFTER = .0005 # time after peak in extracted spike

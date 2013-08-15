@@ -94,6 +94,9 @@ def get_probe_file(params):
 def get_dead_channels(params):
     return params.get('DEAD_CHANNELS', [])
     
+def get_nchannels(params):
+    return params.get('NCHANNELS', 0)
+    
 def load_params_json(params_json):
     if not params_json:
         return None
@@ -101,6 +104,7 @@ def load_params_json(params_json):
     
     params = {}
     params['freq'] = get_freq(params_dict)
+    params['nchannels'] = get_nchannels(params_dict)
     params['nsamples'] = get_nsamples(params_dict, params['freq'])
     params['fetdim'] = get_fetdim(params_dict)
     params['raw_data_files'] = get_raw_data_files(params_dict)
@@ -112,6 +116,7 @@ def load_params_json(params_json):
 def params_to_json(params):
     
     params_ns = {}
+    params_ns['NCHANNELS'] = params['nchannels']
     params_ns['SAMPLING_FREQUENCY'] = params['freq']
     params_ns['WAVEFORMS_NSAMPLES'] = params['nsamples']
     params_ns['FETDIM'] = params['fetdim']

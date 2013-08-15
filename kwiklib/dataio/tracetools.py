@@ -57,10 +57,11 @@ def dat_to_kwd(filename_dat, filename_kwd, nchannels, params_json='',
         probe_json=''):
     if os.path.exists(filename_kwd):
         return
+    # print filename_dat, filename_kwd, nchannels, params_json, probe_json
+    # return
     file_kwd = create_kwd(filename_kwd)
     write_metadata(file_kwd, params_json, probe_json)
     write_raw_data(file_kwd, filename_dat, nchannels)
-    
     close_kwd(file_kwd)
     
     

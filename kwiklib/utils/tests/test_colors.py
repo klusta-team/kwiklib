@@ -6,7 +6,6 @@
 import sys
 
 import numpy as np
-from galry import figure, imshow, show, ylim, rectangles
 
 from kwiklib.utils.colors import (COLORS_COUNT, COLORMAP, COLORMAP_TEXTURE,
     next_color, SHIFTLEN)
@@ -28,6 +27,7 @@ def rgb_rect(rgb, coords):
     c[:,1] = y0
     c[:,2] = np.linspace(x0+a, x1, len(rgb))
     c[:,3] = y1
+    from galry import rectangles
     rectangles(coordinates=c, color=rgb)
 
 
@@ -40,6 +40,7 @@ def test_colors_1():
     assert next_color(COLORS_COUNT) == 1
     
 def test_color_galry():
+    from galry import figure, imshow, show, ylim, rectangles
     autodestruct = True
     if autodestruct:
         autodestruct = 100

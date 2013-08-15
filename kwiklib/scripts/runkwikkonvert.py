@@ -9,7 +9,7 @@ import re
 import numpy as np
 
 from kwiklib.dataio import (paramspy_to_json, load_params_json, load_prm, 
-    params_to_json, load_prb)
+    params_to_json, load_prb, dat_to_kwd)
 
 
 # -----------------------------------------------------------------------------
@@ -34,8 +34,8 @@ def get_abs_path(file, dir):
     else:
         return os.path.abspath(os.path.join(dir, file))
 
-def convert_raw_file(filename_raw, params_json='', probe_json=''):
-    base, ext = os.path.splitext(filename_dat)
+def convert_raw_file(filename_raw, nchannels, params_json='', probe_json=''):
+    base, ext = os.path.splitext(filename_raw)
     if ext == '.dat':
         filename_kwd = base + '.kwd'
         dat_to_kwd(filename_raw, filename_kwd, nchannels, 
@@ -76,12 +76,9 @@ def main():
     files = params['raw_data_files']
     files = [get_abs_path(file, dir) for file in files]
     
-    # print files
-    # print params_json
-    # print probe_json
-    
-    # for file in files:
-        # convert_raw_file(file, params_json=params_json, probe_json=probe_json)
+    for file in files:
+        convert_raw_file(file, nchannels, params_json=params_json, 
+            probe_json=probe_json)
 
 if __name__ == '__main__':
     main()
