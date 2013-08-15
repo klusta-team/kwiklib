@@ -12,7 +12,7 @@ import tables as tb
 
 from kwiklib.dataio import (save_binary, create_kwd, write_raw_data, 
     close_kwd, dat_to_kwd, read_dat, )
-from kwiklib.dataio.tests import (create_rawdata, duration, freq, nchannels,
+from kwiklib.dataio.tests import (create_trace, duration, freq, nchannels,
     TEST_FOLDER)
 
 # -----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ def setup():
     if not os.path.exists(dir):
         os.mkdir(dir)
         
-    dat = create_rawdata(nsamples, nchannels)
+    dat = create_trace(nsamples, nchannels)
     
     # Create mock DAT file.
     save_binary(os.path.join(dir, 'test.dat'), dat)

@@ -296,16 +296,16 @@ class HDF5Loader(Loader):
         self.spikes_selected_table = None
         
     # Raw data functions.
-    def get_rawdata(self):
+    def get_trace(self):
         try:
-            rawdata = self.kwd_raw.root.data
+            trace = self.kwd_raw.root.data
         except:
-            rawdata = None
+            trace = None
             
         freq = 20000.
         dead_channels = np.arange(0,5,1)
         data = dict(
-            rawdata=rawdata,
+            trace=trace,
             freq=freq,
             dead_channels=dead_channels,
         )
