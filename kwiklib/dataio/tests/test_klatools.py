@@ -1,4 +1,4 @@
-"""Unit tests for klatools module."""
+"""Unit tests for auxtools module."""
 
 # -----------------------------------------------------------------------------
 # Imports
@@ -11,22 +11,22 @@ import numpy as np
 import numpy.random as rnd
 import pandas as pd
 
-from kwiklib.dataio import kla_to_json, load_kla_json
+from kwiklib.dataio import kwa_to_json, load_kwa_json
 
 # -----------------------------------------------------------------------------
-# KLA tests
+# KWA tests
 # -----------------------------------------------------------------------------
-def test_kla_1():
-    kla = {}
-    kla['shanks'] = {1: {'cluster_colors': [1, 2, 5],
+def test_kwa_1():
+    kwa = {}
+    kwa['shanks'] = {1: {'cluster_colors': [1, 2, 5],
                'group_colors': [4],},
            2: {'cluster_colors': [6],
                'group_colors': [1, 3],}
                }
-    kla_json = kla_to_json(kla)
-    kla2 = load_kla_json(kla_json)
+    kwa_json = kwa_to_json(kwa)
+    kwa2 = load_kwa_json(kwa_json)
     
     for shank in (1, 2):
         for what in ('cluster_colors', 'cluster_colors'):
-            assert kla2['shanks'][shank][what] == kla['shanks'][shank][what]
+            assert kwa2['shanks'][shank][what] == kwa['shanks'][shank][what]
     

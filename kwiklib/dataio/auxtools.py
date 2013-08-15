@@ -1,4 +1,4 @@
-"""This module provides functions used to load KLA (klailiary) files."""
+"""This module provides functions used to load KWA (kwailiary) files."""
 
 # -----------------------------------------------------------------------------
 # Imports
@@ -17,48 +17,48 @@ from selection import get_indices
 # -----------------------------------------------------------------------------
 # Probe file functions
 # -----------------------------------------------------------------------------
-def kla_to_json(kla_dict):
-    """Convert a KLA dictionary to JSON.
+def kwa_to_json(kwa_dict):
+    """Convert a KWA dictionary to JSON.
     cluster_colors and group_colors are pandas.Series objects."""
-    kla_full = {}
-    kla_full['shanks'] = []
-    for shank, kla in kla_dict['shanks'].iteritems():
-        cluster_colors = kla['cluster_colors']
-        group_colors = kla['group_colors']
+    kwa_full = {}
+    kwa_full['shanks'] = []
+    for shank, kwa in kwa_dict['shanks'].iteritems():
+        cluster_colors = kwa['cluster_colors']
+        group_colors = kwa['group_colors']
         clusters = get_indices(cluster_colors)
         groups = get_indices(group_colors)
-        kla_shank = dict(
+        kwa_shank = dict(
             clusters=[{'cluster': str(cluster), 'color': str(cluster_colors[cluster])}
                 for cluster in clusters],
             groups_of_clusters=[{'group': str(group), 'color': str(group_colors[group])}
                 for group in groups],
             shank_index=shank
         )
-        kla_full['shanks'].append(kla_shank)
-    return json.dumps(kla_full, indent=4)
+        kwa_full['shanks'].append(kwa_shank)
+    return json.dumps(kwa_full, indent=4)
 
-def load_kla_json(kla_json):
-    """Convert from KLA JSON into two NumPy arrays with the cluster colors and group colors."""
-    if not kla_json:
+def load_kwa_json(kwa_json):
+    """Convert from KWA JSON into two NumPy arrays with the cluster colors and group colors."""
+    if not kwa_json:
         return None
-    kla_dict = json.loads(kla_json)
+    kwa_dict = json.loads(kwa_json)
     auxdata = {}
     auxdata['shanks'] = {}
     
     # load list of cluster and group colors for each shank
-    if kla_dict['shanks']:
-        for kla in kla_dict['shanks']:
-            shank = kla['shank_index']
-            cluster_colors = [int(o['color']) for o in kla['clusters']]
-            group_colors = [int(o['color']) for o in kla['groups_of_clusters']]
-            auxdata['shanks'][int(kla['shank_index'])] = dict(cluster_colors=cluster_colors, 
+    if kwa_dict['shanks']:
+        for kwa in kwa_dict['shanks']:
+            shank = kwa['shank_index']
+            cluster_colors = [int(o['color']) for o in kwa['clusters']]
+            group_colors = [int(o['color']) for o in kwa['groups_of_clusters']]
+            auxdata['shanks'][int(kwa['shank_index'])] = dict(cluster_colors=cluster_colors, 
                 group_colors=group_colors,)
         
     return auxdata
     
-def write_kla(filename_kla, kla):
-    kla_json = kla_to_json(kla)
-    with open(filename_kla, 'w') as f:
-        f.write(kla_json)
+def write_kwa(filename_kwa, kwa):
+    kwa_json = kwa_to_json(kwa)
+    with open(filename_kwa, 'w') as f:
+        f.write(kwa_json)
     
 

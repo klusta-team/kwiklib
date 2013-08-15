@@ -73,7 +73,7 @@ def test_hdf5():
         writer.convert()
     
     # Open the HDF5 file.
-    filename = os.path.join(dir, 'test.klx')
+    filename = os.path.join(dir, 'test.kwik')
     with tables.openFile(filename) as file:
         # Shank 1.
         # --------

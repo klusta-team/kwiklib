@@ -23,7 +23,7 @@ from tools import (load_text, normalize,
     first_row, load_binary_memmap)
 from probe import load_probe_json
 from params import load_params_json
-from klatools import load_kla_json, kla_to_json, write_kla
+from auxtools import load_kwa_json, kwa_to_json, write_kwa
 from selection import (select, select_pairs, get_spikes_in_clusters,
     get_some_spikes_in_clusters, get_some_spikes, get_indices, pandaize)
 from kwiklib.utils.logger import (debug, info, warn, exception, FileLogger,
@@ -46,12 +46,12 @@ class HDF5Loader(Loader):
         
     def set_filenames(self, filename):
         filenames = find_filenames(filename)
-        self.filename_klx = filenames['hdf5_klx']
+        self.filename_kwik = filenames['hdf5_kwik']
         self.filename_log = filenames['kvwlg']
         self.filename_clu = filenames['clu']
-        self.filename_kla = filenames['hdf5_kla']
-        self.filename_raw_kld = filenames['hdf5_raw']
-        self.filename = self.filename_klx
+        self.filename_kwa = filenames['hdf5_kwa']
+        self.filename_raw_kwd = filenames['hdf5_raw']
+        self.filename = self.filename_kwik
        
     def klusters_to_hdf5_progress_report(self, spike, nspikes, shank, nshanks):
         count = 100 * nshanks
@@ -59,9 +59,9 @@ class HDF5Loader(Loader):
         self.report_progress(index, count)
        
     def open_spikes(self):
-        """Open a HDF5 klx file."""
+        """Open a HDF5 kwik file."""
         
-        if not os.path.exists(self.filename_klx):
+        if not os.path.exists(self.filename_kwik):
             klusters_to_hdf5(filename, self.klusters_to_hdf5_progress_report)
         
         self.initialize_logfile()
@@ -73,35 +73,35 @@ class HDF5Loader(Loader):
         debug("Similarity measure: {0:s}.".format(self.similarity_measure))
         info("Opening {0:s}.".format(self.filename))
             
-        self.klx = tb.openFile(self.filename, mode='r+')
+        self.kwik = tb.openFile(self.filename, mode='r+')
         # Get the list of shanks.
-        self.shanks = list(self.klx.getNodeAttr('/metadata', 'SHANKS'))
+        self.shanks = list(self.kwik.getNodeAttr('/metadata', 'SHANKS'))
         # WARNING
         # The commented code above detects the shank indices from introspection
         # in the "shanks" group. It is not necessary anymore as soon as the
         # metadata contains a "SHANKS" attribute with the list of shanks.
         # self.shanks = [int(re.match("shank([0-9]+)", 
             # shank._v_name).group(1)[0])
-                # for shank in self.klx.listNodes('/shanks')]
+                # for shank in self.kwik.listNodes('/shanks')]
         self.read_metadata()
         # By default, read the first available shank.
         self.set_shank(self.shanks[0])
         
     def open_aesthetic(self):
-        # Read KLA file.
+        # Read KWA file.
         try:
-            with open(self.filename_kla) as f:
-                self.kla_json = f.read()
-            self.kla = load_kla_json(self.kla_json)
+            with open(self.filename_kwa) as f:
+                self.kwa_json = f.read()
+            self.kwa = load_kwa_json(self.kwa_json)
         except IOError:
-            self.kla_json = None
-            self.kla = None
+            self.kwa_json = None
+            self.kwa = None
     
     def open_traces(self):
         try:
-            self.kld_raw = tb.openFile(self.filename_raw_kld)
+            self.kwd_raw = tb.openFile(self.filename_raw_kwd)
         except:
-            self.kld_raw = None
+            self.kwd_raw = None
     
     
     # Shank functions.
@@ -124,13 +124,13 @@ class HDF5Loader(Loader):
         if shank is not None:
             self.shank = shank
         # Get the tables.
-        self.spike_table = self.klx.getNode(
+        self.spike_table = self.kwik.getNode(
             self.shank_path + '/spikes')
-        self.wave_table = self.klx.getNode(
+        self.wave_table = self.kwik.getNode(
             self.shank_path + '/waveforms')
-        self.clusters_table = self.klx.getNode(
+        self.clusters_table = self.kwik.getNode(
             self.shank_path + '/clusters')
-        self.groups_table = self.klx.getNode(
+        self.groups_table = self.kwik.getNode(
             self.shank_path + '/groups_of_clusters')
         # Get the contents.
         self.read_nchannels()
@@ -138,7 +138,7 @@ class HDF5Loader(Loader):
         self.read_nsamples()
         self.read_clusters()
         self.read_spiketimes()
-        self.read_kla()
+        self.read_kwa()
         self.read_arrays()
         
     
@@ -146,7 +146,7 @@ class HDF5Loader(Loader):
     # --------------
     def read_metadata(self):
         """Read the metadata in /metadata."""
-        params_json = self.klx.getNodeAttr('/metadata', 'PRM_JSON') or None
+        params_json = self.kwik.getNodeAttr('/metadata', 'PRM_JSON') or None
         self.params = load_params_json(params_json)
         
         # Read the sampling frequency.
@@ -166,7 +166,7 @@ class HDF5Loader(Loader):
             # To be set in "set_shank" as it is per-shank information.
             self.nsamples = None
         
-        probe_json = self.klx.getNodeAttr('/metadata', 'PRB_JSON') or None
+        probe_json = self.kwik.getNodeAttr('/metadata', 'PRB_JSON') or None
         self.probe = load_probe_json(probe_json)
         
     def read_nchannels(self):
@@ -201,8 +201,8 @@ class HDF5Loader(Loader):
         self.spiketimes = pd.Series(spiketimes, dtype=np.float32)
         self.duration = spiketimes[-1]
     
-    def read_kla(self):
-        # Read KLA JSON string.
+    def read_kwa(self):
+        # Read KWA JSON string.
         # Read the cluster info.
         clusters = self.clusters_table.col('cluster')
         cluster_groups = self.clusters_table.col('group')
@@ -210,11 +210,11 @@ class HDF5Loader(Loader):
         groups = self.groups_table.col('group')
         group_names = self.groups_table.col('name')
 
-        # Getting the colors from the KLA file, or creating them.
-        # kla = load_kla_json(self.kla_json)
-        if self.kla:
-            cluster_colors = self.kla['shanks'][self.shank]['cluster_colors']
-            group_colors = self.kla['shanks'][self.shank]['group_colors']
+        # Getting the colors from the KWA file, or creating them.
+        # kwa = load_kwa_json(self.kwa_json)
+        if self.kwa:
+            cluster_colors = self.kwa['shanks'][self.shank]['cluster_colors']
+            group_colors = self.kwa['shanks'][self.shank]['group_colors']
         else:
             cluster_colors = generate_colors(len(clusters))
             group_colors = generate_colors(len(groups))
@@ -298,7 +298,7 @@ class HDF5Loader(Loader):
     # Raw data functions.
     def get_rawdata(self):
         try:
-            rawdata = self.kld_raw.root.data
+            rawdata = self.kwd_raw.root.data
         except:
             rawdata = None
             
@@ -473,7 +473,7 @@ class HDF5Loader(Loader):
         self.groups_table.cols.name[:] = self.group_info['name']
         
         # Commit the changes on disk.
-        self.klx.flush()
+        self.kwik.flush()
         
         
         # Report progress.
@@ -488,16 +488,16 @@ class HDF5Loader(Loader):
         # Report progress.
         self.report_progress_save(5, 6)
         
-        # Update the KLA file.
+        # Update the KWA file.
         # --------------------
-        kla={}
-        kla['shanks'] = {
+        kwa={}
+        kwa['shanks'] = {
             shank: dict(
                 cluster_colors=self.cluster_info['color'],
                 group_colors=self.group_info['color'],
             ) for shank in self.shanks
         }
-        write_kla(self.filename_kla, kla)
+        write_kwa(self.filename_kwa, kwa)
         
         # Report progress.
         self.report_progress_save(6, 6)
@@ -506,10 +506,10 @@ class HDF5Loader(Loader):
     # Close functions.
     # ----------------
     def close(self):
-        """Close the klx HDF5 file."""
-        if hasattr(self, 'klx') and self.klx.isopen:
-            self.klx.flush()
-            self.klx.close()
+        """Close the kwik HDF5 file."""
+        if hasattr(self, 'kwik') and self.kwik.isopen:
+            self.kwik.flush()
+            self.kwik.close()
         if hasattr(self, 'logfile'):
             unregister(self.logfile)
        

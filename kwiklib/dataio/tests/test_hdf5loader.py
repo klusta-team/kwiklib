@@ -39,7 +39,7 @@ def test_hdf5_loader1():
     klusters_to_hdf5(filename)
         
     # Open the file.
-    filename_h5 = os.path.join(dir, 'test.klx')
+    filename_h5 = os.path.join(dir, 'test.kwik')
     
     l = HDF5Loader(filename=filename_h5)
     lk = KlustersLoader(filename=filename)

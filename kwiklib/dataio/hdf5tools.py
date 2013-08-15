@@ -22,7 +22,7 @@ from klustersloader import (find_filenames, find_index, read_xml,
     find_filename_or_new,
     read_clusters, read_cluster_info, read_group_info,)
 from loader import (default_cluster_info, default_group_info)
-from klatools import kla_to_json, write_kla
+from auxtools import kwa_to_json, write_kwa
 from tools import MemMappedText, MemMappedBinary
 
 
@@ -167,10 +167,10 @@ def create_hdf5_files(filename, klusters_data):
     # klusters_data_first = klusters_data.itervalues().next()
     
     # Create the HDF5 file.
-    hdf5['klx'] = tables.openFile(hdf5_filenames['hdf5_klx'], mode='w')
+    hdf5['kwik'] = tables.openFile(hdf5_filenames['hdf5_kwik'], mode='w')
     
     # Metadata.
-    for file in [hdf5['klx']]:#, hdf5['raw.kld']]:
+    for file in [hdf5['kwik']]:#, hdf5['raw.kwd']]:
         file.createGroup('/', 'metadata')
     
         # Put the version number.
@@ -194,7 +194,7 @@ def create_hdf5_files(filename, klusters_data):
             if isinstance(key, (int, long))])
         file.setNodeAttr('/metadata', 'SHANKS', np.unique(shanks))
 
-    file = hdf5['klx']
+    file = hdf5['kwik']
     file.createGroup('/', 'shanks')
     
     # Create groups and tables for each shank.
@@ -204,13 +204,13 @@ def create_hdf5_files(filename, klusters_data):
         shank_path = '/shanks/shank{0:d}'.format(shank)
         
         # Create the /shanks/shank<X> groups in each file.
-        file = hdf5['klx']
+        file = hdf5['kwik']
         file.createGroup('/shanks', 'shank{0:d}'.format(shank))
         
         
         # Create the cluster table.
         # -------------------------
-        hdf5['cluster_table', shank] = hdf5['klx'].createTable(
+        hdf5['cluster_table', shank] = hdf5['kwik'].createTable(
             shank_path, 'clusters', 
             get_clusters_description())
             
@@ -226,7 +226,7 @@ def create_hdf5_files(filename, klusters_data):
             
         # Create the group table.
         # -----------------------
-        hdf5['group_table', shank] = hdf5['klx'].createTable(
+        hdf5['group_table', shank] = hdf5['kwik'].createTable(
             shank_path, 'groups_of_clusters', 
             get_groups_description())
             
@@ -242,7 +242,7 @@ def create_hdf5_files(filename, klusters_data):
                
         # Create the spike table.
         # -----------------------
-        hdf5['spike_table', shank] = hdf5['klx'].createTable(
+        hdf5['spike_table', shank] = hdf5['kwik'].createTable(
             shank_path, 'spikes', 
             get_spikes_description(
                 fetcol=data['fetcol'],
@@ -251,7 +251,7 @@ def create_hdf5_files(filename, klusters_data):
                 
         # Create the wave table.
         # ----------------------
-        hdf5['wave_table', shank] = hdf5['klx'].createTable(
+        hdf5['wave_table', shank] = hdf5['kwik'].createTable(
             shank_path, 'waveforms', 
             get_waveforms_description(
                 nsamples=data['nsamples'],
@@ -346,20 +346,20 @@ class HDF5Writer(object):
                 self.shanks.index(self.shank),
                 len(self.shanks))
         
-    def write_kla(self):
-        kla = {}
-        kla['shanks'] = {
+    def write_kwa(self):
+        kwa = {}
+        kwa['shanks'] = {
             shank: dict(
                 cluster_colors=self.klusters_data[shank]['acluinfo']['color'],
                 group_colors=self.klusters_data[shank]['groupinfo']['color'],
             ) for shank in self.shanks
         }
-        write_kla(self.filenames['hdf5_kla'], kla)
+        write_kwa(self.filenames['hdf5_kwa'], kwa)
         
     def convert(self):
         """Convert the old file format to the new HDF5-based format."""
-        # Write the KLA file.
-        self.write_kla()
+        # Write the KWA file.
+        self.write_kwa()
         # Convert in HDF5 by going through all spikes.
         for self.shank in self.shanks:
             self.spike = 0
@@ -384,14 +384,14 @@ class HDF5Writer(object):
                     if isinstance(data, (MemMappedBinary, MemMappedText)):
                         data.close()
         
-        # # Close the KLA file.
-        # if self.hdf5_data['kla']:
-            # self.hdf5_data['kla'].close()
+        # # Close the KWA file.
+        # if self.hdf5_data['kwa']:
+            # self.hdf5_data['kwa'].close()
         
         # Close the HDF5 files.
-        if self.hdf5_data['klx'].isopen:
-            self.hdf5_data['klx'].flush()
-            self.hdf5_data['klx'].close()
+        if self.hdf5_data['kwik'].isopen:
+            self.hdf5_data['kwik'].flush()
+            self.hdf5_data['kwik'].close()
         
     def __del__(self):
         self.close()

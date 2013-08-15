@@ -50,7 +50,7 @@ def main():
     # Get the raw data files.
     files = params['raw_data_files']
     
-    dat_to_kld(filename_dat, filename_kld, nchannels, nsamples=None,
+    dat_to_kwd(filename_dat, filename_kwd, nchannels, nsamples=None,
         metadata=None):
     
     

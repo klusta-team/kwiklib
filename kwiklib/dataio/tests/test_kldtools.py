@@ -1,4 +1,4 @@
-"""Unit tests for kldtools module."""
+"""Unit tests for tracetools module."""
 
 # -----------------------------------------------------------------------------
 # Imports
@@ -10,8 +10,8 @@ import numpy.random as rnd
 import pandas as pd
 import tables as tb
 
-from kwiklib.dataio import (save_binary, create_kld, write_raw_data, 
-    close_kld, dat_to_kld, read_dat, )
+from kwiklib.dataio import (save_binary, create_kwd, write_raw_data, 
+    close_kwd, dat_to_kwd, read_dat, )
 from kwiklib.dataio.tests import (create_rawdata, duration, freq, nchannels,
     TEST_FOLDER)
 
@@ -33,31 +33,31 @@ def setup():
     
 
 # -----------------------------------------------------------------------------
-# KLD tests
+# KWD tests
 # -----------------------------------------------------------------------------
-def test_kld_1():
+def test_kwd_1():
     # Open the mock data.
     dir = TEST_FOLDER
     filename_dat = os.path.join(dir, 'test.dat')
-    filename_kld = os.path.join(dir, 'test.kld')
+    filename_kwd = os.path.join(dir, 'test.kwd')
     
-    # Convert the DAT file in KLD.
-    dat_to_kld(filename_dat, filename_kld, nchannels, 
+    # Convert the DAT file in KWD.
+    dat_to_kwd(filename_dat, filename_kwd, nchannels, 
         nsamples=nsamples)
     
     # Load DAT file (memmap).
     dat = read_dat(filename_dat, nchannels)
     assert dat.shape == (nsamples, nchannels)
     
-    # Load KLD file.
-    file_kld = tb.openFile(filename_kld)
-    kld = file_kld.root.data[:]
-    assert kld.shape == (nsamples, nchannels)
+    # Load KWD file.
+    file_kwd = tb.openFile(filename_kwd)
+    kwd = file_kwd.root.data[:]
+    assert kwd.shape == (nsamples, nchannels)
 
     # Check they are identical.
-    assert np.array_equal(dat, kld)
+    assert np.array_equal(dat, kwd)
     
-    # Close the KLD file.
-    close_kld(file_kld)
+    # Close the KWD file.
+    close_kwd(file_kwd)
     
     
