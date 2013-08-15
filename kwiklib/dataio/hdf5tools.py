@@ -15,7 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from probe import probe_to_json, all_to_all_probe
-from params import params_to_json
+from params import paramsxml_to_json
 from klustersloader import (find_filenames, find_index, read_xml,
     filename_to_triplet, triplet_to_filename, find_indices,
     find_hdf5_filenames, find_filename, find_any_filename, 
