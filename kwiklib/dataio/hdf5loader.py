@@ -100,14 +100,14 @@ class HDF5Loader(Loader):
             self.kwa = {}
     
     def open_traces(self):
-        # try:
-        self.kwd_raw = tb.openFile(self.filename_raw_kwd)
-        self.read_metadata(self.kwd_raw)
-        self.set_shank(self.shanks[0])
-        self.read_nchannels()
-        self.read_kwa_channels()
-        # except:
-            # self.kwd_raw = None
+        try:
+            self.kwd_raw = tb.openFile(self.filename_raw_kwd)
+            self.read_metadata(self.kwd_raw)
+            self.set_shank(self.shanks[0])
+            self.read_nchannels()
+            self.read_kwa_channels()
+        except:
+            self.kwd_raw = None
     
     # Shank functions.
     # ----------------
