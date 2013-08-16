@@ -12,7 +12,7 @@ import numpy.random as rnd
 import pandas as pd
 import tables as tb
 
-from kwiklib.dataio import save_binary, read_dat, close_kwd
+from kwiklib.dataio import save_binary, read_dat, close_kwd, paramspy_to_json
 from kwiklib.dataio.kwikkonvert import kwikkonvert
 from kwiklib.dataio.tests import (create_trace, duration, freq, nchannels,
     TEST_FOLDER, nsamples, fetdim)
@@ -94,6 +94,16 @@ def test_kwikkonvert_1():
 
     # Check they are identical.
     assert np.array_equal(dat, kwd)
+    
+    # Check PRM_JSON.
+    params_json = paramspy_to_json(params_py)
+    params_json2 = file_kwd.getNodeAttr('/metadata', 'PRM_JSON')
+    assert params_json == params_json2
+    
+    # Check PRB_JSON.
+    probe_json = probe
+    probe_json2 = file_kwd.getNodeAttr('/metadata', 'PRB_JSON')
+    assert probe_json == probe_json2
     
     # Close the KWD file.
     close_kwd(file_kwd)
