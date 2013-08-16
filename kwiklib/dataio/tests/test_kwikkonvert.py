@@ -54,7 +54,7 @@ def test_kwikkonvert_1():
     WAVEFORMS_NSAMPLES = {nsamples_wave}
     FETDIM = {fetdim}
     PRB_FILE = 'myprobe.prb'
-    DEAD_CHANNELS = []
+    IGNORED_CHANNELS = []
     RAW_DATA_FILES = ['test.dat']
     """.replace('    ', '').format(
         nchannels=nchannels,

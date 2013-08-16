@@ -79,7 +79,7 @@ def probe_to_json(probe_ns):
         # 'nchannels': nchannels,
         # 'channel_names': {channel: 'ch{0:d}'.format(channel) 
             # for channel in channels},
-        # 'dead_channels': [],
+        # 'ignored_channels': [],
         'shanks': [
                     {
                         'shank_index': shank,

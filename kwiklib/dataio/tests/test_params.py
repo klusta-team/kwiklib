@@ -40,7 +40,7 @@ def assert_params(params):
     assert params['freq'] == 20000.
     assert params['nsamples'] == 20
     assert params['fetdim'] == 3
-    assert params['dead_channels'] == []
+    assert params['ignored_channels'] == []
     assert params['probe_file'] == 'myprobe.prb'
     assert params['raw_data_files'] == ['myfile1.ns5', 'myfile2.ns5']
 
@@ -51,7 +51,7 @@ def test_params_json():
     WAVEFORMS_NSAMPLES = 20
     FETDIM = 3
     PRB_FILE = 'myprobe.prb'
-    DEAD_CHANNELS = []
+    IGNORED_CHANNELS = []
     RAW_DATA_FILES = ['myfile1.ns5', 'myfile2.ns5']
     """.replace('    ', '')
     params_json = paramspy_to_json(params_py)

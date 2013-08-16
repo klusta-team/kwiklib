@@ -91,9 +91,9 @@ def get_probe_file(params):
     elif 'PROBE_FILE' in params:
         return params['PROBE_FILE']
 
-def get_dead_channels(params):
+def get_ignored_channels(params):
     print params
-    return params.get('DEAD_CHANNELS', [])
+    return params.get('IGNORED_CHANNELS', [])
     
 def get_nchannels(params):
     return params.get('NCHANNELS', 0)
@@ -109,7 +109,7 @@ def load_params_json(params_json):
     params['fetdim'] = get_fetdim(params_dict)
     params['raw_data_files'] = get_raw_data_files(params_dict)
     params['probe_file'] = get_probe_file(params_dict)
-    params['dead_channels'] = get_dead_channels(params_dict)
+    params['ignored_channels'] = get_ignored_channels(params_dict)
     
     return params
 
@@ -122,7 +122,7 @@ def params_to_json(params):
     params_ns['FETDIM'] = params['fetdim']
     params_ns['RAW_DATA_FILES'] = params['raw_data_files']
     params_ns['PRB_FILE'] = params['probe_file']
-    params_ns['DEAD_CHANNELS'] = params['dead_channels']
+    params_ns['IGNORED_CHANNELS'] = params['ignored_channels']
     
     return json.dumps(params_ns)
 
