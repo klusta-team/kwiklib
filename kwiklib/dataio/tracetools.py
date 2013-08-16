@@ -72,6 +72,14 @@ def get_header_size(filename_raw, ext):
     
         return Header
     
+def get_or_create_table(file_kwd, nchannels=None, nsamples=None):
+    if not '/data' in file_kwd:
+        # Create the EArray.
+        data = file_kwd.createEArray('/', 'data', tables.Int16Atom(), 
+            (0, nchannels), expectedrows=nsamples)
+    data = file_kwd.getNode('/data')
+    return data
+    
 def write_raw_data(file_kwd, filename_raw, nchannels=None, 
         datatype=None):
     if datatype is None:
@@ -90,9 +98,8 @@ def write_raw_data(file_kwd, filename_raw, nchannels=None,
     nsamples = (os.path.getsize(filename_raw) // 
         (nchannels * np.dtype(datatype).itemsize))
     
-    # Create the EArray.
-    data = file_kwd.createEArray('/', 'data', tables.Int16Atom(), 
-        (0, nchannels), expectedrows=nsamples)
+    # Get or create the EArray.
+    data = get_or_create_table(file_kwd, nchannels=nchannels, nsamples=nsamples)
     
     # Open the raw data file.
     raw = MemMappedArray(filename_raw, np.int16, header_size=header_size)
