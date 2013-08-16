@@ -185,7 +185,11 @@ def find_filename_or_new(filename, extension_requested,
         if have_file_index:
             filename_existing = find_any_filename(filename)
             file, fileindex = os.path.splitext(filename_existing)
-            fileindex = int(fileindex[1:])
+            try:
+                fileindex = int(fileindex[1:])
+            except:
+                # We request a filename with a file index but none exists.
+                fileindex = 1
             file = '.'.join(file.split('.')[:-1])
             filename_new = "{0:s}.{1:s}.{2:d}".format(file, 
                 extension_requested, int(fileindex))

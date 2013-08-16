@@ -466,9 +466,6 @@ class HDF5Loader(Loader):
         self.update_cluster_info()
         self.update_group_info()
         
-        self.update_channel_info()
-        self.update_channel_group_info()
-        
         # Renumber internal variables, knowing that in this case the file
         # will be automatically reloaded right afterwards.
         if renumber:
