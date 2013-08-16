@@ -216,7 +216,6 @@ def find_filenames(filename):
                          find_filename(filename, 'mask'))
     # HDF5 file format
     filenames.update(find_hdf5_filenames(filename))
-    print filenames
     return filenames
 
 def filename_to_triplet(filename):
