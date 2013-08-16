@@ -1,0 +1,4 @@
+RAW_DATA_FILES = 'myexperiment.dat'
+SAMPLING_FREQUENCY = 20000.
+NCHANNELS = 32
+PRB_FILE = 'myprobe32.prb'

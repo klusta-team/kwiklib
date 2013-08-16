@@ -8,15 +8,7 @@ import re
 import cPickle
 
 import numpy as np
-# Try importing Pandas.
-# try:
 import pandas as pd
-    # # Make sure that read_csv is available.
-    # assert hasattr(pd, 'read_csv')
-    # HAS_PANDAS = True
-# except (ImportError, AssertionError):
-    # log_warn("You should install Pandas v>=0.8.")
-    # HAS_PANDAS = False
 
  
 # -----------------------------------------------------------------------------
@@ -61,11 +53,6 @@ def get_array(data, copy=False, dosort=False):
 # -----------------------------------------------------------------------------
 # Text files related functions
 # -----------------------------------------------------------------------------
-# def load_text(filepath, dtype, skiprows=0):
-    # if not filepath:
-        # raise IOError("The filepath is empty.")
-    # return np.loadtxt(filepath, dtype=dtype, skiprows=skiprows)
-
 def first_row(filepath):
     with open(filepath, 'r') as f:
         n = f.readline().strip()
