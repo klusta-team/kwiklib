@@ -307,7 +307,6 @@ class HDF5Loader(Loader):
             
         freq = self.params['freq']
         ignored_channels = self.params['ignored_channels']
-        print ignored_channels
         data = dict(
             trace=trace,
             freq=freq,

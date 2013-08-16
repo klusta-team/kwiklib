@@ -41,7 +41,7 @@ def convert_raw_file(filename_raw, nchannels, params_json='', probe_json='',
 # -----------------------------------------------------------------------------
 # Main function
 # -----------------------------------------------------------------------------
-def kwikkonvert(prm_filename, overwrite=False):
+def kwikkonvert(prm_filename, overwrite=False, verbose=True):
 
     dir = os.path.dirname(prm_filename)
     if not os.path.exists(prm_filename):
@@ -65,8 +65,13 @@ def kwikkonvert(prm_filename, overwrite=False):
     files = params['raw_data_files']
     files = [get_abs_path(file, dir) for file in files]
     
+    if verbose:
+        print("Converting {0:d} file(s)...".format(len(files)))
+    
     for file in files:
         convert_raw_file(file, nchannels, params_json=params_json, 
             probe_json=probe_json, overwrite=overwrite)
 
+    if verbose:
+        print("File {0:s} successfully created.".format(prm_filename))
     
