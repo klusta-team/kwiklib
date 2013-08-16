@@ -36,7 +36,7 @@ def convert_raw_file(filename_raw, nchannels, params_json='', probe_json='',
         raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
     raw_to_kwd(filename_raw, filename_kwd, nchannels, ext=ext,
         params_json=params_json, probe_json=probe_json)
-        
+    
     
 # -----------------------------------------------------------------------------
 # Main function

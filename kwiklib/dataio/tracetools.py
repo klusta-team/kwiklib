@@ -21,6 +21,13 @@ def create_kwd(filename_kwd):
     file_kwd.setNodeAttr('/', 'VERSION', 1)
     return file_kwd
 
+def get_header_size(filename_raw, ext):
+    if ext == 'dat':
+        return 0
+    elif ext == 'ns5':
+        # TODO
+        return 0
+    
 def write_raw_data(file_kwd, filename_raw, ext=None, nchannels=None, 
         datatype=None):
     if datatype is None:
@@ -30,12 +37,15 @@ def write_raw_data(file_kwd, filename_raw, ext=None, nchannels=None,
     nsamples = (os.path.getsize(filename_raw) // 
         (nchannels * np.dtype(datatype).itemsize))
     
+    # Get the header.
+    header_size = get_header_size(filename_raw, ext)
+    
     # Create the EArray.
     data = file_kwd.createEArray('/', 'data', tables.Int16Atom(), 
         (0, nchannels), expectedrows=nsamples)
     
-    # Open the DAT file.
-    raw = MemMappedArray(filename_raw, np.int16)
+    # Open the raw data file.
+    raw = MemMappedArray(filename_raw, np.int16, header_size=header_size)
     chunk_nrows = 1000
     chunk_pos = 0
     while True:

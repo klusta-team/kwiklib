@@ -129,27 +129,30 @@ def load_pickle(file):
 def load_binary_memmap(file, dtype=None, shape=None):
     return np.memmap(file, dtype=dtype, shape=shape)
 
-def get_chunk(f, dtype, start, stop):
+def get_chunk(f, dtype, start, stop, offset=0):
     itemsize = np.dtype(dtype).itemsize
     count = (stop - start)
-    f.seek(itemsize * start, os.SEEK_SET)
+    f.seek(offset + itemsize * start, os.SEEK_SET)
     return np.fromfile(f, dtype=dtype, count=count)
 
 def get_chunk_line(f, dtype):
     return np.fromstring(f.readline(), dtype=dtype, sep=' ')
 
 class MemMappedArray(object):
-    def __init__(self, filename, dtype):
+    def __init__(self, filename, dtype, header_size=0):
         self.filename = filename
+        self.header_size = header_size
         self.dtype = dtype
         self.itemsize = np.dtype(self.dtype).itemsize
         self.f = open(filename, 'rb')
         
     def __getitem__(self, key):
         if isinstance(key, (int, long)):
-            return get_chunk(self.f, self.dtype, key, key + 1)[0]
+            return get_chunk(self.f, self.dtype, key, key + 1, 
+                offset=self.header_size)[0]
         elif isinstance(key, slice):
-            return get_chunk(self.f, self.dtype, key.start, key.stop)
+            return get_chunk(self.f, self.dtype, key.start, key.stop,
+                offset=self.header_size)
         
     def __del__(self):
         self.f.close()
