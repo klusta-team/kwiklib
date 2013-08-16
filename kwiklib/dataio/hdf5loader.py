@@ -52,6 +52,7 @@ class HDF5Loader(Loader):
         self.filename_kwa = filenames['hdf5_kwa']
         self.filename_raw_kwd = filenames['hdf5_raw']
         self.filename = self.filename_kwik
+        self.filenames = filenames
        
     def klusters_to_hdf5_progress_report(self, spike, nspikes, shank, nshanks):
         count = 100 * nshanks
@@ -61,7 +62,7 @@ class HDF5Loader(Loader):
     def open_spikes(self):
         """Open a HDF5 kwik file."""
         
-        if not os.path.exists(self.filename_kwik):
+        if not os.path.exists(self.filename_kwik) and os.path.exists(self.filenames['fet']):
             klusters_to_hdf5(self.filename, self.klusters_to_hdf5_progress_report)
         
         self.initialize_logfile()
@@ -73,19 +74,20 @@ class HDF5Loader(Loader):
         debug("Similarity measure: {0:s}.".format(self.similarity_measure))
         info("Opening {0:s}.".format(self.filename))
             
-        self.kwik = tb.openFile(self.filename, mode='r+')
-        # Get the list of shanks.
-        self.shanks = list(self.kwik.getNodeAttr('/metadata', 'SHANKS'))
-        # WARNING
-        # The commented code above detects the shank indices from introspection
-        # in the "shanks" group. It is not necessary anymore as soon as the
-        # metadata contains a "SHANKS" attribute with the list of shanks.
-        # self.shanks = [int(re.match("shank([0-9]+)", 
-            # shank._v_name).group(1)[0])
-                # for shank in self.kwik.listNodes('/shanks')]
-        self.read_metadata(self.kwik)
-        # By default, read the first available shank.
-        self.set_shank(self.shanks[0])
+        if os.path.exists(self.filename):
+            self.kwik = tb.openFile(self.filename, mode='r+')
+            # Get the list of shanks.
+            # WARNING
+            # The commented code above detects the shank indices from introspection
+            # in the "shanks" group. It is not necessary anymore as soon as the
+            # metadata contains a "SHANKS" attribute with the list of shanks.
+            # self.shanks = [int(re.match("shank([0-9]+)", 
+                # shank._v_name).group(1)[0])
+                    # for shank in self.kwik.listNodes('/shanks')]
+            self.read_metadata(self.kwik)
+            # By default, read the first available shank.
+            self.set_shank(self.shanks[0])
+            self.read_shank()
         
     def open_aesthetic(self):
         # Read KWA file.
@@ -98,11 +100,14 @@ class HDF5Loader(Loader):
             self.kwa = {}
     
     def open_traces(self):
-        try:
-            self.kwd_raw = tb.openFile(self.filename_raw_kwd)
-            self.read_metadata(self.kwd_raw)
-        except:
-            self.kwd_raw = None
+        # try:
+        self.kwd_raw = tb.openFile(self.filename_raw_kwd)
+        self.read_metadata(self.kwd_raw)
+        self.set_shank(self.shanks[0])
+        self.read_nchannels()
+        self.read_kwa_channels()
+        # except:
+            # self.kwd_raw = None
     
     # Shank functions.
     # ----------------
@@ -116,8 +121,7 @@ class HDF5Loader(Loader):
             warn("Shank {0:d} is not in the list of shanks: {1:s}".format(
                 shank, str(self.shanks)))
         self.shank = shank
-        self.shank_path = '/shanks/shank{0:d}'.format(self.shank)
-        self.read_shank()
+        self.shank_path = '/shank{0:d}'.format(self.shank)
     
     def read_shank(self, shank=None):
         """Read the tables corresponding to a given shank."""
@@ -138,7 +142,7 @@ class HDF5Loader(Loader):
         self.read_nsamples()
         self.read_clusters()
         self.read_spiketimes()
-        self.read_kwa()
+        self.read_kwa_clusters()
         self.read_arrays()
         
     
@@ -167,8 +171,9 @@ class HDF5Loader(Loader):
             self.nsamples = None
         
         probe_json = datafile.getNodeAttr('/metadata', 'PRB_JSON') or None
+        self.shanks = list(datafile.getNodeAttr('/metadata', 'SHANKS'))
         self.probe = load_probe_json(probe_json)
-        
+
     def read_nchannels(self):
         """Read the number of alive channels from the probe file."""
         channels = self.probe[self.shank]['channels']
@@ -204,7 +209,7 @@ class HDF5Loader(Loader):
         self.spiketimes = pd.Series(spiketimes, dtype=np.float32)
         self.duration = spiketimes[-1]
     
-    def read_kwa(self):
+    def read_kwa_clusters(self):
         # Read KWA JSON string.
         # Read the cluster info.
         clusters = self.clusters_table.col('cluster')
@@ -222,7 +227,24 @@ class HDF5Loader(Loader):
             cluster_colors = generate_colors(len(clusters))
             group_colors = generate_colors(len(groups))
          
+        # Create the cluster_info DataFrame.
+        self.cluster_info = pd.DataFrame(dict(
+            color=cluster_colors,
+            group=cluster_groups,
+            ), index=clusters)
+        self.cluster_colors = self.cluster_info['color'].astype(np.int32)
+        self.cluster_groups = self.cluster_info['group'].astype(np.int32)
+
+        # Create the group_info DataFrame.
+        self.group_info = pd.DataFrame(dict(
+            color=group_colors,
+            name=group_names,
+            ), index=groups)
+        self.group_colors = self.group_info['color'].astype(np.int32)
+        self.group_names = self.group_info['name']
          
+         
+    def read_kwa_channels(self):
         # create channel attributes
         # channel_names, channel_colors, channel_groups, channel_group_names, channel_group_colors, channels_visible, channel_groups_visible
         if self.kwa.get('channels', {}):
@@ -232,7 +254,7 @@ class HDF5Loader(Loader):
             self.channel_groups = pd.Series([self.kwa['channels'][channel]['group'] for channel in channels], index=channels)
             self.channels_visible = pd.Series([self.kwa['channels'][channel]['visible'] for channel in channels], index=channels)
         else:
-            self.channel_names = pd.Series(["Channel {0:d}".format(channel) for channel in xrange(self.nchannels)])
+            self.channel_names = pd.Series(["ch{0:d}".format(channel) for channel in xrange(self.nchannels)])
             self.channel_colors = pd.Series(np.mod(np.arange(self.nchannels, dtype=np.int32), COLORS_COUNT) + 1)
             
             # TODO: put channels in shanks rather than assuming they're all in group 0
@@ -248,22 +270,6 @@ class HDF5Loader(Loader):
             # TODO: put channels in shanks rather than assuming they're all in group 0
             self.channel_group_names = pd.Series(["Group 1"])
             self.channel_group_colors = pd.Series([0])
-            
-        # Create the cluster_info DataFrame.
-        self.cluster_info = pd.DataFrame(dict(
-            color=cluster_colors,
-            group=cluster_groups,
-            ), index=clusters)
-        self.cluster_colors = self.cluster_info['color'].astype(np.int32)
-        self.cluster_groups = self.cluster_info['group'].astype(np.int32)
-        
-        # Create the group_info DataFrame.
-        self.group_info = pd.DataFrame(dict(
-            color=group_colors,
-            name=group_names,
-            ), index=groups)
-        self.group_colors = self.group_info['color'].astype(np.int32)
-        self.group_names = self.group_info['name']
     
     # Read and process arrays.
     # ------------------------
@@ -333,12 +339,14 @@ class HDF5Loader(Loader):
             
         freq = self.params['freq']
         ignored_channels = self.params['ignored_channels']
-        channel_colors = pd.np.array(self.channel_colors)
+        channel_colors = self.channel_colors
+        channel_names=self.channel_names
         data = dict(
             trace=trace,
             freq=freq,
             ignored_channels=ignored_channels,
-            channel_colors=channel_colors
+            channel_colors=channel_colors,
+            channel_names=channel_names
         )
         return data
 
