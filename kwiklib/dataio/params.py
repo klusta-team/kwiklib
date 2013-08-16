@@ -61,7 +61,7 @@ def get_nsamples(params, freq):
                 for key, value in params['WAVEFORMS_NSAMPLES'].iteritems()}
         # Second case: it's a single value, the same nsamples for all channels.
         else:
-            return int(params['WAVEFORMS_NSAMPLES'])
+            return int(params['WAVEFORMS_NSAMPLES'] or 0)
     # or SpikeDetekt format.
     elif 'T_BEFORE' in params and 'T_AFTER' in params:
         return int(freq * (float(params['T_BEFORE']) + float(params['T_AFTER'])))
@@ -73,7 +73,7 @@ def get_fetdim(params):
             return {int(key): value 
                 for key, value in params['FETDIM'].iteritems()}
         else:
-            return int(params['FETDIM'])
+            return int(params['FETDIM'] or 0)
     # or SpikeDetekt format.
     elif 'FPC' in params:
         return params['FPC']
