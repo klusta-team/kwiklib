@@ -198,7 +198,6 @@ def find_filename_or_new(filename, extension_requested,
             except:
                 file = '.'.join(dots[:-1])
             filename_new = "{0:s}.{1:s}".format(file, extension_requested)
-            print dots, filename_new
         return filename_new
     else:
         return filename_found
