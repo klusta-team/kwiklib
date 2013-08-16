@@ -92,6 +92,7 @@ def get_probe_file(params):
         return params['PROBE_FILE']
 
 def get_dead_channels(params):
+    print params
     return params.get('DEAD_CHANNELS', [])
     
 def get_nchannels(params):
@@ -101,7 +102,6 @@ def load_params_json(params_json):
     if not params_json:
         return None
     params_dict = json.loads(params_json)
-    
     params = {}
     params['freq'] = get_freq(params_dict)
     params['nchannels'] = get_nchannels(params_dict)

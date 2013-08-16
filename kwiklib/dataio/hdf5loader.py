@@ -83,7 +83,7 @@ class HDF5Loader(Loader):
         # self.shanks = [int(re.match("shank([0-9]+)", 
             # shank._v_name).group(1)[0])
                 # for shank in self.kwik.listNodes('/shanks')]
-        self.read_metadata()
+        self.read_metadata(self.kwik)
         # By default, read the first available shank.
         self.set_shank(self.shanks[0])
         
@@ -100,9 +100,9 @@ class HDF5Loader(Loader):
     def open_traces(self):
         try:
             self.kwd_raw = tb.openFile(self.filename_raw_kwd)
+            self.read_metadata(self.kwd_raw)
         except:
             self.kwd_raw = None
-    
     
     # Shank functions.
     # ----------------
@@ -144,9 +144,9 @@ class HDF5Loader(Loader):
     
     # Read contents.
     # --------------
-    def read_metadata(self):
+    def read_metadata(self, datafile):
         """Read the metadata in /metadata."""
-        params_json = self.kwik.getNodeAttr('/metadata', 'PRM_JSON') or None
+        params_json = datafile.getNodeAttr('/metadata', 'PRM_JSON') or None
         self.params = load_params_json(params_json)
         
         # Read the sampling frequency.
@@ -166,7 +166,7 @@ class HDF5Loader(Loader):
             # To be set in "set_shank" as it is per-shank information.
             self.nsamples = None
         
-        probe_json = self.kwik.getNodeAttr('/metadata', 'PRB_JSON') or None
+        probe_json = datafile.getNodeAttr('/metadata', 'PRB_JSON') or None
         self.probe = load_probe_json(probe_json)
         
     def read_nchannels(self):
@@ -305,8 +305,9 @@ class HDF5Loader(Loader):
         except:
             trace = None
             
-        freq = 20000.
-        dead_channels = np.arange(0,5,1)
+        freq = self.params['freq']
+        dead_channels = self.params['dead_channels']
+        print dead_channels
         data = dict(
             trace=trace,
             freq=freq,
