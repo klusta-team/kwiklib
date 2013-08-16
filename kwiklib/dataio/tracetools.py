@@ -4,12 +4,14 @@
 # Imports
 # -----------------------------------------------------------------------------
 import os
+import struct
 
 import tables
 import numpy as np
 
 from hdf5tools import write_metadata
 from tools import MemMappedArray
+from kwiklib.utils import logger as log
 
 
 # -----------------------------------------------------------------------------
@@ -25,8 +27,50 @@ def get_header_size(filename_raw, ext):
     if ext == 'dat':
         return 0
     elif ext == 'ns5':
-        # TODO
-        return 0
+
+        f = open(filename_raw, 'rb')
+        file_total_size = os.path.getsize(filename_raw)
+        
+        sample_width = 2  # int16 samples
+    
+        # Read File_Type_ID and check compatibility
+        # If v2.2 is used, this value will be 'NEURALCD', which uses a slightly
+        # more complex header. Currently unsupported.
+        File_Type_ID = [chr(ord(c)) \
+            for c in f.read(8)]
+        if "".join(File_Type_ID) != 'NEURALSG':
+            log.info( "Incompatible ns5 file format. Only v2.1 is supported.\nThis will probably not work.")
+
+        # Skip the next field.
+        f.read(16)
+
+        # Read Period.
+        period, = struct.unpack('<I', f.read(4))
+        freq = period * 30000.0
+
+        # Read Channel_Count and Channel_ID
+        Channel_Count, = struct.unpack('<I', f.read(4))
+        
+        Channel_ID = [struct.unpack('<I', f.read(4))[0]
+            for n in xrange(Channel_Count)]
+            
+        # Compute total header length
+        Header = 8 + 16 + 4 + 4 + \
+            4*Channel_Count # in bytes
+
+        # determine length of file
+        n_samples = (file_total_size - Header) // (Channel_Count * sample_width)
+        # Length = np.float64(n_samples) / Channel_Count
+        file_total_size2 = sample_width * Channel_Count * n_samples + Header
+    
+        # Sanity check.
+        if file_total_size != file_total_size2:
+            fields = ["{0:s}={1:s}".format(key, str(locals()[key])) 
+                for key in ('period', 'freq', 'Channel_Count', 'Channel_ID',
+                    'n_samples')]
+            raise ValueError("The file seems corrupted: " + ", ".join(fields))
+    
+        return Header
     
 def write_raw_data(file_kwd, filename_raw, ext=None, nchannels=None, 
         datatype=None):
