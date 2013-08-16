@@ -333,10 +333,12 @@ class HDF5Loader(Loader):
             
         freq = self.params['freq']
         ignored_channels = self.params['ignored_channels']
+        channel_colors = pd.np.array(self.channel_colors)
         data = dict(
             trace=trace,
             freq=freq,
             ignored_channels=ignored_channels,
+            channel_colors=channel_colors
         )
         return data
 
