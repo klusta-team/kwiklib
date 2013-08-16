@@ -28,14 +28,15 @@ def convert_raw_file(filename_raw, nchannels, params_json='', probe_json='',
     base, ext = os.path.splitext(filename_raw)
     # if ext == '.dat':
     # Remove the leading dot ('.').
-    ext = ext[1:]
+    # ext = ext[1:]
     filename_kwd = base + '.raw.kwd'
     # Raise an error if the KWD file already exists, unless overwrite is 
     # True.
     if not overwrite and os.path.exists(filename_kwd):
         raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
-    raw_to_kwd(filename_raw, filename_kwd, nchannels, ext=ext,
+    raw_to_kwd(filename_raw, filename_kwd, nchannels, 
         params_json=params_json, probe_json=probe_json)
+    return filename_kwd
     
     
 # -----------------------------------------------------------------------------
@@ -73,5 +74,5 @@ def kwikkonvert(prm_filename, overwrite=False, verbose=True):
             probe_json=probe_json, overwrite=overwrite)
 
     if verbose:
-        print("File {0:s} successfully created.".format(prm_filename))
+        print("File successfully created.")
     

@@ -72,17 +72,23 @@ def get_header_size(filename_raw, ext):
     
         return Header
     
-def write_raw_data(file_kwd, filename_raw, ext=None, nchannels=None, 
+def write_raw_data(file_kwd, filename_raw, nchannels=None, 
         datatype=None):
     if datatype is None:
         datatype = np.int16
-    # Wa can infer the total number of samples from the file size and the
+        
+    # Get the RAW data file extension.
+    base, ext = os.path.splitext(filename_raw)
+    # Remove the leading dot ('.').
+    ext = ext[1:]
+        
+    # Get the header.
+    header_size = get_header_size(filename_raw, ext)
+    
+    # We can infer the total number of samples from the file size and the
     # data type size.
     nsamples = (os.path.getsize(filename_raw) // 
         (nchannels * np.dtype(datatype).itemsize))
-    
-    # Get the header.
-    header_size = get_header_size(filename_raw, ext)
     
     # Create the EArray.
     data = file_kwd.createEArray('/', 'data', tables.Int16Atom(), 
@@ -108,13 +114,13 @@ def close_kwd(file_kwd):
     file_kwd.flush()
     file_kwd.close()
     
-def raw_to_kwd(filename_raw, filename_kwd, nchannels, ext=None, params_json='',
+def raw_to_kwd(filename_raw, filename_kwd, nchannels, params_json='',
         probe_json=''):
     # if os.path.exists(filename_kwd):
         # raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
     file_kwd = create_kwd(filename_kwd)
     write_metadata(file_kwd, params_json, probe_json)
-    write_raw_data(file_kwd, filename_raw, nchannels=nchannels, ext=ext)
+    write_raw_data(file_kwd, filename_raw, nchannels=nchannels)
     close_kwd(file_kwd)
     
     
