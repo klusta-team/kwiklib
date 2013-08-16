@@ -154,7 +154,7 @@ def find_filename(filename, extension_requested, dir='', files=[]):
     
     return None
 
-def find_any_filename(filename, extension_requested=None, dir='', files=[]):
+def find_any_filename(filename, extension_requested, dir='', files=[]):
     # get the full path
     if not dir:
         dir = os.path.dirname(filename)
@@ -166,10 +166,7 @@ def find_any_filename(filename, extension_requested=None, dir='', files=[]):
         except (WindowsError, OSError, IOError):
             raise IOError("Error when accessing '{0:s}'.".format(dir))
     
-    if extension_requested:
-        filtered = filter(lambda f: f.endswith('.' + extension_requested), files)
-    else:
-        filtered = files
+    filtered = filter(lambda f: f.endswith('.' + extension_requested), files)
     if filtered:
         return os.path.join(dir, filtered[0])
     
@@ -183,8 +180,7 @@ def find_filename_or_new(filename, extension_requested,
     # with the requested one.
     if not filename_found:
         if have_file_index:
-            filename_existing = find_any_filename(filename)
-            file, fileindex = os.path.splitext(filename_existing)
+            file, fileindex = os.path.splitext(filename)
             try:
                 fileindex = int(fileindex[1:])
             except:
@@ -194,8 +190,7 @@ def find_filename_or_new(filename, extension_requested,
             filename_new = "{0:s}.{1:s}.{2:d}".format(file, 
                 extension_requested, int(fileindex))
         else:
-            filename_existing = find_any_filename(filename)
-            dots = filename_existing.split('.')
+            dots = filename.split('.')
             # Trailing file index?
             try:
                 if int(dots[-1]) >= 0:
@@ -203,6 +198,7 @@ def find_filename_or_new(filename, extension_requested,
             except:
                 file = '.'.join(dots[:-1])
             filename_new = "{0:s}.{1:s}".format(file, extension_requested)
+            print dots, filename_new
         return filename_new
     else:
         return filename_found
@@ -221,6 +217,7 @@ def find_filenames(filename):
                          find_filename(filename, 'mask'))
     # HDF5 file format
     filenames.update(find_hdf5_filenames(filename))
+    print filenames
     return filenames
 
 def filename_to_triplet(filename):
