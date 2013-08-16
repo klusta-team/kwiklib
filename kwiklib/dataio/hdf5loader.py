@@ -121,7 +121,7 @@ class HDF5Loader(Loader):
             warn("Shank {0:d} is not in the list of shanks: {1:s}".format(
                 shank, str(self.shanks)))
         self.shank = shank
-        self.shank_path = '/shank{0:d}'.format(self.shank)
+        self.shank_path = '/shanks/shank{0:d}'.format(self.shank)
     
     def read_shank(self, shank=None):
         """Read the tables corresponding to a given shank."""
