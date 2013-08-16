@@ -9,7 +9,7 @@ import re
 import numpy as np
 
 from kwiklib.dataio import (paramspy_to_json, load_params_json, load_prm, 
-    params_to_json, load_prb, dat_to_kwd)
+    params_to_json, load_prb, raw_to_kwd)
 from kwiklib import kwikkonvert
 
 

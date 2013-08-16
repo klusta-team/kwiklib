@@ -9,7 +9,7 @@ import re
 import numpy as np
 
 from kwiklib.dataio import (paramspy_to_json, load_params_json, load_prm, 
-    params_to_json, load_prb, dat_to_kwd)
+    params_to_json, load_prb, raw_to_kwd)
 
 
 # -----------------------------------------------------------------------------
@@ -32,7 +32,7 @@ def convert_raw_file(filename_raw, nchannels, params_json='', probe_json='',
         # True.
         if not overwrite and os.path.exists(filename_kwd):
             raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
-        dat_to_kwd(filename_raw, filename_kwd, nchannels, 
+        raw_to_kwd(filename_raw, filename_kwd, nchannels, 
             params_json=params_json, probe_json=probe_json)
     
         

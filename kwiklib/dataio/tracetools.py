@@ -53,7 +53,7 @@ def close_kwd(file_kwd):
     file_kwd.flush()
     file_kwd.close()
     
-def dat_to_kwd(filename_dat, filename_kwd, nchannels, params_json='',
+def raw_to_kwd(filename_dat, filename_kwd, nchannels, params_json='',
         probe_json=''):
     # if os.path.exists(filename_kwd):
         # raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
