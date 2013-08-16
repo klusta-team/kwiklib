@@ -95,7 +95,7 @@ class HDF5Loader(Loader):
             self.kwa = load_kwa_json(self.kwa_json)
         except IOError:
             self.kwa_json = None
-            self.kwa = None
+            self.kwa = {}
     
     def open_traces(self):
         try:
@@ -221,7 +221,34 @@ class HDF5Loader(Loader):
         else:
             cluster_colors = generate_colors(len(clusters))
             group_colors = generate_colors(len(groups))
+         
+         
+        # create channel attributes
+        # channel_names, channel_colors, channel_groups, channel_group_names, channel_group_colors, channels_visible, channel_groups_visible
+        if self.kwa.get('channels', {}):
+            channels = sorted(self.kwa['channels'].keys())
+            self.channel_colors = pd.Series([self.kwa['channels'][channel]['color'] for channel in channels], index=channels)
+            self.channel_names = pd.Series([self.kwa['channels'][channel]['name'] for channel in channels], index=channels)
+            self.channel_groups = pd.Series([self.kwa['channels'][channel]['group'] for channel in channels], index=channels)
+            self.channels_visible = pd.Series([self.kwa['channels'][channel]['visible'] for channel in channels], index=channels)
+        else:
+            self.channel_names = pd.Series(["Channel {0:d}".format(channel) for channel in xrange(self.nchannels)])
+            self.channel_colors = pd.Series(np.mod(np.arange(self.nchannels, dtype=np.int32), COLORS_COUNT) + 1)
+            
+            # TODO: put channels in shanks rather than assuming they're all in group 0
+            self.channel_groups = pd.Series(np.zeros(self.nchannels))
         
+        if self.kwa.get('groups_of_channels', {}):
+            channel_groups = sorted(self.kwa['groups_of_channels'].keys())
+            self.channel_group_colors = pd.Series([self.kwa['groups_of_channels'][group]['color'] for group in channel_groups], index=channel_groups)
+            self.channel_group_names = pd.Series([self.kwa['groups_of_channels'][group]['name'] for group in channel_groups], index=channel_groups)
+            self.channel_groups_visible = pd.Series([self.kwa['groups_of_channels'][group]['visible'] for group in channel_groups], index=channel_groups)
+        else:
+            
+            # TODO: put channels in shanks rather than assuming they're all in group 0
+            self.channel_group_names = pd.Series(["Group 1"])
+            self.channel_group_colors = pd.Series([0])
+            
         # Create the cluster_info DataFrame.
         self.cluster_info = pd.DataFrame(dict(
             color=cluster_colors,
@@ -237,7 +264,6 @@ class HDF5Loader(Loader):
             ), index=groups)
         self.group_colors = self.group_info['color'].astype(np.int32)
         self.group_names = self.group_info['name']
-    
     
     # Read and process arrays.
     # ------------------------
@@ -438,6 +464,9 @@ class HDF5Loader(Loader):
         
         self.update_cluster_info()
         self.update_group_info()
+        
+        self.update_channel_info()
+        self.update_channel_group_info()
         
         # Renumber internal variables, knowing that in this case the file
         # will be automatically reloaded right afterwards.

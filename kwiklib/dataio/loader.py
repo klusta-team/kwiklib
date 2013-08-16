@@ -311,7 +311,7 @@ class Loader(QtCore.QObject):
             channel_group_colors = get_array(self.get_channel_group_colors('all'))
             channel_groups = get_array(self.get_channel_groups('all'))
             colors = pd.Series(channel_group_colors[channel_groups], 
-                index=self.get_channels_unique())
+                index=self.channels)
         else:
             colors = self.channel_colors
         return select(colors, channels)
@@ -325,22 +325,22 @@ class Loader(QtCore.QObject):
     def get_channel_names(self, channels=None):
         return select(self.channel_names, channels)
 
+    def get_channels_visible(self, channels=None):
+        return select(self.channels_visible, channels)
+
     def get_channel_groups(self, channels=None):
         if channels is None:
             channels = self.channels_selected
         return select(self.channel_groups, channels)
+
+    def get_channel_groups_visible(self, channel_groups=None):
+        return select(self.channel_groups_visible, channel_groups)
 
     def get_channel_group_colors(self, channel_groups=None):
         return select(self.channel_group_colors, channel_groups)
 
     def get_channel_group_names(self, channel_groups=None):
         return select(self.channel_group_names, channel_groups)
-
-    def get_channel_sizes(self, channels=None):
-        if channels is None:
-            channels = self.channels_selected
-        sizes = pd.Series(self.counter, dtype=np.int32)
-        return select(sizes, channels)
         
     # Access to the data: misc
     # ------------------------
