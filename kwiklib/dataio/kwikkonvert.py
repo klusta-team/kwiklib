@@ -29,7 +29,7 @@ def convert_raw_file(filename_raw, nchannels, params_json='', probe_json='',
     # if ext == '.dat':
     # Remove the leading dot ('.').
     ext = ext[1:]
-    filename_kwd = base + '.kwd'
+    filename_kwd = base + '.raw.kwd'
     # Raise an error if the KWD file already exists, unless overwrite is 
     # True.
     if not overwrite and os.path.exists(filename_kwd):
