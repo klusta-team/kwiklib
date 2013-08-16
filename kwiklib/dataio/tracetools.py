@@ -121,13 +121,16 @@ def close_kwd(file_kwd):
     file_kwd.flush()
     file_kwd.close()
     
-def raw_to_kwd(filename_raw, filename_kwd, nchannels, params_json='',
+def raw_to_kwd(filenames_raw, filename_kwd, nchannels, params_json='',
         probe_json=''):
+    if isinstance(filenames_raw, basestring):
+        filenames_raw = [filenames_raw]
     # if os.path.exists(filename_kwd):
         # raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
     file_kwd = create_kwd(filename_kwd)
     write_metadata(file_kwd, params_json, probe_json)
-    write_raw_data(file_kwd, filename_raw, nchannels=nchannels)
+    for filename_raw in filenames_raw:
+        write_raw_data(file_kwd, filename_raw, nchannels=nchannels)
     close_kwd(file_kwd)
     
     

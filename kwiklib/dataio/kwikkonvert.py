@@ -23,18 +23,17 @@ def get_abs_path(file, dir):
     else:
         return os.path.abspath(os.path.join(dir, file))
 
-def convert_raw_file(filename_raw, nchannels, params_json='', probe_json='',
+def convert_raw_files(filenames_raw, nchannels, params_json='', probe_json='',
         overwrite=False):
-    base, ext = os.path.splitext(filename_raw)
-    # if ext == '.dat':
-    # Remove the leading dot ('.').
-    # ext = ext[1:]
+    # HACK: the KWD name comes from the first RAW filename
+    filename_raw = filenames_raw[0]
+    base, ext = os.path.splitext(filenames_raw[0])
     filename_kwd = base + '.raw.kwd'
     # Raise an error if the KWD file already exists, unless overwrite is 
     # True.
     if not overwrite and os.path.exists(filename_kwd):
         raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
-    raw_to_kwd(filename_raw, filename_kwd, nchannels, 
+    raw_to_kwd(filenames_raw, filename_kwd, nchannels, 
         params_json=params_json, probe_json=probe_json)
     return filename_kwd
     
@@ -69,9 +68,8 @@ def kwikkonvert(prm_filename, overwrite=False, verbose=True):
     if verbose:
         print("Converting {0:d} file(s)...".format(len(files)))
     
-    for file in files:
-        convert_raw_file(file, nchannels, params_json=params_json, 
-            probe_json=probe_json, overwrite=overwrite)
+    convert_raw_files(files, nchannels, params_json=params_json, 
+        probe_json=probe_json, overwrite=overwrite)
 
     if verbose:
         print("File successfully created.")
