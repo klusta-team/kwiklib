@@ -43,7 +43,7 @@ def test_kwikkonvert_1():
     # Open the mock data.
     dir = TEST_FOLDER
     filename_dat = os.path.join(dir, 'test.dat')
-    filename_kwd = os.path.join(dir, 'test.kwd')
+    filename_kwd = os.path.join(dir, 'test.raw.kwd')
     filename_prm = os.path.join(dir, 'params.prm')
     filename_prb = os.path.join(dir, 'myprobe.prb')
     
