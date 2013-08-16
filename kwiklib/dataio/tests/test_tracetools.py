@@ -10,8 +10,7 @@ import numpy.random as rnd
 import pandas as pd
 import tables as tb
 
-from kwiklib.dataio import (save_binary, create_kwd, write_raw_data, 
-    close_kwd, raw_to_kwd, read_dat, )
+from kwiklib.dataio import (save_binary, close_kwd, raw_to_kwd, read_dat, )
 from kwiklib.dataio.tests import (create_trace, duration, freq, nchannels,
     TEST_FOLDER)
 
@@ -42,7 +41,7 @@ def test_kwd_1():
     filename_kwd = os.path.join(dir, 'test.kwd')
     
     # Convert the DAT file in KWD.
-    raw_to_kwd(filename_dat, filename_kwd, nchannels)
+    raw_to_kwd(filename_dat, filename_kwd, nchannels, ext='dat')
     
     # Load DAT file (memmap).
     dat = read_dat(filename_dat, nchannels)

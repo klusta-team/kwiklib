@@ -26,15 +26,16 @@ def get_abs_path(file, dir):
 def convert_raw_file(filename_raw, nchannels, params_json='', probe_json='',
         overwrite=False):
     base, ext = os.path.splitext(filename_raw)
-    if ext == '.dat':
-        filename_kwd = base + '.kwd'
-        # Raise an error if the KWD file already exists, unless overwrite is 
-        # True.
-        if not overwrite and os.path.exists(filename_kwd):
-            raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
-        raw_to_kwd(filename_raw, filename_kwd, nchannels, 
-            params_json=params_json, probe_json=probe_json)
-    
+    # if ext == '.dat':
+    # Remove the leading dot ('.').
+    ext = ext[1:]
+    filename_kwd = base + '.kwd'
+    # Raise an error if the KWD file already exists, unless overwrite is 
+    # True.
+    if not overwrite and os.path.exists(filename_kwd):
+        raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
+    raw_to_kwd(filename_raw, filename_kwd, nchannels, ext=ext,
+        params_json=params_json, probe_json=probe_json)
         
     
 # -----------------------------------------------------------------------------
