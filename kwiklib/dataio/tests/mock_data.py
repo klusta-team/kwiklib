@@ -73,7 +73,6 @@ def create_clusters(nspikes, nclusters, cluster_offset=cluster_offset):
     return rnd.randint(size=nspikes, low=cluster_offset, 
         high=nclusters + cluster_offset)
 
-######
 # ClusterView
 def create_cluster_colors(nclusters):
     return np.mod(np.arange(nclusters, dtype=np.int32), COLORS_COUNT) + 1
@@ -104,7 +103,6 @@ def create_channel_groups(nchannels):
     
 def create_channel_group_colors(nchannelgroups):
     return np.mod(np.arange(nchannelgroups, dtype=np.int32), COLORS_COUNT) + 1
-######
 
 def create_masks(nspikes, nchannels, fetdim):
     return np.clip(rnd.rand(nspikes, nchannels * fetdim + 1) * 1.5, 0, 1)
@@ -196,15 +194,9 @@ def create_probe(nchannels):
 # Fixtures
 # -----------------------------------------------------------------------------
 def setup():
-    # log.debug("Creating mock data for dataio subpackage.")
     
     # Create mock directory if needed.
     dir = TEST_FOLDER
-    # if not os.path.exists(dir):
-        # os.mkdir(dir)
-    # else:
-        # # No need to recreate the files.
-        # return
         
     # Create mock data.
     waveforms = create_waveforms(nspikes, nsamples, nchannels)
@@ -218,7 +210,7 @@ def setup():
              'group': cluster_groups}, 
          dtype=np.int32,
          index=np.unique(clusters))
-         
+    
     group_colors = create_group_colors(ngroups)
     group_names = create_group_names(ngroups)
     group_info = pd.DataFrame(
@@ -259,10 +251,6 @@ def setup():
         fmt='%.6f')
     save_text(os.path.join(dir, 'test.xml'), xml)
     save_text(os.path.join(dir, 'test.probe'), probe)
-    
-    # import time
-    # print dir
-    # time.sleep(5)
     
 def teardown():
     # log.debug("Erasing mock data for dataio subpackage.")

@@ -55,10 +55,8 @@ def close_kwd(file_kwd):
     
 def dat_to_kwd(filename_dat, filename_kwd, nchannels, params_json='',
         probe_json=''):
-    if os.path.exists(filename_kwd):
-        return
-    # print filename_dat, filename_kwd, nchannels, params_json, probe_json
-    # return
+    # if os.path.exists(filename_kwd):
+        # raise IOError("The KWD file '{0:s}' already exists.".format(filename_kwd))
     file_kwd = create_kwd(filename_kwd)
     write_metadata(file_kwd, params_json, probe_json)
     write_raw_data(file_kwd, filename_dat, nchannels)
