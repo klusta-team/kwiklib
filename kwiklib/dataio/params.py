@@ -92,7 +92,6 @@ def get_probe_file(params):
         return params['PROBE_FILE']
 
 def get_ignored_channels(params):
-    print params
     return params.get('IGNORED_CHANNELS', [])
     
 def get_nchannels(params):
