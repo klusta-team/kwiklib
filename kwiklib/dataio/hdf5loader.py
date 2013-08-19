@@ -337,10 +337,14 @@ class HDF5Loader(Loader):
         except:
             trace = None
             
-        freq = self.params['freq']
-        ignored_channels = self.params['ignored_channels']
-        channel_colors = self.channel_colors
-        channel_names=self.channel_names
+        if trace != None:
+            freq = self.params['freq']
+            ignored_channels = self.params['ignored_channels']
+            channel_colors = self.channel_colors
+            channel_names = self.channel_names
+        else:
+            freq = ignored_channels = channel_colors = channel_names = None
+            
         data = dict(
             trace=trace,
             freq=freq,
