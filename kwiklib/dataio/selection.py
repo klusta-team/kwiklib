@@ -171,6 +171,8 @@ def get_some_spikes_in_clusters(clusters_selected, clusters, counter=None,
         nspikes_max_expected = 100
     if nspikes_per_cluster_min is None:
         nspikes_per_cluster_min = 5
+    if counter is None:
+        counter = np.bincount(clusters)
     
     nspikes = len(clusters)
     spikes = np.zeros(nspikes, dtype=np.bool)
