@@ -53,7 +53,7 @@ def select_pandas(data, spikes, drop_empty_rows=True):
         # not to the view. So we convert `spikes` into an array of indices,
         # so that Pandas can handle missing values.
         data_selected = data.ix[np.nonzero(spikes)[0]]
-    if drop_empty_rows:
+    if drop_empty_rows and hasattr(data_selected, '__len__'):
         data_selected = data_selected.dropna()
     return data_selected
 
