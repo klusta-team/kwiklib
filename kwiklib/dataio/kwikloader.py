@@ -35,38 +35,35 @@ from spikedetekt2.dataio import Experiment
 # HDF5 Loader
 # -----------------------------------------------------------------------------
 class KwikLoader(Loader):
-    experiment = None
+    
+    def __init__(self, parent=None, filename=None, userpref=None):
+        super(KwikLoader, self).__init__(parent=parent, filename=filename, userpref=userpref)
+        self.experiment = None
     
     # Read functions.
     # ---------------
     def open(self, filename=None):
         """Open everything."""
         dir, basename = os.path.split(filename)
-        self.exp = Experiment(basename, dir=dir, mode='a')
-        self.initialize_logfile()
+        self.experiment = Experiment(basename, dir=dir, mode='a')
+        # TODO
+        # self.initialize_logfile()
         # Load the similarity measure chosen by the user in the preferences
         # file: 'gaussian' or 'kl'.
         # Refresh the preferences file when a new file is opened.
         # USERPREF.refresh()
         self.similarity_measure = self.userpref['similarity_measure'] or 'gaussian'
         debug("Similarity measure: {0:s}.".format(self.similarity_measure))
-        info("Opening {0:s}.".format(self.filename))
-        self.shanks = self.exp.cluster_groups.keys()
+        info("Opening {0:s}.".format(self.experiment.name))
+        self.shanks = self.experiment.channel_groups.keys()
         
-        # DEBUG
-        print self.shanks
-        self.set_shank(self.shanks[0])
-        
-        # Read the sampling frequency.
         self.freq = self.experiment.application_data.spikedetekt.sample_rate
-        print self.freq
-        
         # TODO: read this info per shank
         self.fetdim = self.experiment.application_data.spikedetekt.nfeatures_per_channel
-        print self.fetdim
-        
         self.nsamples = self.experiment.application_data.spikedetekt.waveforms_nsamples
-        print self.nsamples
+        
+        self.set_shank(self.shanks[0])
+        
         
     # Shank functions.
     # ----------------
@@ -82,9 +79,12 @@ class KwikLoader(Loader):
         self.shank = shank        
         self.nchannels = len(self.experiment.channel_groups[self.shank].channels)
     
-        clusters = self.experiment.channel_groups[self.shank].spikes.cluster.main[:]
+        clusters = self.experiment.channel_groups[self.shank].spikes.clusters.main[:]
         self.clusters = pd.Series(clusters, dtype=np.int32)
         self.nspikes = len(self.clusters)
+        
+        fs = self.experiment.channel_groups[self.shank].spikes.features_masks.shape
+        self.nextrafet = (fs[1] - self.nchannels * self.fetdim)
         
         spiketimes = self.experiment.channel_groups[self.shank].spikes.time_samples[:] * (1. / self.freq)
         self.spiketimes = pd.Series(spiketimes, dtype=np.float32)
@@ -93,6 +93,7 @@ class KwikLoader(Loader):
         self._update_data()
         
         self.read_clusters()
+        # self.read_arrays()
         
     # Read contents.
     # --------------
@@ -103,12 +104,12 @@ class KwikLoader(Loader):
     def read_clusters(self):
         # Read the cluster info.
         clusters = self.experiment.channel_groups[self.shank].clusters.main.keys()
-        cluster_groups = [c.cluster_group for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
-        cluster_colors = [c.application_data.klustaviewa.color for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
+        cluster_groups = [c.cluster_group or 0 for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
+        cluster_colors = [c.application_data.klustaviewa.color or 1 for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
         
         groups = self.experiment.channel_groups[self.shank].cluster_groups.main.keys()
-        group_names = [g.name for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
-        group_colors = [g.application_data.klustaviewa.color for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
+        group_names = [g.name or 'Group' for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
+        group_colors = [g.application_data.klustaviewa.color or 1 for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
 
         # Create the cluster_info DataFrame.
         self.cluster_info = pd.DataFrame(dict(
@@ -171,10 +172,10 @@ class KwikLoader(Loader):
         return x
     
     def process_masks_full(self, masks_full):
-        return (masks_full * 1. / 255).astype(np.float32)
+        return masks_full
     
     def process_masks(self, masks_full):
-        return (masks_full[:,:-self.nextrafet:self.fetdim] * 1. / 255).astype(np.float32)
+        return masks_full[:,:-self.nextrafet:self.fetdim]
     
     def process_waveforms(self, waveforms):
         return (waveforms * 1e-5).astype(np.float32).reshape((-1, self.nsamples, self.nchannels))
@@ -434,7 +435,9 @@ class KwikLoader(Loader):
         # if hasattr(self, 'kwik') and self.kwik.isopen:
             # self.kwik.flush()
             # self.kwik.close()
-        self.experiment.close()
+        if self.experiment is not None:
+            self.experiment.close()
+            self.experiment = None
         if hasattr(self, 'logfile'):
             unregister(self.logfile)
        
