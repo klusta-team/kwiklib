@@ -64,7 +64,6 @@ class KwikLoader(Loader):
         
         self.set_shank(self.shanks[0])
         
-        
     # Shank functions.
     # ----------------
     def get_shanks(self):
@@ -93,7 +92,6 @@ class KwikLoader(Loader):
         self._update_data()
         
         self.read_clusters()
-        # self.read_arrays()
         
     # Read contents.
     # --------------
@@ -127,36 +125,6 @@ class KwikLoader(Loader):
         self.group_colors = self.group_info['color'].astype(np.int32)
         self.group_names = self.group_info['name']
          
-         
-    # def read_kwa_channels(self):
-        # TODO: update to new format with Experiment class
-        
-        # # create channel attributes
-        # # channel_names, channel_colors, channel_groups, channel_group_names, channel_group_colors, channels_visible, channel_groups_visible
-        # if self.kwa.get('channels', {}):
-            # channels = sorted(self.kwa['channels'].keys())
-            # self.channel_colors = pd.Series([self.kwa['channels'][channel]['color'] for channel in channels], index=channels)
-            # self.channel_names = pd.Series([self.kwa['channels'][channel]['name'] for channel in channels], index=channels)
-            # self.channel_groups = pd.Series([self.kwa['channels'][channel]['group'] for channel in channels], index=channels)
-            # self.channels_visible = pd.Series([self.kwa['channels'][channel]['visible'] for channel in channels], index=channels)
-        # else:
-            # self.channel_names = pd.Series(["ch{0:d}".format(channel) for channel in xrange(self.nchannels)])
-            # self.channel_colors = pd.Series(np.mod(np.arange(self.nchannels, dtype=np.int32), COLORS_COUNT) + 1)
-            
-            # # TODO: put channels in shanks rather than assuming they're all in group 0
-            # self.channel_groups = pd.Series(np.zeros(self.nchannels))
-        
-        # if self.kwa.get('groups_of_channels', {}):
-            # channel_groups = sorted(self.kwa['groups_of_channels'].keys())
-            # self.channel_group_colors = pd.Series([self.kwa['groups_of_channels'][group]['color'] for group in channel_groups], index=channel_groups)
-            # self.channel_group_names = pd.Series([self.kwa['groups_of_channels'][group]['name'] for group in channel_groups], index=channel_groups)
-            # self.channel_groups_visible = pd.Series([self.kwa['groups_of_channels'][group]['visible'] for group in channel_groups], index=channel_groups)
-        # else:
-            
-            # # TODO: put channels in shanks rather than assuming they're all in group 0
-            # self.channel_group_names = pd.Series(["Group 1"])
-            # self.channel_group_colors = pd.Series([0])
-    
     # Read and process arrays.
     # ------------------------
     def process_features(self, y):
@@ -180,66 +148,6 @@ class KwikLoader(Loader):
     def process_waveforms(self, waveforms):
         return (waveforms * 1e-5).astype(np.float32).reshape((-1, self.nsamples, self.nchannels))
     
-    # def read_arrays(self):
-        # self.nextrafet = (self.spike_table.cols.features.shape[1] - 
-            # self.nchannels * self.fetdim)
-            
-        # self.features = self.spike_table, 'features', self.process_features
-        # self.masks_full = self.spike_table, 'masks', self.process_masks_full
-        # self.masks = self.spike_table, 'masks', self.process_masks
-        # self.waveforms = self.wave_table, 'waveform', self.process_waveforms
-        
-        # # Background spikes
-        # # -----------------
-        # # Used for:
-        # #   * background feature view
-        # #   * similarity matrix
-        # # Load background spikes for FeatureView.
-        # step = max(1, int(self.nspikes / (1000. * self.nclusters)))
-        # self.background_spikes = slice(0, self.nspikes, step)
-        # self.background_table = self.spike_table[self.background_spikes]
-        # self.background_features = self.background_table['features']
-        # # Find normalization factor for features.
-        # ncols = self.background_features.shape[1]
-        # self.background_features_normalization = 1. / np.abs(
-            # self.background_features[:,:ncols-self.nextrafet]).max()
-        # # Normalize extra features except time.
-        # if self.nextrafet > 1:
-            # self.background_extra_features_normalization = 1. / (np.median(np.abs(
-                # self.background_features[:,-self.nextrafet:-1])) * 2)
-        # self.background_features = self.process_features(
-            # self.background_features)
-        # # self.background_features_pandas = pandaize(
-            # # self.background_features, self.background_spikes)
-        # self.background_masks = self.process_masks_full(
-            # self.background_table['masks'])
-        # self.background_clusters = self.background_table['cluster_manual']
-        # self.spikes_selected_table = None
-        
-    # # Raw data functions.
-    # def get_trace(self):
-        # try:
-            # trace = self.kwd_raw.root.data
-        # except:
-            # trace = None
-            
-        # if trace != None:
-            # freq = self.params['freq']
-            # ignored_channels = self.params['ignored_channels']
-            # channel_colors = self.channel_colors
-            # channel_names = self.channel_names
-        # else:
-            # freq = ignored_channels = channel_colors = channel_names = None
-            
-        # data = dict(
-            # trace=trace,
-            # freq=freq,
-            # ignored_channels=ignored_channels,
-            # channel_colors=channel_colors,
-            # channel_names=channel_names
-        # )
-        # return data
-
     # Access to the data: spikes
     # --------------------------
     def select(self, spikes=None, clusters=None):
@@ -263,75 +171,6 @@ class KwikLoader(Loader):
             # self.waveforms_selected = None
         self.spikes_selected = spikes
         self.clusters_selected = clusters
-
-    # def get_features_background(self):
-        # # return self.background_features_pandas
-        # return pandaize(self.background_features, self.background_spikes)
-    
-    # def get_features(self, spikes=None, clusters=None):
-        # if self.spikes_selected_table is None:
-            # return None
-        # # Special case: return the already-selected values from the cache.
-        # if spikes is None and clusters is None:
-            # features = self.spikes_selected_table['features']
-            # values = self.process_features(features)
-            # return pandaize(values, self.spikes_selected)
-        # # Normal case.
-        # if clusters is not None:
-            # spikes = get_spikes_in_clusters(clusters, self.clusters)
-        # if spikes is None:
-            # spikes = self.spikes_selected
-        # return select(self.features, spikes)
-    
-    # def get_masks(self, spikes=None, full=None, clusters=None):
-        # if self.spikes_selected_table is None:
-            # return None
-        # # Special case: return the already-selected values from the cache.
-        # if spikes is None and clusters is None:
-            # masks = self.spikes_selected_table['masks']
-            # if full:
-                # values = self.process_masks_full(masks)
-            # else:
-                # values = self.process_masks(masks)
-            # return pandaize(values, self.spikes_selected)
-            
-        # # Normal case.
-        # if clusters is not None:
-            # spikes = get_spikes_in_clusters(clusters, self.clusters)
-        # if spikes is None:
-            # spikes = self.spikes_selected
-        # if not full:
-            # masks = self.masks
-        # else:
-            # masks = self.masks_full
-        # return select(masks, spikes)
-    
-    # def get_waveforms(self, spikes=None, clusters=None):
-        
-        # if self.waveforms_selected is None:
-            # return None
-        # # Special case: return the already-selected values from the cache.
-        # if spikes is None and clusters is None:
-            # values = self.process_waveforms(self.waveforms_selected)
-            # return pandaize(values, self.spikes_waveforms)
-        
-        # # Normal case.
-        # if self.spikes_selected_table is None:
-            # return None
-        # if spikes is not None:
-            # return select(self.waveforms, spikes)
-        # else:
-            # if clusters is None:
-                # clusters = self.clusters_selected
-            # if clusters is not None:
-                # spikes = get_some_spikes_in_clusters(clusters, self.clusters,
-                    # counter=self.counter,
-                    # nspikes_max_expected=self.userpref['waveforms_nspikes_max_expected'],
-                    # nspikes_per_cluster_min=self.userpref['waveforms_nspikes_per_cluster_min'])
-            # else:
-                # spikes = self.spikes_selected
-        # return select(self.waveforms, spikes)
-    
     
     # Log file.
     # ---------
@@ -341,21 +180,8 @@ class KwikLoader(Loader):
         # Register log file.
         register(self.logfile)
         
-    
     # Save.
     # -----
-    # def _update_table_size(self, table, size_new, default=None):
-        # if default is None:
-            # cols = table.colnames
-            # dtype = [(name, table.coldtypes[name]) for name in cols]
-            # default = np.zeros(1, dtype=dtype)
-        # nrows_old = table.nrows
-        # if size_new < nrows_old:
-            # table.removeRows(0, nrows_old - size_new)
-        # elif size_new > nrows_old:
-            # for _ in xrange(size_new - nrows_old):
-                # table.append(default)
-    
     def save(self, renumber=False):
         
         # Report progress.
@@ -426,7 +252,6 @@ class KwikLoader(Loader):
         
         # Report progress.
         self.report_progress_save(6, 6)
-    
     
     # Close functions.
     # ----------------
