@@ -206,7 +206,7 @@ class HDF5Loader(Loader):
     def read_spiketimes(self):
         spiketimes = self.spike_table.col('time') * (1. / self.freq)
         # Convert to Pandas.
-        self.spiketimes = pd.Series(spiketimes, dtype=np.float32)
+        self.spiketimes = pd.Series(spiketimes, dtype=np.float64)
         self.duration = spiketimes[-1]
     
     def read_kwa_clusters(self):
