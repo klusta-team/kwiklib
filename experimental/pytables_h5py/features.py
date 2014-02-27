@@ -16,7 +16,7 @@ filename_contiguous = 'features_contiguous.h5'
 if not os.path.exists(filename_contiguous):
     create_contiguous(filename_contiguous)
 
-ind = np.random.randint(size=50000, low=0, high=n)
+ind = np.random.randint(size=100, low=0, high=n)
 ind = np.unique(ind)
 
 with h5py.File(filename_contiguous, "r") as f:
