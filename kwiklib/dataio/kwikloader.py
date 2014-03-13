@@ -86,7 +86,7 @@ class KwikLoader(Loader):
         self.nextrafet = (fs[1] - self.nchannels * self.fetdim)
         
         spiketimes = self.experiment.channel_groups[self.shank].spikes.time_samples[:] * (1. / self.freq)
-        self.spiketimes = pd.Series(spiketimes, dtype=np.float32)
+        self.spiketimes = pd.Series(spiketimes, dtype=np.float64)
         self.duration = spiketimes[-1]
     
         self._update_data()
