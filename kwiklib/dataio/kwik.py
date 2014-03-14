@@ -125,7 +125,8 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
     
     # Create channel groups.
     file.createGroup('/', 'channel_groups')
-    for igroup, group_info in enumerate(prb.get('channel_groups', [])):
+    for igroup, group_info in prb.iteritems():
+        igroup = int(igroup)
         group = file.createGroup('/channel_groups', str(igroup))
         # group_info: channel, graph, geometry
         group._f_setAttr('name', 'channel_group_{0:d}'.format(igroup))
@@ -221,7 +222,8 @@ def create_kwx(path, prb=None, prm=None, has_masks=True):
     file = tb.openFile(path, mode='w')
     file.createGroup('/', 'channel_groups')
     
-    for ichannel_group, chgrp_info in enumerate(prb.get('channel_groups', [])):
+    for ichannel_group, chgrp_info in prb.iteritems():
+        ichannel_group = int(ichannel_group)
         nchannels_ = len(chgrp_info.get('channels', [])) or nchannels or 0
         waveforms_nsamples_ = chgrp_info.get('waveforms_nsamples', waveforms_nsamples) or 0
         nfeatures_per_channel_ = chgrp_info.get('nfeatures_per_channel', nfeatures_per_channel) or 0
@@ -254,7 +256,7 @@ def create_kwx(path, prb=None, prm=None, has_masks=True):
         
         
         # Determine a sensible chunk shape.
-        chunkrows = 10485760 // (waveforms_nsamples_ * nchannels_ * 2)
+        chunkrows = 500 * 1024 // (waveforms_nsamples_ * nchannels_ * 2)
         
         file.createEArray(channel_group_path, 'waveforms_raw',
                           tb.Int16Atom(), (0, waveforms_nsamples_, nchannels_),
@@ -506,7 +508,7 @@ def add_cluster_group(fd, channel_group_id=None, id=None, clustering='main',
     kv = kwik.createGroup(app, 'klustaviewa')
     kv._f_setAttr('color', color or ((int(id) % (COLORS_COUNT - 1)) + 1))
     
-def add_spikes(fd, channel_group_id=None, clustering='main',
+def add_spikes(fd, channel_group_id=None,
                 time_samples=None, time_fractional=0,
                 recording=0, cluster=0, cluster_original=0,
                 features_masks=None, features=None, masks=None,

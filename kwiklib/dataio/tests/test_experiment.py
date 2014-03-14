@@ -31,13 +31,13 @@ def _setup(_name):
     prm = {'nfeatures': 3, 'waveforms_nsamples': 10, 'nchannels': 3,
            'sample_rate': 20000.,
            'nfeatures_per_channel': 1}
-    prb = {'channel_groups': [
+    prb = {0:
         {
             'channels': [4, 6, 8],
             'graph': [[4, 6], [8, 4]],
             'geometry': {4: [0.4, 0.6], 6: [0.6, 0.8], 8: [0.8, 0.0]},
         }
-    ]}
+    }
     create_files(_name, dir=DIRPATH, prm=prm, prb=prb)
     
     # Open the files.

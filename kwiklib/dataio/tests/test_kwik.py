@@ -21,13 +21,13 @@ DIRPATH = tempfile.mkdtemp()
 
 def setup_create():
     prm = {'nfeatures': 3, 'waveforms_nsamples': 20}
-    prb = {'channel_groups': [
+    prb = {0:
         {
             'channels': [4, 6, 8],
             'graph': [[4, 6], [8, 4]],
             'geometry': {4: [0.4, 0.6], 6: [0.6, 0.8], 8: [0.8, 0.0]},
         }
-    ]}
+    }
     
     create_files('myexperiment', dir=DIRPATH, prm=prm, prb=prb)
 
@@ -78,13 +78,13 @@ def test_create_kwik():
         'waveforms_nsamples': 20,
         'nfeatures': 3*32,
     }
-    prb = {'channel_groups': [
+    prb = {0:
         {
             'channels': [4, 6, 8],
             'graph': [[4, 6], [8, 4]],
             'geometry': {4: [0.4, 0.6], 6: [0.6, 0.8], 8: [0.8, 0.0]},
         }
-    ]}
+    }
     
     create_kwik(path, prm=prm, prb=prb)
     
@@ -107,19 +107,19 @@ def test_create_kwx():
         'waveforms_nsamples': waveforms_nsamples,
         'nfeatures': 3*nchannels,
     }
-    prb = {'channel_groups': [
+    prb = {0:
         {
             'channels': np.arange(nchannels),
         },
-        {
+        1: {
             'channels': nchannels + np.arange(nchannels2),
             'nfeatures': 3*nchannels2
         },
-        {
+        2: {
             'channels': nchannels + nchannels2 + np.arange(nchannels),
             'nfeatures': 2*nchannels
         },
-    ]}
+    }
     
     create_kwx(path, prb=prb, prm=prm)
     

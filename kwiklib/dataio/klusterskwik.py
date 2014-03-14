@@ -24,7 +24,7 @@ from klustersloader import (find_filenames, find_index, read_xml,
 from loader import (default_cluster_info, default_group_info)
 # from auxtools import kwa_to_json, write_kwa
 from tools import MemMappedText, MemMappedBinary
-from kwik import create_files, open_files, close_files
+from kwik import create_files, open_files, close_files, add_spikes
 
 
 # -----------------------------------------------------------------------------
@@ -203,18 +203,15 @@ class KwikWriter(object):
         return read
         
     def write_spike(self, read):
-        return
-         # = read['cluster']
-         # = read['fet']
-         # = read['time']
-        
-        # (read['mask'] * 255).astype(np.uint8)
-        
-        # # Fill the wave row.
-        # if 'spk' in read:
-             # = read['spk']
-        # if 'uspk' in read:
-             # = read['uspk']
+        # add_spikes(self.files, channel_group_id=str(self.shank),
+            # time_samples=read['time'],
+            # cluster=read['cluster'], 
+            # cluster_original=read['cluster'],
+            # features=read['fet'], 
+            # masks=read['mask'],
+            # waveforms_raw=read.get('uspk', None), 
+            # waveforms_filtered=read.get('spk', None),)
+        pass
 
     def report_progress(self):
         if self._progress_callback:
