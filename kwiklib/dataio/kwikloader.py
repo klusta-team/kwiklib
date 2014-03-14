@@ -155,20 +155,6 @@ class KwikLoader(Loader):
             if not hasattr(clusters, '__len__'):
                 clusters = [clusters]
             spikes = get_spikes_in_clusters(clusters, self.clusters)
-        # # HDD access here: get the portion of the table with the requested 
-        # # clusters (cache). It is very quick to access the different columns
-        # # from this in-memory table later.
-        # if spikes is not None:
-            # self.spikes_selected_table = self.spike_table[spikes]
-            # # Select waveforms too.
-            # self.spikes_waveforms = get_some_spikes_in_clusters(clusters, self.clusters,
-                    # counter=self.counter,
-                    # nspikes_max_expected=self.userpref['waveforms_nspikes_max_expected'],
-                    # nspikes_per_cluster_min=self.userpref['waveforms_nspikes_per_cluster_min'])
-            # self.waveforms_selected = self.waveforms[0][self.spikes_waveforms]['waveform_filtered']
-        # else:
-            # self.spikes_selected_table = None
-            # self.waveforms_selected = None
         self.spikes_selected = spikes
         self.clusters_selected = clusters
     
