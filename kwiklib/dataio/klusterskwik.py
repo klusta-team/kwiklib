@@ -178,6 +178,9 @@ class KwikWriter(object):
         prb = probe_to_prb(self.klusters_data['probe'])
         prm = metadata_to_prm(self.klusters_data['metadata'])
         
+        for chgrp in prb.keys():
+            prb[chgrp]['nfeatures'] = self.klusters_data[chgrp]['fetcol']
+        
         self.filenames_kwik = create_files(self.name, prm=prm, prb=prb)
         self.files = open_files(self.name, mode='a')
         
@@ -216,8 +219,8 @@ class KwikWriter(object):
             time_samples=read['time'],
             cluster=read['cluster'], 
             cluster_original=read['cluster'],
-            # features=read['fet'], 
-            # masks=read['mask'],
+            features=read['fet'], 
+            masks=read['mask'],
             waveforms_raw=wr, 
             waveforms_filtered=wf,)
         # pass

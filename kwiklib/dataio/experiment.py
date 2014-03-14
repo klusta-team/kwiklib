@@ -95,6 +95,8 @@ def _print_instance(obj, depth=0, name=''):
         if isinstance(obj, tb.EArray):
             s = name + ' [{dtype} {shape}]'.format(dtype=obj.dtype, 
                 shape=obj.shape)
+        elif isinstance(obj, (string_types, int, long, float, tuple)) or obj is None:
+            s = name + ' = ' + str(obj)
         else:
             s = name
         r = [(depth, s)] + r
