@@ -13,7 +13,8 @@ import shutil
 from nose.tools import with_setup
 
 from kwiklib.dataio.tests.mock_data import (
-    nspikes, nclusters, nsamples, nchannels, fetdim, TEST_FOLDER, )
+    nspikes, nclusters, nsamples, nchannels, fetdim, TEST_FOLDER, 
+    setup, teardown)
 from kwiklib.dataio import (KlustersLoader, read_clusters, save_clusters,
     find_filename, find_indices, filename_to_triplet, triplet_to_filename,
     read_cluster_info, save_cluster_info, read_group_info, save_group_info,
@@ -440,6 +441,7 @@ def test_klusters_loader_control():
     
     l.close()
     
+@with_setup(setup)
 def test_klusters_save():
     """WARNING: this test should occur at the end of the module since it
     changes the mock data sets."""

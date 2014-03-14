@@ -37,9 +37,9 @@ fetdim = 3
 duration = 1.
 freq = 20000.
 
-TEST_FOLDER = os.path.join(tempfile.gettempdir(), 'kwik')
-if not os.path.exists(TEST_FOLDER):
-    os.mkdir(TEST_FOLDER)
+TEST_FOLDER = tempfile.gettempdir()
+# if not os.path.exists(TEST_FOLDER):
+    # os.mkdir(TEST_FOLDER)
 
 
 # -----------------------------------------------------------------------------
