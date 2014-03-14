@@ -6,7 +6,8 @@
 import os
 import tempfile
 
-from kwiklib.dataio.probe import generate_probe, load_probe, save_probe
+from kwiklib.dataio.probe import (generate_probe, load_probe, save_probe, 
+    old_to_new)
 
 
 # -----------------------------------------------------------------------------
@@ -56,4 +57,34 @@ def test_load_probe_1():
     probe_bis = load_probe(filename)
     
     assert probe == probe_bis
+    
+def test_old_to_new_1():
+    probes = {
+        1:[
+                (0, 7), (0, 1),
+                (1, 7), (6, 7),
+                (1, 6), (1, 2),
+                (2, 6), (5, 6),
+                (2, 5), (2, 3),
+                (3, 5), (5, 4),
+                (3, 4), 
+                ]
+        }
+    geometry = {
+        0: (0, 0),
+        1: (5, 10),
+        2: (-6, 20),
+        3: (7, 30),
+        4: (-8, 40),
+        5: (9, 50),
+        6: (-10, 60),
+        7: (11, 70),
+    }
+    prb = old_to_new({'probes': probes, 'geometry': geometry})
+    
+    assert prb.keys() == [1]
+    assert prb[1]['channels'] == range(8)
+    assert prb[1]['graph'] == probes[1]
+    assert prb[1]['geometry'] == geometry
+
     

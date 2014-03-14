@@ -56,4 +56,37 @@ def save_probe(filename, prb):
     with open(filename, 'w') as f:
         f.write('channel_groups = ' + str(prb))
     
+def old_to_new(probe_ns):
+    """Convert from the old Python .probe format to the new .PRB format."""
+    graph = probe_ns['probes']
+    shanks = sorted(graph.keys())
+    if 'geometry' in probe_ns:
+        geometry = probe_ns['geometry']
+    else:
+        geometry = None
+    # Find the list of shanks.
+    shank_channels = {shank: flatten(graph[shank]) for shank in shanks}
+    # Find the list of channels.
+    channels = flatten(shank_channels.values())
+    nchannels = len(channels)
+    # Create JSON dictionary.
+    channel_groups = {
+        shank: {
+                    'channels': shank_channels[shank],
+                    'graph': graph[shank],
+                }
+                for shank in shanks
+            }
+    # Add the geometry if it exists.
+    if geometry:
+        # Find out if there's one geometry per shank, or a common geometry
+        # for all shanks.
+        for k, d in channel_groups.iteritems():
+            multiple = k in geometry and isinstance(geometry[k], dict)
+            if multiple:
+                d['geometry'] = geometry[k]
+            else:
+                d['geometry'] = geometry
+    return channel_groups
+    
     
