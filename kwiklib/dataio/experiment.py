@@ -58,6 +58,7 @@ def _get_child_id(child):
 
 def _print_instance(obj, depth=0, name=''):
     # Handle the first element of the list/dict.
+    r = []
     if isinstance(obj, (list, dict)):
         if not obj:
             r = []
@@ -77,8 +78,13 @@ def _print_instance(obj, depth=0, name=''):
         r = []
     # Handle class instances.
     elif hasattr(obj, '__dict__'):
+        vs = vars(obj)
+        if hasattr(obj, '__dir__'):
+            vs.update({name: getattr(obj, name) 
+                        for name in dir(obj)
+                            if name not in ('CLASS', 'TITLE', 'VERSION')})
         fields = {k: v 
-            for k, v in iteritems(vars(obj)) 
+            for k, v in iteritems(vs) 
                 if not k.startswith('_')}
         r = list(chain(*[_print_instance(fields[n], depth=depth+1, name=str(n)) 
                 for n in sorted(iterkeys(fields))]))
