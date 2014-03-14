@@ -169,6 +169,7 @@ class KwikWriter(object):
         self.klusters_data = open_klusters(self.filename)
         self.filenames = self.klusters_data['filenames']
         self.name = self.klusters_data['name']
+        self.nchannels = self.klusters_data['metadata']['nchannels']
         
         # Backup the original CLU file.
         filename_clu_original = find_filename_or_new(self.filename, 'clu_original')
@@ -178,7 +179,7 @@ class KwikWriter(object):
         prm = metadata_to_prm(self.klusters_data['metadata'])
         
         self.filenames_kwik = create_files(self.name, prm=prm, prb=prb)
-        self.files = open_files(self.name)
+        self.files = open_files(self.name, mode='a')
         
         self.shanks = sorted([key for key in self.klusters_data.keys() 
             if isinstance(key, (int, long))])
@@ -203,15 +204,23 @@ class KwikWriter(object):
         return read
         
     def write_spike(self, read):
-        # add_spikes(self.files, channel_group_id=str(self.shank),
-            # time_samples=read['time'],
-            # cluster=read['cluster'], 
-            # cluster_original=read['cluster'],
+        wr = read.get('uspk', None)
+        wf = read.get('spk', None)
+        
+        if wr is not None:
+            wr = wr.reshape((1, -1, self.nchannels))
+        if wf is not None:
+            wf = wf.reshape((1, -1, self.nchannels))
+        
+        add_spikes(self.files, channel_group_id=str(self.shank),
+            time_samples=read['time'],
+            cluster=read['cluster'], 
+            cluster_original=read['cluster'],
             # features=read['fet'], 
             # masks=read['mask'],
-            # waveforms_raw=read.get('uspk', None), 
-            # waveforms_filtered=read.get('spk', None),)
-        pass
+            waveforms_raw=wr, 
+            waveforms_filtered=wf,)
+        # pass
 
     def report_progress(self):
         if self._progress_callback:

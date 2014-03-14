@@ -125,6 +125,7 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
     
     # Create channel groups.
     file.createGroup('/', 'channel_groups')
+    
     for igroup, group_info in prb.iteritems():
         igroup = int(igroup)
         group = file.createGroup('/channel_groups', str(igroup))
