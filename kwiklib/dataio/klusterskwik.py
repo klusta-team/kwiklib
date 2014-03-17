@@ -24,7 +24,8 @@ from klustersloader import (find_filenames, find_index, read_xml,
 from loader import (default_cluster_info, default_group_info)
 # from auxtools import kwa_to_json, write_kwa
 from tools import MemMappedText, MemMappedBinary
-from kwik import create_files, open_files, close_files, add_spikes
+from kwik import (create_files, open_files, close_files, add_spikes, 
+    to_contiguous)
 from probe import generate_probe
 
 
@@ -229,7 +230,6 @@ class KwikWriter(object):
             masks=read['mask'],
             waveforms_raw=wr, 
             waveforms_filtered=wf,)
-        # pass
 
     def report_progress(self):
         if self._progress_callback:
@@ -239,20 +239,8 @@ class KwikWriter(object):
                 self.shanks.index(self.shank),
                 len(self.shanks))
         
-    # def write_kwa(self):
-        # kwa = {}
-        # kwa['shanks'] = {
-            # shank: dict(
-                # cluster_colors=self.klusters_data[shank]['acluinfo']['color'],
-                # group_colors=self.klusters_data[shank]['groupinfo']['color'],
-            # ) for shank in self.shanks
-        # }
-        # write_kwa(self.filenames['hdf5_kwa'], kwa)
-        
     def convert(self):
         """Convert the old file format to the new HDF5-based format."""
-        # Write the KWA file.
-        # self.write_kwa()
         # Convert in HDF5 by going through all spikes.
         for self.shank in self.shanks:
             self.spike = 0
@@ -262,6 +250,10 @@ class KwikWriter(object):
                 self.write_spike(read)
                 read = self.read_next_spike()
                 self.report_progress()
+                
+            # Convert features masks array from chunked to contiguous
+            node = self.files['kwx'].root.channel_groups.__getattr__(str(self.shank)).features_masks
+            to_contiguous(node, self.spike)
         
     def progress_report(self, fun):
         self._progress_callback = fun
