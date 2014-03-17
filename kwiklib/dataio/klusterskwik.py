@@ -25,6 +25,7 @@ from loader import (default_cluster_info, default_group_info)
 # from auxtools import kwa_to_json, write_kwa
 from tools import MemMappedText, MemMappedBinary
 from kwik import create_files, open_files, close_files, add_spikes
+from probe import generate_probe
 
 
 # -----------------------------------------------------------------------------
@@ -119,13 +120,15 @@ def open_klusters(filename):
             have_file_index=False)
         shanks = {shank: klusters_data[shank]['nchannels']
             for shank in filenames_shanks.keys()}
-        probe_python = all_to_all_probe(shanks)
-        with open(filename_probe, 'w') as f:
-            f.write(probe_python)
-        
-    probe_ns = {}
-    execfile(filename_probe, {}, probe_ns)
-    klusters_data['probe'] = probe_ns
+        probe_python = generate_probe(shanks, 'complete')
+        # with open(filename_probe, 'w') as f:
+            # f.write(probe_python)
+        # save_probe(filename_probe, probe_python)
+        klusters_data['prb'] = probe_python
+    else:
+        probe_ns = {}
+        execfile(filename_probe, {}, probe_ns)
+        klusters_data['probe'] = probe_ns
     
     return klusters_data
 
@@ -143,7 +146,7 @@ def metadata_to_prm(metadata):
 # -----------------------------------------------------------------------------
 # HDF5 writer
 # ----------------------------------------------------------------------------- 
-def klusters_to_kwik(filename=None, dir=None, progress_report=None):
+def klusters_to_kwik(filename=None, dir='.', progress_report=None):
     with KwikWriter(filename, dir=dir) as f:
         # Callback function for progress report.
         if progress_report is not None:
@@ -175,7 +178,10 @@ class KwikWriter(object):
         filename_clu_original = find_filename_or_new(self.filename, 'clu_original')
         shutil.copyfile(self.filenames['clu'], filename_clu_original)
         
-        prb = probe_to_prb(self.klusters_data['probe'])
+        if 'probe' in self.klusters_data:
+            prb = probe_to_prb(self.klusters_data['probe'])
+        else:
+            prb = self.klusters_data['prb']
         prm = metadata_to_prm(self.klusters_data['metadata'])
         
         for chgrp in prb.keys():

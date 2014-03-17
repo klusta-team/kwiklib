@@ -242,7 +242,7 @@ def create_kwx(path, prb=None, prm=None, has_masks=True):
                          
         
         # Determine a sensible chunk shape.
-        chunkrows = 10485760 // (nfeatures_ * 4)
+        chunkrows = 500 * 1024 // (nfeatures_ * 4 * (2 if has_masks else 1))
                          
         # Create the arrays.
         if has_masks:
