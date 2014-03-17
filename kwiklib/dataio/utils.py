@@ -18,6 +18,10 @@ _maxint8inv = 1./255
 _dtype_factors = {
     (np.int16, np.float32): _maxint16inv,
     (np.int16, np.float64): _maxint16inv,
+    (np.int32, np.float32): _maxint16inv,
+    (np.int32, np.float64): _maxint16inv,
+    (np.int64, np.float32): _maxint16inv,
+    (np.int64, np.float64): _maxint16inv,
     (np.float32, np.int16): _maxint16,
     (np.float64, np.int16): _maxint16,
     (np.int8, np.float32): _maxint8inv,

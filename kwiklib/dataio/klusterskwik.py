@@ -203,8 +203,9 @@ class KwikWriter(object):
         data = self.klusters_data[self.shank]
         read = {}
         read['cluster'] = data['aclu'][self.spike]
-        read['fet'] = convert_dtype(data['fet'].next(), np.float32)
-        read['time'] = read['fet'][-1]
+        fet = data['fet'].next()
+        read['time'] = fet[-1]
+        read['fet'] = convert_dtype(fet, np.float32)
         if 'spk' in data:
             read['spk'] = data['spk'].next()
         if 'mask' in data:
