@@ -25,7 +25,7 @@ from loader import (default_cluster_info, default_group_info)
 # from auxtools import kwa_to_json, write_kwa
 from tools import MemMappedText, MemMappedBinary
 from kwik import (create_files, open_files, close_files, add_spikes, 
-    to_contiguous)
+    to_contiguous, add_cluster, add_cluster_group)
 from probe import generate_probe
 
 
@@ -243,6 +243,26 @@ class KwikWriter(object):
         """Convert the old file format to the new HDF5-based format."""
         # Convert in HDF5 by going through all spikes.
         for self.shank in self.shanks:
+            
+            # Write cluster info.
+            acluinfo = self.klusters_data[self.shank]['acluinfo']
+            for clu, info in acluinfo.iterrows():
+                add_cluster(self.files,
+                    channel_group_id=str(self.shank), 
+                    id=str(clu),
+                    cluster_group=info['group'],
+                    color=info['color'],)
+            
+            # Write cluster group info.
+            groupinfo = self.klusters_data[self.shank]['groupinfo']
+            for clugrp, info in groupinfo.iterrows():
+                add_cluster_group(self.files,
+                    channel_group_id=str(self.shank), 
+                    id=str(clugrp), 
+                    name=info['name'], 
+                    color=info['color'])
+            
+            # Write spike data.
             self.spike = 0
             read = self.read_next_spike()
             self.report_progress()
