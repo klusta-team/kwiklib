@@ -37,7 +37,7 @@ fetdim = 3
 duration = 1.
 freq = 20000.
 
-TEST_FOLDER = tempfile.gettempdir()
+TEST_FOLDER = tempfile.mkdtemp()
 # if not os.path.exists(TEST_FOLDER):
     # os.mkdir(TEST_FOLDER)
 
