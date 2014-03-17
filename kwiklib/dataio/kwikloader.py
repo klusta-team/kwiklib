@@ -55,7 +55,7 @@ class KwikLoader(Loader):
         self.similarity_measure = self.userpref['similarity_measure'] or 'gaussian'
         debug("Similarity measure: {0:s}.".format(self.similarity_measure))
         info("Opening {0:s}.".format(self.experiment.name))
-        self.shanks = self.experiment.channel_groups.keys()
+        self.shanks = sorted(self.experiment.channel_groups.keys())
         
         self.freq = self.experiment.application_data.spikedetekt.sample_rate
         # TODO: read this info per shank
