@@ -24,6 +24,7 @@ from klustersloader import (find_filenames, find_index, read_xml,
 from loader import (default_cluster_info, default_group_info)
 # from auxtools import kwa_to_json, write_kwa
 from tools import MemMappedText, MemMappedBinary
+from utils import convert_dtype
 from kwik import (create_files, open_files, close_files, add_spikes, 
     to_contiguous, add_cluster, add_cluster_group)
 from probe import generate_probe
@@ -202,7 +203,7 @@ class KwikWriter(object):
         data = self.klusters_data[self.shank]
         read = {}
         read['cluster'] = data['aclu'][self.spike]
-        read['fet'] = data['fet'].next()
+        read['fet'] = convert_dtype(data['fet'].next(), np.float32)
         read['time'] = read['fet'][-1]
         if 'spk' in data:
             read['spk'] = data['spk'].next()

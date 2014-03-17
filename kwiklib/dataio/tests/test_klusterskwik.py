@@ -21,9 +21,15 @@ def test_conversion_1():
         assert isinstance(exp.channel_groups[1].spikes.features_masks, tb.Array)
         assert not isinstance(exp.channel_groups[1].spikes.features_masks, tb.EArray)
         
+        # Check features and waveforms.
         nspikes = len(exp.channel_groups[1].spikes.clusters.main[:])
         assert exp.channel_groups[1].spikes.features_masks.shape[0] == nspikes
         assert exp.channel_groups[1].spikes.waveforms_raw.shape[0] == nspikes
         assert exp.channel_groups[1].spikes.waveforms_filtered.shape[0] == nspikes
         
+        # print exp.channel_groups[1].spikes.waveforms_raw[20,...]
+        # print exp.channel_groups[1].spikes.features_masks[20:40,:,0]
+        kwx = exp._files['kwx']
+        fm = kwx.root.channel_groups.__getattr__('1').features_masks
+        print fm[20:40,:,0]
         

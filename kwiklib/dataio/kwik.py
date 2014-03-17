@@ -286,16 +286,31 @@ def create_kwd(path, type='raw', prm=None,):#recordings=None,):
 
 def to_contiguous(node, nspikes=None):
     """Convert an EArray to a contiguous Array."""
+    # This function assumes that node is an EArray.
+    if not isinstance(node, tb.EArray):
+        return node
     file = node._v_file
     parent = node._v_parent
     name = node._v_name
     # arr = node._f_getChild(name)
     shape = (nspikes,) + node.shape[1:]
     atom = node.atom
+    chunksize = node.chunkshape[0]
+    # We recreate it as a contiguous array, with a temp name for the copy.
+    node_new = file.createArray(parent, name + '_bis', atom=atom, shape=shape)
+    # Copy the data chunk by chunk
+    for i in range(nspikes // chunksize):
+        node_new[i*chunksize:(i+1)*chunksize,...] = \
+            node[i*chunksize:(i+1)*chunksize,...]
+    # rem = nspikes - (i+1)*chunksize
+    k = (nspikes // chunksize) * chunksize
+    if nspikes > k:
+        node_new[k:,...] = node[k:,...]
+    # Remove the EArray.
     file.removeNode(parent, name)
-    # We recreate it as a contiguous array.
-    file.createArray(parent, name, atom=atom, shape=shape)
-    return parent._f_getChild(name)
+    # Rename the Array (remove the _bis).
+    node_new._f_rename(name)
+    return node_new
 
 def create_files(name, dir=None, prm=None, prb=None):
     
