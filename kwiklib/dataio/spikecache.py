@@ -47,8 +47,9 @@ class SpikeCache(object):
         
         assert self.nspikes == len(self.spike_clusters)
         if self.waveforms_raw is not None:
-            assert self.nspikes == self.waveforms_raw.shape[0]
-        assert self.nspikes == self.waveforms_filtered.shape[0]
+            assert self.waveforms_raw.shape[0] in (0, self.nspikes)
+        if self.waveforms_filtered is not None:
+            assert self.waveforms_filtered.shape[0] in (0, self.nspikes)
         
         assert cache_fraction > 0
         
@@ -99,6 +100,9 @@ class SpikeCache(object):
         
         """
         assert count > 0
+        w = self.waveforms_filtered if filtered else self.waveforms_raw
+        if w is None or len(w) == 0:
+            return np.array([[[]]])
         nclusters = len(clusters)
         indices = []
         for cluster in clusters:
@@ -114,7 +118,6 @@ class SpikeCache(object):
         # indices now contains some spike indices from the requested clusters
         if len(indices) > 0:
             indices = np.hstack(indices)
-        w = self.waveforms_filtered if filtered else self.waveforms_raw
         return _select(w, indices)
         
         

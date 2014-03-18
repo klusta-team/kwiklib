@@ -208,6 +208,8 @@ class KwikWriter(object):
         read['fet'] = convert_dtype(fet, np.float32)
         if 'spk' in data:
             read['spk'] = data['spk'].next()
+        if 'uspk' in data:
+            read['uspk'] = data['uspk'].next()
         if 'mask' in data:
             read['mask'] = data['mask'].next()
         else:
@@ -231,7 +233,8 @@ class KwikWriter(object):
             features=read['fet'], 
             masks=read['mask'],
             waveforms_raw=wr, 
-            waveforms_filtered=wf,)
+            waveforms_filtered=wf,
+            fill_empty=False)
 
     def report_progress(self):
         if self._progress_callback:

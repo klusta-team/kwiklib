@@ -24,7 +24,8 @@ def test_conversion_1():
         # Check features and waveforms.
         nspikes = len(exp.channel_groups[1].spikes.clusters.main[:])
         assert exp.channel_groups[1].spikes.features_masks.shape[0] == nspikes
-        assert exp.channel_groups[1].spikes.waveforms_raw.shape[0] == nspikes
+        # No uspk file ==> no waveforms_raw
+        assert exp.channel_groups[1].spikes.waveforms_raw.shape[0] == 0
         assert exp.channel_groups[1].spikes.waveforms_filtered.shape[0] == nspikes
         
         assert exp.channel_groups[1].spikes.time_samples[:].sum() > 0
