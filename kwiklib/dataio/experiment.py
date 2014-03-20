@@ -14,7 +14,8 @@ import tables as tb
 
 from selection import select, slice_to_indices
 from kwiklib.dataio.kwik import (get_filenames, open_files, close_files,
-    add_spikes, add_cluster)
+    add_spikes, add_cluster, add_cluster_group, remove_cluster, 
+    remove_cluster_group)
 from kwiklib.dataio.utils import convert_dtype
 from kwiklib.dataio.spikecache import SpikeCache
 from kwiklib.utils.six import (iteritems, string_types, iterkeys, 
@@ -437,8 +438,13 @@ class Clustering(Node):
         
 class ClustersClustering(Clustering):
     """An actual clustering, with color and group."""
-    def __init__(self, *args, **kwargs):
-        super(ClustersClustering, self).__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+        # super(ClustersClustering, self).__init__(*args, **kwargs)
+        # self.group = DictVectorizer(self._dict, 'cluster_group')
+        
+    def _update(self):
+        self._dict = self._gen_children(child_class=self._child_class)
+        self.color = DictVectorizer(self._dict, 'application_data.klustaviewa.color')
         self.group = DictVectorizer(self._dict, 'cluster_group')
         
     def add_cluster(self, id=None, color=None, **kwargs):
@@ -449,8 +455,33 @@ class ClustersClustering(Clustering):
                     id=str(id), clustering=clustering, **kwargs)
         self._update()
         
+    def remove_cluster(self, id=None,):
+        channel_group_id = self._node._v_parent._v_parent._v_name
+        clustering = self._node._v_name
+        remove_cluster(self._files, channel_group_id=channel_group_id, 
+                       id=str(id), clustering=clustering)
+        self._update()
+        
 class ClusterGroupsClustering(Clustering):
-    pass
+    def _update(self):
+        self._dict = self._gen_children(child_class=self._child_class)
+        self.color = DictVectorizer(self._dict, 'application_data.klustaviewa.color')
+        self.name = DictVectorizer(self._dict, 'name')
+        
+    def add_group(self, id=None, color=None, name=None):
+        channel_group_id = self._node._v_parent._v_parent._v_name
+        clustering = self._node._v_name
+        add_cluster_group(self._files, channel_group_id=channel_group_id, 
+                    color=color, name=name,
+                    id=str(id), clustering=clustering, )
+        self._update()
+        
+    def remove_group(self, id=None,):
+        channel_group_id = self._node._v_parent._v_parent._v_name
+        clustering = self._node._v_name
+        remove_cluster_group(self._files, channel_group_id=channel_group_id, 
+                       id=str(id), clustering=clustering)
+        self._update()
         
 class ClustersNode(Node):
     """The parent of clustering types: main, original..."""
@@ -502,7 +533,8 @@ class ClusterGroup(Node):
         
         self.application_data = NodeWrapper(self._node.application_data)
         self.user_data = NodeWrapper(self._node.user_data)
-    
+        self.color = self.application_data.klustaviewa.color
+        
 class Recording(Node):
     def __init__(self, files, node=None, root=None):
         super(Recording, self).__init__(files, node, root=root)

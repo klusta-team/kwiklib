@@ -219,6 +219,21 @@ def test_experiment_add_cluster():
         assert chgrp.clusters.main[27].color == 34
         assert np.allclose(chgrp.clusters.main.color[:], [1, 34])
         
+        chgrp.clusters.main.remove_cluster(id=27)
+        assert 27 not in chgrp.clusters.main.keys()
+        
+@with_setup(setup2, teardown2)  # Create brand new files.
+def test_experiment_add_cluster_group():
+    with Experiment('myexperiment2', dir=DIRPATH, mode='a') as exp:
+        chgrp = exp.channel_groups[0]
+        chgrp.cluster_groups.main.add_group(id=27, name='boo', color=34)
+        assert 27 in chgrp.cluster_groups.main.keys()
+        assert chgrp.cluster_groups.main[27].name == 'boo'
+        assert chgrp.cluster_groups.main[27].color == 34
+        
+        chgrp.cluster_groups.main.remove_group(id=27)
+        assert 27 not in chgrp.cluster_groups.main.keys()
+        
 def test_experiment_clusters():
     with Experiment('myexperiment', dir=DIRPATH) as exp:
         chgrp = exp.channel_groups[0]
