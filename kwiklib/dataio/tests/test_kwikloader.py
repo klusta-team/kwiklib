@@ -13,8 +13,10 @@ import shutil
 from nose.tools import with_setup
 
 from mock_data import setup as setup_klusters
-from mock_data import teardown, TEST_FOLDER
-from kwiklib.dataio import KwikLoader, Experiment, klusters_to_kwik
+from mock_data import (teardown, TEST_FOLDER, nspikes, nclusters, nsamples, 
+    nchannels, fetdim)
+from kwiklib.dataio import (KwikLoader, Experiment, klusters_to_kwik,
+    check_dtype, check_shape, get_array, select, get_indices)
 
 
 # -----------------------------------------------------------------------------
@@ -28,15 +30,12 @@ def setup():
 # -----------------------------------------------------------------------------
 # Tests
 # -----------------------------------------------------------------------------
-def test_1():
-    with Experiment('test', dir=TEST_FOLDER, mode='r') as exp:
-        print exp
-
-def teAst_kwik_loader_1():
+def test_kwik_loader_1():
+    
     # Open the mock data.
     dir = TEST_FOLDER
     xmlfile = os.path.join(dir, 'test.xml')
-    l = KlustersLoader(filename=xmlfile)
+    l = KwikLoader(filename=xmlfile)
     
     # Get full data sets.
     features = l.get_features()
@@ -47,7 +46,7 @@ def teAst_kwik_loader_1():
     spiketimes = l.get_spiketimes()
     nclusters = len(Counter(clusters))
     
-    probe = l.get_probe()
+    # probe = l.get_probe()
     cluster_colors = l.get_cluster_colors()
     cluster_groups = l.get_cluster_groups()
     group_colors = l.get_group_colors()
@@ -58,12 +57,12 @@ def teAst_kwik_loader_1():
     # ---------------------------------
     assert check_shape(features, (nspikes, nchannels * fetdim + 1))
     # assert features_some.shape[1] == nchannels * fetdim + 1
-    assert check_shape(masks, (nspikes, nchannels))
+    assert check_shape(masks, (nspikes, nchannels * fetdim + 1))
     assert check_shape(waveforms, (nspikes, nsamples, nchannels))
     assert check_shape(clusters, (nspikes,))
     assert check_shape(spiketimes, (nspikes,))
     
-    assert check_shape(probe, (nchannels, 2))
+    # assert check_shape(probe, (nchannels, 2))
     assert check_shape(cluster_colors, (nclusters,))
     assert check_shape(cluster_groups, (nclusters,))
     assert check_shape(group_colors, (4,))
@@ -78,9 +77,9 @@ def teAst_kwik_loader_1():
     # HACK: Panel has no dtype(s) attribute
     # assert check_dtype(waveforms, np.float32)
     assert check_dtype(clusters, np.int32)
-    assert check_dtype(spiketimes, np.float32)
+    assert check_dtype(spiketimes, np.float64)
     
-    assert check_dtype(probe, np.float32)
+    # assert check_dtype(probe, np.float32)
     assert check_dtype(cluster_colors, np.int32)
     assert check_dtype(cluster_groups, np.int32)
     assert check_dtype(group_colors, np.int32)
@@ -88,64 +87,12 @@ def teAst_kwik_loader_1():
     assert check_dtype(cluster_sizes, np.int32)
     
     l.close()
-    
-def teAst_kwik_loader_2():
+        
+def test_kwik_loader_control():
     # Open the mock data.
     dir = TEST_FOLDER
     xmlfile = os.path.join(dir, 'test.xml')
-    l = KlustersLoader(filename=xmlfile)
-    
-    # Get full data sets.
-    features = l.get_features()
-    masks = l.get_masks()
-    waveforms = l.get_waveforms()
-    clusters = l.get_clusters()
-    spiketimes = l.get_spiketimes()
-    nclusters = len(Counter(clusters))
-    
-    probe = l.get_probe()
-    cluster_colors = l.get_cluster_colors()
-    cluster_groups = l.get_cluster_groups()
-    group_colors = l.get_group_colors()
-    group_names = l.get_group_names()
-    cluster_sizes = l.get_cluster_sizes()
-    
-    
-    # Check selection.
-    # ----------------
-    index = nspikes / 2
-    waveform = select(waveforms, index)
-    cluster = clusters[index]
-    spikes_in_cluster = np.nonzero(clusters == cluster)[0]
-    nspikes_in_cluster = len(spikes_in_cluster)
-    l.select(clusters=[cluster])
-    
-    
-    # Check the size of the selected data.
-    # ------------------------------------
-    assert check_shape(l.get_features(), (nspikes_in_cluster, 
-                                          nchannels * fetdim + 1))
-    assert check_shape(l.get_masks(full=True), (nspikes_in_cluster, 
-                                                nchannels * fetdim + 1))
-    assert check_shape(l.get_waveforms(), 
-                       (nspikes_in_cluster, nsamples, nchannels))
-    assert check_shape(l.get_clusters(), (nspikes_in_cluster,))
-    assert check_shape(l.get_spiketimes(), (nspikes_in_cluster,))
-    
-    
-    # Check waveform sub selection.
-    # -----------------------------
-    waveforms_selected = l.get_waveforms()
-    assert np.array_equal(get_array(select(waveforms_selected, index)), 
-        get_array(waveform))
-        
-    l.close()
-        
-def tesAt_kwik_loader_control():
-    # Open the mock data.
-    dir = TEST_FOLDER
-    xmlfile = os.path.join(dir, 'test.xml')
-    l = KlustersLoader(filename=xmlfile)
+    l = KwikLoader(filename=xmlfile)
     
     # Take all spikes in cluster 3.
     spikes = get_indices(l.get_clusters(clusters=3))

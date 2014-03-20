@@ -107,6 +107,7 @@ class ArrayProxy(object):
     def __init__(self, arr, col=None):
         self._arr = arr
         self._col = col
+        self.dtype = arr.dtype
     
     @property
     def shape(self):

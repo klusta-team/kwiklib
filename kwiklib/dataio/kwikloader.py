@@ -37,8 +37,8 @@ from .experiment import Experiment
 class KwikLoader(Loader):
     
     def __init__(self, parent=None, filename=None, userpref=None):
-        super(KwikLoader, self).__init__(parent=parent, filename=filename, userpref=userpref)
         self.experiment = None
+        super(KwikLoader, self).__init__(parent=parent, filename=filename, userpref=userpref)
     
     # Read functions.
     # ---------------
@@ -82,8 +82,12 @@ class KwikLoader(Loader):
         self.clusters = pd.Series(clusters, dtype=np.int32)
         self.nspikes = len(self.clusters)
         
-        fs = self.experiment.channel_groups[self.shank].spikes.features_masks.shape
-        self.nextrafet = (fs[1] - self.nchannels * self.fetdim)
+        self.features = self.experiment.channel_groups[self.shank].spikes.features
+        self.masks = self.experiment.channel_groups[self.shank].spikes.masks
+        self.waveforms = self.experiment.channel_groups[self.shank].spikes.waveforms_filtered
+        
+        nfet = self.features.shape[1]
+        self.nextrafet = (nfet - self.nchannels * self.fetdim)
         
         spiketimes = self.experiment.channel_groups[self.shank].spikes.time_samples[:] * (1. / self.freq)
         self.spiketimes = pd.Series(spiketimes, dtype=np.float64)
@@ -147,6 +151,67 @@ class KwikLoader(Loader):
     
     def process_waveforms(self, waveforms):
         return (waveforms * 1e-5).astype(np.float32).reshape((-1, self.nsamples, self.nchannels))
+    
+    
+    # def get_features(self, spikes=None, clusters=None):
+        # if clusters is not None:
+            # clusters = self.clusters_selected
+            
+        # exp = self.experiment
+        # channel_group = self.shank
+        # clustering = 'main'
+        
+        # fetdim = exp.application_data.spikedetekt.nfeatures_per_channel
+        # nchannels = exp.application_data.spikedetekt.nchannels
+        
+        # clusters_data = getattr(exp.channel_groups[channel_group].clusters, clustering)
+        # spikes_data = exp.channel_groups[channel_group].spikes
+        # channels_data = exp.channel_groups[channel_group].channels
+        
+        # spike_clusters = getattr(spikes_data.clusters, clustering)[:]
+        # cluster_colors = clusters_data.color[clusters]
+        
+        # if len(clusters) > 0:
+            # # TODO: put fraction in user parameters
+            # spikes_selected, fm = spikes_data.load_features_masks(fraction=.1, 
+                                                                  # clusters=clusters)
+        # else:
+            # spikes_selected = []
+            # fm = np.zeros((0, spikes_data.features_masks.shape[1], 2), 
+                          # dtype=spikes_data.features_masks.dtype)
+        
+        # features = fm[:, :, 0]
+        # return pd.DataFrame(features, index=spikes_selected)
+        
+    
+    # def get_masks(self, spikes=None, full=None, clusters=None):
+        # if clusters is not None:
+            # spikes = get_spikes_in_clusters(clusters, self.clusters)
+        # if spikes is None:
+            # spikes = self.spikes_selected
+        # if not full:
+            # masks = self.masks
+        # else:
+            # masks = self.masks_full
+        # return select(masks, spikes)
+    
+    # def get_waveforms(self, spikes=None, clusters=None):
+        # if spikes is not None:
+            # return select(self.waveforms, spikes)
+        # else:
+            # if clusters is None:
+                # clusters = self.clusters_selected
+            # if clusters is not None:
+                # spikes = get_some_spikes_in_clusters(clusters, self.clusters,
+                    # counter=self.counter,
+                    # nspikes_max_expected=self.userpref['waveforms_nspikes_max_expected'],
+                    # nspikes_per_cluster_min=self.userpref['waveforms_nspikes_per_cluster_min'])
+            # else:
+                # spikes = self.spikes_selected
+        # return select(self.waveforms, spikes)
+    
+    
+    
     
     # Access to the data: spikes
     # --------------------------
