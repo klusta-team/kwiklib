@@ -230,6 +230,11 @@ def test_add_cluster_group():
     noise.application_data.klustaviewa._v_attrs.color
     noise.user_data
     
+    remove_cluster_group(files, channel_group_id='0', id='0')
+    assert not hasattr(
+        files['kwik'].root.channel_groups.__getattr__('0').cluster_groups.main,
+        '0')
+        
     close_files(files)
 
 @with_setup(setup_create, teardown_create)
@@ -245,6 +250,11 @@ def test_add_cluster():
     cluster.quality_measures
     cluster.application_data.klustaviewa._v_attrs.color
     cluster.user_data
+    
+    remove_cluster(files, channel_group_id='0', id='0')
+    assert not hasattr(
+        files['kwik'].root.channel_groups.__getattr__('0').clusters.main,
+        '0')
     
     close_files(files)
 

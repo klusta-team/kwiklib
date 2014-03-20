@@ -488,6 +488,21 @@ def add_cluster(fd, channel_group_id=None, id=None, clustering='main',
     kv = kwik.createGroup(app, 'klustaviewa')
     kv._f_setAttr('color', color or ((int(id) % (COLORS_COUNT - 1)) + 1))
     
+def remove_cluster(fd, channel_group_id=None, id=None, clustering='main',
+                ):
+    """fd is returned by `open_files`: it is a dict {type: tb_file_handle}."""
+    if channel_group_id is None:
+        channel_group_id = '0'
+    kwik = fd.get('kwik', None)
+    # The KWIK needs to be there.
+    assert kwik is not None
+    # The channel group id containing the new cluster group must be specified.
+    assert channel_group_id is not None
+    clusters_path = '/channel_groups/{0:s}/clusters/{1:s}'.format(
+        channel_group_id, clustering)
+    assert id is not None
+    cluster = kwik.removeNode(clusters_path, id, recursive=True)
+    
 def add_cluster_group(fd, channel_group_id=None, id=None, clustering='main',
                       name=None, color=None):
     """fd is returned by `open_files`: it is a dict {type: tb_file_handle}."""
@@ -523,6 +538,21 @@ def add_cluster_group(fd, channel_group_id=None, id=None, clustering='main',
     app = kwik.createGroup(cluster_group, 'application_data')
     kv = kwik.createGroup(app, 'klustaviewa')
     kv._f_setAttr('color', color or ((int(id) % (COLORS_COUNT - 1)) + 1))
+    
+def remove_cluster_group(fd, channel_group_id=None, id=None, clustering='main',
+                ):
+    """fd is returned by `open_files`: it is a dict {type: tb_file_handle}."""
+    if channel_group_id is None:
+        channel_group_id = '0'
+    kwik = fd.get('kwik', None)
+    # The KWIK needs to be there.
+    assert kwik is not None
+    # The channel group id containing the new cluster group must be specified.
+    assert channel_group_id is not None
+    cluster_groups_path = '/channel_groups/{0:s}/cluster_groups/{1:s}'.format(
+        channel_group_id, clustering)
+    assert id is not None
+    cluster_group = kwik.removeNode(cluster_groups_path, id, recursive=True)
     
 def add_spikes(fd, channel_group_id=None,
                 time_samples=None, time_fractional=0,
