@@ -35,6 +35,7 @@ from .experiment import Experiment
 # HDF5 Loader
 # -----------------------------------------------------------------------------
 class KwikLoader(Loader):
+    # TODO: change the clustering ('main' by default)
     
     def __init__(self, parent=None, filename=None, userpref=None):
         self.experiment = None
@@ -129,89 +130,110 @@ class KwikLoader(Loader):
         self.group_colors = self.group_info['color'].astype(np.int32)
         self.group_names = self.group_info['name']
          
-    # Read and process arrays.
-    # ------------------------
-    def process_features(self, y):
-        x = y.copy()
-        # Normalize all regular features.
-        x[:,:x.shape[1]-self.nextrafet] *= self.background_features_normalization
-        # Normalize extra features except time.
-        if self.nextrafet > 1:
-            x[:,-self.nextrafet:-1] *= self.background_extra_features_normalization
-        # Normalize time.
-        x[:,-1] *= (1. / (self.duration * self.freq))
-        x[:,-1] = 2 * x[:,-1] - 1
-        return x
     
-    def process_masks_full(self, masks_full):
-        return masks_full
-    
-    def process_masks(self, masks_full):
-        return masks_full[:,:-self.nextrafet:self.fetdim]
-    
-    def process_waveforms(self, waveforms):
-        return (waveforms * 1e-5).astype(np.float32).reshape((-1, self.nsamples, self.nchannels))
-    
-    
-    # def get_features(self, spikes=None, clusters=None):
-        # if clusters is not None:
-            # clusters = self.clusters_selected
+    # Writing capabilities.
+    # ---------------------
+    def set_cluster(self, spikes, cluster):
+        if not hasattr(spikes, '__len__'):
+            spikes = [spikes]
+        
+        self.experiment.channel_groups[self.shank].spikes.clusters.main[spikes] = cluster
+        clusters = self.experiment.channel_groups[self.shank].spikes.clusters.main[:]
+        self.clusters = pd.Series(clusters, dtype=np.int32)
+        
+        self._update_data()
+        
+    def set_cluster_groups(self, clusters, group):
+        # self.cluster_groups.ix[clusters] = group
+        if not hasattr(clusters, '__len__'):
+            clusters = [clusters]
+        
+        clusters_gr = self.experiment.channel_groups[self.shank].clusters.main
+        for cl in clusters:
+            clusters_gr[cl].cluster_group = group
+        
+        self.read_clusters()
+        
+    def set_cluster_colors(self, clusters, color):
+        # self.cluster_colors.ix[clusters] = color
+        if not hasattr(clusters, '__len__'):
+            clusters = [clusters]
+        
+        clusters_gr = self.experiment.channel_groups[self.shank].clusters.main
+        for cl in clusters:
+            clusters_gr[cl].application_data.klustaviewa.color = color
+        
+        self.read_clusters()
+        
+    def set_group_names(self, groups, name):
+        # self.group_names.ix[groups] = name
+        if not hasattr(groups, '__len__'):
+            groups = [groups]
+        groups_gr = self.experiment.channel_groups[self.shank].cluster_groups.main
+        for gr in groups:
+            groups_gr[gr].name = name
+        
+        self.read_clusters()
+        
+    def set_group_colors(self, groups, color):
+        # self.group_colors.ix[groups] = color
+        if not hasattr(groups, '__len__'):
+            groups = [groups]
+        
+        groups_gr = self.experiment.channel_groups[self.shank].cluster_groups.main
+        for gr in groups:
+            groups_gr[gr].application_data.klustaviewa.color = color
+        
+        self.read_clusters()
+        
+        
+    # Add.
+    def add_cluster(self, cluster, group, color):
+        # if cluster not in self.cluster_groups.index:
+            # self.cluster_groups = self.cluster_groups.append(
+                # pd.Series([group], index=[cluster])).sort_index()
+        # if cluster not in self.cluster_colors.index:
+            # self.cluster_colors = self.cluster_colors.append(
+                # pd.Series([color], index=[cluster])).sort_index()
+        
+        self.experiment.channel_groups[self.shank].clusters.main.add_cluster(
+            id=cluster, color=color, cluster_group=group)
+        
+        self.read_clusters()
+        
+    def add_group(self, group, name, color):
+        # if group not in self.group_colors.index:
+            # self.group_colors = self.group_colors.append(
+                # pd.Series([color], index=[group])).sort_index()
+        # if group not in self.group_names.index:
+            # self.group_names = self.group_names.append(
+                # pd.Series([name], index=[group])).sort_index()
+                
+        groups = self.experiment.channel_groups[self.shank].cluster_groups.main
+        groups.add_group(id=group, color=color, name=name,)
+        
+        self.read_clusters()
+        
+    # Remove.
+    def remove_cluster(self, cluster):
+        if np.any(np.in1d(cluster, self.clusters)):
+            raise ValueError(("Cluster {0:d} is not empty and cannot "
+            "be removed.").format(cluster))
             
-        # exp = self.experiment
-        # channel_group = self.shank
-        # clustering = 'main'
+        self.experiment.channel_groups[self.shank].clusters.main.remove_cluster(
+            id=cluster,)
         
-        # fetdim = exp.application_data.spikedetekt.nfeatures_per_channel
-        # nchannels = exp.application_data.spikedetekt.nchannels
-        
-        # clusters_data = getattr(exp.channel_groups[channel_group].clusters, clustering)
-        # spikes_data = exp.channel_groups[channel_group].spikes
-        # channels_data = exp.channel_groups[channel_group].channels
-        
-        # spike_clusters = getattr(spikes_data.clusters, clustering)[:]
-        # cluster_colors = clusters_data.color[clusters]
-        
-        # if len(clusters) > 0:
-            # # TODO: put fraction in user parameters
-            # spikes_selected, fm = spikes_data.load_features_masks(fraction=.1, 
-                                                                  # clusters=clusters)
-        # else:
-            # spikes_selected = []
-            # fm = np.zeros((0, spikes_data.features_masks.shape[1], 2), 
-                          # dtype=spikes_data.features_masks.dtype)
-        
-        # features = fm[:, :, 0]
-        # return pd.DataFrame(features, index=spikes_selected)
-        
-    
-    # def get_masks(self, spikes=None, full=None, clusters=None):
-        # if clusters is not None:
-            # spikes = get_spikes_in_clusters(clusters, self.clusters)
-        # if spikes is None:
-            # spikes = self.spikes_selected
-        # if not full:
-            # masks = self.masks
-        # else:
-            # masks = self.masks_full
-        # return select(masks, spikes)
-    
-    # def get_waveforms(self, spikes=None, clusters=None):
-        # if spikes is not None:
-            # return select(self.waveforms, spikes)
-        # else:
-            # if clusters is None:
-                # clusters = self.clusters_selected
-            # if clusters is not None:
-                # spikes = get_some_spikes_in_clusters(clusters, self.clusters,
-                    # counter=self.counter,
-                    # nspikes_max_expected=self.userpref['waveforms_nspikes_max_expected'],
-                    # nspikes_per_cluster_min=self.userpref['waveforms_nspikes_per_cluster_min'])
-            # else:
-                # spikes = self.spikes_selected
-        # return select(self.waveforms, spikes)
-    
-    
-    
+        self.read_clusters()
+            
+    def remove_group(self, group):
+        if np.any(np.in1d(group, self.cluster_groups)):
+            raise ValueError(("Group {0:d} is not empty and cannot "
+            "be removed.").format(group))
+
+        self.experiment.channel_groups[self.shank].cluster_groups.main.remove_group(
+            id=group,)
+            
+        self.read_clusters()
     
     # Access to the data: spikes
     # --------------------------
