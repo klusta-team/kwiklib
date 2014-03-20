@@ -216,7 +216,7 @@ def test_experiment_add_cluster():
         chgrp = exp.channel_groups[0]
         chgrp.clusters.main.add_cluster(id=27, color=34)
         assert 27 in chgrp.clusters.main.keys()
-        assert chgrp.clusters.main[27].color == 34
+        assert chgrp.clusters.main[27].application_data.klustaviewa.color == 34
         assert np.allclose(chgrp.clusters.main.color[:], [1, 34])
         
         chgrp.clusters.main.remove_cluster(id=27)
@@ -229,7 +229,7 @@ def test_experiment_add_cluster_group():
         chgrp.cluster_groups.main.add_group(id=27, name='boo', color=34)
         assert 27 in chgrp.cluster_groups.main.keys()
         assert chgrp.cluster_groups.main[27].name == 'boo'
-        assert chgrp.cluster_groups.main[27].color == 34
+        assert chgrp.cluster_groups.main[27].application_data.klustaviewa.color == 34
         
         chgrp.cluster_groups.main.remove_group(id=27)
         assert 27 not in chgrp.cluster_groups.main.keys()

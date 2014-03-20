@@ -45,6 +45,8 @@ class KwikLoader(Loader):
     # ---------------
     def open(self, filename=None):
         """Open everything."""
+        if filename is None:
+            filename = self.filename
         dir, basename = os.path.split(filename)
         self.experiment = Experiment(basename, dir=dir, mode='a')
         # TODO
@@ -256,75 +258,22 @@ class KwikLoader(Loader):
     # Save.
     # -----
     def save(self, renumber=False):
-        
-        # Report progress.
-        self.report_progress_save(1, 6)
-        
-        self.update_cluster_info()
-        self.update_group_info()
-        
         # Renumber internal variables, knowing that in this case the file
         # will be automatically reloaded right afterwards.
+        self.report_progress_save(1, 3)
+        
         if renumber:
             self.renumber()
             self.clusters = self.clusters_renumbered
             self.cluster_info = self.cluster_info_renumbered
             self._update_data()
         
-        # # Update the changes in the HDF5 tables.
-        # self.spike_table.cols.cluster_manual[:] = get_array(self.clusters)
+        self.close()
+        self.report_progress_save(2, 3)
         
+        self.open()
+        self.report_progress_save(3, 3)
         
-        # Report progress.
-        self.report_progress_save(2, 6)
-        
-        # Update the clusters table.
-        # --------------------------
-        # Add/remove rows to match the new number of clusters.
-        # TODO: write capabilities
-        # self.clusters_table.cols.cluster[:] = self.get_clusters_unique()
-        # self.clusters_table.cols.group[:] = self.cluster_info['group']
-        
-        
-        # Report progress.
-        self.report_progress_save(3, 6)
-        
-        # Update the group table.
-        # -----------------------
-        # Add/remove rows to match the new number of clusters.
-        # groups = get_array(get_indices(self.group_info))
-        # self.groups_table.cols.group[:] = groups
-        # self.groups_table.cols.name[:] = self.group_info['name']
-        
-        # Commit the changes on disk.
-        # self.kwik.flush()
-        
-        
-        # Report progress.
-        self.report_progress_save(4, 6)
-        
-        # Save the CLU file.
-        # ------------------
-        # save_clusters(self.filename_clu, 
-            # convert_to_clu(self.clusters, self.cluster_info['group']))
-        
-        
-        # Report progress.
-        self.report_progress_save(5, 6)
-        
-        # Update the KWA file.
-        # --------------------
-        # kwa={}
-        # kwa['shanks'] = {
-            # shank: dict(
-                # cluster_colors=self.cluster_info['color'],
-                # group_colors=self.group_info['color'],
-            # ) for shank in self.shanks
-        # }
-        # write_kwa(self.filename_kwa, kwa)
-        
-        # Report progress.
-        self.report_progress_save(6, 6)
     
     # Close functions.
     # ----------------

@@ -156,13 +156,13 @@ def test_kwik_loader_control():
     l.close()
     
 @with_setup(setup)
-def teAst_kwik_save():
+def test_kwik_save():
     """WARNING: this test should occur at the end of the module since it
     changes the mock data sets."""
     # Open the mock data.
     dir = TEST_FOLDER
     xmlfile = os.path.join(dir, 'test.xml')
-    l = KlustersLoader(filename=xmlfile)
+    l = KwikLoader(filename=xmlfile)
     
     clusters = l.get_clusters()
     cluster_colors = l.get_cluster_colors()
@@ -186,17 +186,22 @@ def teAst_kwik_save():
     l.remove_empty_clusters()
     l.save()
     
-    clusters = read_clusters(l.filename_aclu)
-    cluster_info = read_cluster_info(l.filename_acluinfo)
+    clusters = l.get_clusters()
+    cluster_colors = l.get_cluster_colors()
+    cluster_groups = l.get_cluster_groups()
+    group_colors = l.get_group_colors()
+    group_names = l.get_group_names()
     
     assert np.all(clusters[::2] == 2)
     assert np.all(clusters[1::2] == 3)
     
-    assert np.array_equal(cluster_info.index, cluster_indices)
-    assert np.all(cluster_info.values[::2, 0] == 10)
-    assert np.all(cluster_info.values[1::2, 0] == 20)
-    assert np.all(cluster_info.values[::2, 1] == 1)
-    assert np.all(cluster_info.values[1::2, 1] == 0)
+    assert np.all(cluster_colors[::2] == 10)
+    assert np.all(cluster_colors[1::2] == 20)
+    
+    print cluster_groups
+    
+    assert np.all(cluster_groups[::2] == 1)
+    assert np.all(cluster_groups[1::2] == 0)
 
     l.close()
     

@@ -21,6 +21,8 @@ from kwiklib.dataio.spikecache import SpikeCache
 from kwiklib.utils.six import (iteritems, string_types, iterkeys, 
     itervalues, next)
 from kwiklib.utils.wrap import wrap
+from kwiklib.utils.logger import warn
+
 
 # -----------------------------------------------------------------------------
 # Utility functions
@@ -129,6 +131,11 @@ class ArrayProxy(object):
 # Node wrappers
 # -----------------------------------------------------------------------------
 class Node(object):
+    _files = None
+    _kwik = None
+    _node = None
+    _root = None
+    
     def __init__(self, files, node=None, root=None):
         self._files = files
         self._kwik = self._files.get('kwik', None)
@@ -165,6 +172,24 @@ class Node(object):
             # No HDF5 external link: just return the normal child.
             return child
 
+    def __getattr__(self, key):
+        try:
+            return self.__dict__[key]
+        except:
+            try:
+                return self._node._f_getAttr(key)
+            except AttributeError:
+                warn(("{key} needs to be an attribute of "
+                     "{node}").format(key=key, node=self._node._v_name))
+                return None
+            
+    def __setattr__(self, key, value):
+        try:
+            self._node._f_getAttr(key)
+            self._node._f_setAttr(key, value)
+        except AttributeError:
+            super(Node, self).__setattr__(key, value)
+            
 class NodeWrapper(object):
     """Like a PyTables node, but supports in addition: `node.attr`."""
     def __init__(self, node):
@@ -338,8 +363,8 @@ class ChannelGroup(Node):
     def __init__(self, files, node=None, root=None):
         super(ChannelGroup, self).__init__(files, node, root=root)
         
-        self.name = self._node._v_attrs.name
-        self.adjacency_graph = self._node._v_attrs.adjacency_graph
+        # self.name = self._node._v_attrs.name
+        # self.adjacency_graph = self._node._v_attrs.adjacency_graph
         self.application_data = NodeWrapper(self._node.application_data)
         self.user_data = NodeWrapper(self._node.user_data)
         
@@ -503,12 +528,12 @@ class Channel(Node):
     def __init__(self, files, node=None, root=None):
         super(Channel, self).__init__(files, node, root=root)
         
-        self.name = self._node._v_attrs.name
-        self.kwd_index = self._node._v_attrs.kwd_index
-        self.ignored = self._node._v_attrs.ignored
-        self.position = self._node._v_attrs.position
-        self.voltage_gain = self._node._v_attrs.voltage_gain
-        self.display_threshold = self._node._v_attrs.display_threshold
+        # self.name = self._node._v_attrs.name
+        # self.kwd_index = self._node._v_attrs.kwd_index
+        # self.ignored = self._node._v_attrs.ignored
+        # self.position = self._node._v_attrs.position
+        # self.voltage_gain = self._node._v_attrs.voltage_gain
+        # self.display_threshold = self._node._v_attrs.display_threshold
         
         self.application_data = NodeWrapper(self._node.application_data)
         self.user_data = NodeWrapper(self._node.user_data)
@@ -517,35 +542,35 @@ class Cluster(Node):
     def __init__(self, files, node=None, root=None):
         super(Cluster, self).__init__(files, node, root=root)
         
-        self.cluster_group = self._node._v_attrs.cluster_group
-        self.mean_waveform_raw = self._node._v_attrs.mean_waveform_raw
-        self.mean_waveform_filtered = self._node._v_attrs.mean_waveform_filtered
+        # self.cluster_group = self._node._v_attrs.cluster_group
+        # self.mean_waveform_raw = self._node._v_attrs.mean_waveform_raw
+        # self.mean_waveform_filtered = self._node._v_attrs.mean_waveform_filtered
         
         self.application_data = NodeWrapper(self._node.application_data)
-        self.color = self.application_data.klustaviewa.color
+        # self.color = self.application_data.klustaviewa.color
         self.user_data = NodeWrapper(self._node.user_data)
         self.quality_measures = NodeWrapper(self._node.quality_measures)
 
 class ClusterGroup(Node):
     def __init__(self, files, node=None, root=None):
         super(ClusterGroup, self).__init__(files, node, root=root)
-        self.name = self._node._v_attrs.name
+        # self.name = self._node._v_attrs.name
         
         self.application_data = NodeWrapper(self._node.application_data)
         self.user_data = NodeWrapper(self._node.user_data)
-        self.color = self.application_data.klustaviewa.color
+        # self.color = self.application_data.klustaviewa.color
         
 class Recording(Node):
     def __init__(self, files, node=None, root=None):
         super(Recording, self).__init__(files, node, root=root)
         
-        self.name = self._node._v_attrs.name
-        self.start_time = self._node._v_attrs.start_time
-        self.start_sample = self._node._v_attrs.start_sample
-        self.sample_rate = self._node._v_attrs.sample_rate
-        self.bit_depth = self._node._v_attrs.bit_depth
-        self.band_high = self._node._v_attrs.band_high
-        self.band_low = self._node._v_attrs.band_low
+        # self.name = self._node._v_attrs.name
+        # self.start_time = self._node._v_attrs.start_time
+        # self.start_sample = self._node._v_attrs.start_sample
+        # self.sample_rate = self._node._v_attrs.sample_rate
+        # self.bit_depth = self._node._v_attrs.bit_depth
+        # self.band_high = self._node._v_attrs.band_high
+        # self.band_low = self._node._v_attrs.band_low
         
         self.raw = self._get_child('raw')
         self.high = self._get_child('high')
