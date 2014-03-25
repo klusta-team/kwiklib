@@ -408,6 +408,9 @@ class Spikes(Node):
             # TODO: put this value in the parameters
             cache_fraction=1.,)
     
+    def load_features_masks_bg(self, *args, **kwargs):
+        return self._spikecache.load_features_masks_bg(*args, **kwargs)
+    
     def load_features_masks(self, *args, **kwargs):
         return self._spikecache.load_features_masks(*args, **kwargs)
     

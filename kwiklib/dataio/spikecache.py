@@ -59,7 +59,12 @@ class SpikeCache(object):
         self.features_masks_cached = self.features_masks[offset::k,...]
         self.cache_indices = np.arange(self.nspikes)[offset::k,...]
         self.cache_size = len(self.cache_indices)
-    
+        
+    def load_features_masks_bg(self):
+        if not hasattr(self, 'spikes_bg'):
+            self.spikes_bg, self.features_bg = self.load_features_masks(fraction=.05)
+        return self.spikes_bg, self.features_bg
+        
     def load_features_masks(self, fraction=None, clusters=None):
         """Load a subset of features & masks. 
         
