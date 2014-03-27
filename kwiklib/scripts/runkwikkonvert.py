@@ -19,10 +19,18 @@ Kwik format.
 
 """
 
+# -----------------------------------------------------------------------------
+# Function
+# -----------------------------------------------------------------------------
+def progress_report(spike, nspikes, shank, nshanks):
+    if spike == 1:
+        sys.stdout.write("Shank {0:d}/{0:d}...\n".format(shank+1, nshanks))
+    if spike < nspikes:
+        sys.stdout.write("\r%d%%" % (100*float(spike)/nspikes))
+    else:
+        sys.stdout.write("\r\n")
+    sys.stdout.flush()
 
-# -----------------------------------------------------------------------------
-# Main function
-# -----------------------------------------------------------------------------
 def main():
     # Parse the arguments.
     parser = argparse.ArgumentParser(description=DESCRIPTION)
@@ -38,7 +46,7 @@ def main():
     
     assert ext == '.xml', ArgumentError("The file needs to be a valid XML file.")
     
-    klusters_to_kwik(filename=filename, dir=dir, progress_report=None)
+    klusters_to_kwik(filename=filename, dir=dir, progress_report=progress_report)
     
 if __name__ == '__main__':
     main()
