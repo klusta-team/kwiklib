@@ -16,19 +16,17 @@ from qtools import QtGui, QtCore
 
 from loader import (Loader, default_group_info, reorder, renumber_clusters,
     default_cluster_info)
-from klustersloader import find_filenames, save_clusters, convert_to_clu
-# from hdf5tools import klusters_to_hdf5
+from klustersloader import (find_filenames, save_clusters, convert_to_clu, 
+    find_filename)
 from tools import (load_text, normalize,
     load_binary, load_pickle, save_text, get_array,
     first_row, load_binary_memmap)
-# from probe import load_probe_json
-# from params import load_params_json
-# from auxtools import load_kwa_json, kwa_to_json, write_kwa
 from selection import (select, select_pairs, get_spikes_in_clusters,
     get_some_spikes_in_clusters, get_some_spikes, get_indices, pandaize)
 from kwiklib.utils.logger import (debug, info, warn, exception, FileLogger,
     register, unregister)
 from kwiklib.utils.colors import COLORS_COUNT, generate_colors
+from kwiklib.dataio.klusterskwik import klusters_to_kwik
 from .experiment import Experiment
 
 # -----------------------------------------------------------------------------
@@ -43,11 +41,25 @@ class KwikLoader(Loader):
     
     # Read functions.
     # ---------------
+    def _report_progress_open(self, spike, nspikes, shank, nshanks):
+        i = shank * 100 + float(spike)/nspikes*100
+        n = nshanks * 100
+        self.report_progress(i, n)
+    
     def open(self, filename=None):
         """Open everything."""
         if filename is None:
             filename = self.filename
         dir, basename = os.path.split(filename)
+        
+        # Converting to kwik if needed
+        kwik = find_filename(basename, 'kwik', dir=dir)
+        xml = find_filename(basename, 'xml', dir=dir)
+        if not kwik:
+            assert xml, ValueError("I need the .xml file!")
+            klusters_to_kwik(filename=xml, dir=dir,
+                progress_report=self._report_progress_open)
+        
         self.experiment = Experiment(basename, dir=dir, mode='a')
         # TODO
         # self.initialize_logfile()
