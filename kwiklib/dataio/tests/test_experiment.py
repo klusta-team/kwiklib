@@ -239,16 +239,30 @@ def test_experiment_clusters():
         chgrp = exp.channel_groups[0]
         cluster = chgrp.clusters.main[0]
         
-        chgrp.clusters
-        chgrp.clusters.main
+@with_setup(setup2, teardown2)  # Create brand new files.
+def test_experiment_copy_clusters():
+    with Experiment('myexperiment', dir=DIRPATH, mode='a') as exp:
+        clusters = exp.channel_groups[0].spikes.clusters
         
-        assert cluster.application_data
-        assert cluster.user_data
-        assert cluster.quality_measures
+        # Adding spikes.
+        for i in range(10):
+            exp.channel_groups[0].spikes.add(time_samples=i*1000, cluster=10+i)
         
-        cluster.cluster_group
-        cluster.mean_waveform_raw
-        cluster.mean_waveform_filtered
+        main = clusters.main[:]
+        original = clusters.original[:]
+        
+        assert len(main) == 10
+        assert len(original) == 10
+        assert np.allclose(main, np.arange(10, 20))
+        assert np.allclose(original, np.zeros(10))
+        
+        # Change original clusters on disk.
+        clusters.original[1:10:2] = 123
+        assert np.all(clusters.main[1:10:2] != 123)
+        
+        # Copy clusters from original to main.
+        clusters.copy('original', 'main')
+        assert np.all(clusters.main[1:10:2] == 123)
         
 def test_experiment_cluster_groups():
     with Experiment('myexperiment', dir=DIRPATH) as exp:

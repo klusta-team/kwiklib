@@ -432,6 +432,11 @@ class Clusters(Node):
         for node in self._node._f_iterNodes():
             setattr(self, node._v_name, node)
         
+    def copy(self, clustering_from, clustering_to):
+        spike_clusters_from = self._node._f_getChild(clustering_from)[:]
+        clusters_to = self._node._f_getChild(clustering_to)
+        clusters_to[:] = spike_clusters_from
+        
 class Clustering(Node):
     """An actual clustering, with the cluster numbers for all spikes."""
     def __init__(self, files, node=None, root=None, child_class=None):
