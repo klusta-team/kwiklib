@@ -6,6 +6,7 @@ data sets."""
 # -----------------------------------------------------------------------------
 import os
 import os.path
+import shutil
 import re
 from collections import Counter
 
@@ -17,7 +18,7 @@ from qtools import QtGui, QtCore
 from loader import (Loader, default_group_info, reorder, renumber_clusters,
     default_cluster_info)
 from klustersloader import (find_filenames, save_clusters, convert_to_clu, 
-    find_filename)
+    find_filename, find_filename_or_new)
 from tools import (load_text, normalize,
     load_binary, load_pickle, save_text, get_array,
     first_row, load_binary_memmap)
@@ -50,11 +51,24 @@ class KwikLoader(Loader):
         """Open everything."""
         if filename is None:
             filename = self.filename
+        else:
+            self.filename = filename
         dir, basename = os.path.split(filename)
         
         # Converting to kwik if needed
+        # kwik = find_filename(basename, 'kwik', dir=dir)
+        # xml = find_filename(basename, 'xml', dir=dir)
+        # self.filename_clu = find_filename(basename, 'clu', dir=dir)
+        self._filenames = find_filenames(filename)
         kwik = find_filename(basename, 'kwik', dir=dir)
-        xml = find_filename(basename, 'xml', dir=dir)
+        xml = self._filenames['xml']
+        clu = self._filenames['clu']
+        
+        # Backup the .clu file.
+        clu_original = find_filename_or_new(filename, 'clu_original')
+        if not os.path.exists(clu_original):
+            shutil.copyfile(clu, clu_original)
+        
         if not kwik:
             assert xml, ValueError("I need the .xml file!")
             klusters_to_kwik(filename=xml, dir=dir,
@@ -270,21 +284,25 @@ class KwikLoader(Loader):
     # Save.
     # -----
     def save(self, renumber=False):
-        # Renumber internal variables, knowing that in this case the file
-        # will be automatically reloaded right afterwards.
-        self.report_progress_save(1, 3)
+        self.report_progress_save(1, 4)
         
         if renumber:
             self.renumber()
             self.clusters = self.clusters_renumbered
             self.cluster_info = self.cluster_info_renumbered
             self._update_data()
+            
+        # Save the clusters in the .clu file.
+        save_clusters(self._filenames['clu'], 
+            convert_to_clu(self.clusters, self.cluster_info['group']))
+            
+        self.report_progress_save(2, 4)
         
         self.close()
-        self.report_progress_save(2, 3)
+        self.report_progress_save(3, 4)
         
         self.open()
-        self.report_progress_save(3, 3)
+        self.report_progress_save(4, 4)
         
     
     # Close functions.
