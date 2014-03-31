@@ -401,7 +401,7 @@ class Spikes(Node):
         """Initialize the cache for the features & masks."""
         self._spikecache = SpikeCache(
             # TODO: handle multiple clusterings in the spike cache here
-            spike_clusters=self.clusters.main[:], 
+            spike_clusters=self.clusters.main, 
             features_masks=self.features_masks,
             waveforms_raw=self.waveforms_raw,
             waveforms_filtered=self.waveforms_filtered,

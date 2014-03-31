@@ -34,7 +34,10 @@ class SpikeCache(object):
                  features_masks=None,
                  waveforms_raw=None,
                  waveforms_filtered=None):
-        self.spike_clusters = spike_clusters[:]
+                 
+        self.spike_clusters_dataset = spike_clusters
+        self._update_clusters()
+        
         self.nspikes = len(self.spike_clusters)
         # self.cluster_sizes = np.bincount(spike_clusters)
         self.cache_fraction = cache_fraction
@@ -52,6 +55,10 @@ class SpikeCache(object):
             assert self.waveforms_filtered.shape[0] in (0, self.nspikes)
         
         assert cache_fraction > 0
+        
+    def _update_clusters(self):
+        """Re-load the clustering."""
+        self.spike_clusters = self.spike_clusters_dataset[:]
         
     def cache_features_masks(self, offset=0):
         k = np.clip(int(1. / self.cache_fraction), 1, self.nspikes)
@@ -89,6 +96,7 @@ class SpikeCache(object):
             loaded_indices = self.cache_indices[offset::k]
             return loaded_indices, loaded_features_masks
         else:
+            self._update_clusters()
             # Find the indices of all spikes in the requested clusters
             indices = np.nonzero(np.in1d(self.spike_clusters, clusters))[0]
             arr = (self.features_masks_cached 
@@ -110,6 +118,7 @@ class SpikeCache(object):
             return np.array([[[]]])
         nclusters = len(clusters)
         indices = []
+        self._update_clusters()
         for cluster in clusters:
             # Number of spikes to load for this cluster: count
             # but we want this number to be < cluster size, and > 10 if possible
