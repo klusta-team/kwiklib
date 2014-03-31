@@ -304,10 +304,10 @@ class KwikLoader(Loader):
             
         self.report_progress_save(2, 4)
         
-        self.close()
+        # self.close()
         self.report_progress_save(3, 4)
         
-        self.open()
+        # self.open()
         self.report_progress_save(4, 4)
         
     
