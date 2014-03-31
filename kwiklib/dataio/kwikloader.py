@@ -126,6 +126,12 @@ class KwikLoader(Loader):
         
         self.read_clusters()
         
+    def copy_clustering(self, clustering_from='original', 
+                        clustering_to='main'):
+        clusters = self.experiment.channel_groups[self.shank].spikes.clusters
+        clusters.copy(clustering_from, clustering_to)
+        
+        
     # Read contents.
     # --------------
     def get_probe_geometry(self):
