@@ -395,7 +395,7 @@ class Spikes(Node):
             self.masks = ArrayProxy(self.features_masks, col=1)
         elif self.features_masks.ndim == 2:
             self.features = self.features_masks
-            self.masks = np.ones_like(self.features)
+            self.masks = None  #np.ones_like(self.features)
 
         self.nfeatures = self.features.shape[1]
        
