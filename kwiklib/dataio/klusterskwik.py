@@ -175,7 +175,6 @@ class KwikWriter(object):
         self.klusters_data = open_klusters(self.filename)
         self.filenames = self.klusters_data['filenames']
         self.name = self.klusters_data['name']
-        self.nchannels = self.klusters_data['metadata']['nchannels']
         
         # Backup the original CLU file.
         filename_clu_original = find_filename_or_new(self.filename, 'clu_original')
@@ -213,8 +212,8 @@ class KwikWriter(object):
             read['uspk'] = data['uspk'].next()
         if 'mask' in data:
             read['mask'] = data['mask'].next()
-        else:
-            read['mask'] = np.ones_like(read['fet'])
+        # else:
+            # read['mask'] = np.ones_like(read['fet'])
         self.spike += 1
         return read
         
@@ -249,6 +248,7 @@ class KwikWriter(object):
         """Convert the old file format to the new HDF5-based format."""
         # Convert in HDF5 by going through all spikes.
         for self.shank in self.shanks:
+            self.nchannels = self.klusters_data[self.shank]['nchannels']
             
             # Write cluster info.
             acluinfo = self.klusters_data[self.shank]['acluinfo']
