@@ -26,11 +26,13 @@ from kwiklib.utils.logger import info
 # -----------------------------------------------------------------------------
 DIRPATH = tempfile.mkdtemp()
 
-def _setup(_name):
+def _setup(_name, has_masks=True):
     # Create files.
     prm = {'nfeatures': 3, 'waveforms_nsamples': 10, 'nchannels': 3,
            'sample_rate': 20000.,
-           'nfeatures_per_channel': 1}
+           'nfeatures_per_channel': 1,
+           'has_masks': has_masks
+           }
     prb = {0:
         {
             'channels': [4, 6, 8],
@@ -67,6 +69,8 @@ def setup(): _setup('myexperiment')
 def teardown(): _teardown('myexperiment')
 def setup2(): _setup('myexperiment2')
 def teardown2(): _teardown('myexperiment2')
+def setup_nomasks(): _setup('myexperiment_nomasks', has_masks=False)
+def teardown_nomasks(): _teardown('myexperiment_nomasks')
     
 
 # -----------------------------------------------------------------------------
@@ -208,6 +212,25 @@ def test_experiment_add_spikes():
         assert spikes.features_masks.shape == (0, 3, 2)
         
         assert isinstance(spikes.features, ArrayProxy)
+        assert spikes.features.shape == (0, 3)
+        
+@with_setup(setup_nomasks, teardown_nomasks)  # Create brand new files.
+def test_experiment_add_spikes_nomasks():
+    with Experiment('myexperiment_nomasks', dir=DIRPATH, mode='a') as exp:
+        chgrp = exp.channel_groups[0]
+        spikes = chgrp.spikes
+        
+        assert spikes.features_masks.shape == (0, 3)
+        assert isinstance(spikes.features, tb.Array)
+        assert spikes.features.shape == (0, 3)
+        
+        spikes.add(time_samples=1000)
+        spikes.add(time_samples=2000)
+        
+        assert len(spikes) == 2
+        assert spikes.features_masks.shape == (0, 3)
+        
+        assert isinstance(spikes.features, tb.Array)
         assert spikes.features.shape == (0, 3)
         
 @with_setup(setup2, teardown2)  # Create brand new files.

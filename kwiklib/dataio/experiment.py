@@ -389,9 +389,15 @@ class Spikes(Node):
         self.waveforms_filtered = self._get_child('waveforms_filtered')
         
         self.nsamples, self.nchannels = self.waveforms_raw.shape[1:]
-        self.features = ArrayProxy(self.features_masks, col=0)
+        
+        if self.features_masks.ndim == 3:
+            self.features = ArrayProxy(self.features_masks, col=0)
+            self.masks = ArrayProxy(self.features_masks, col=1)
+        elif self.features_masks.ndim == 2:
+            self.features = self.features_masks
+            self.masks = np.ones_like(self.features)
+
         self.nfeatures = self.features.shape[1]
-        self.masks = ArrayProxy(self.features_masks, col=1)
        
     def add(self, **kwargs):
         """Add a spike. Only `time_samples` is mandatory."""
