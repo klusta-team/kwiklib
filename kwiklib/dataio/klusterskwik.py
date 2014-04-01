@@ -106,6 +106,11 @@ def open_klusters(filename):
     metadata.update({shank: read_xml(filenames['xml'], shank)
         for shank in shanks})
     metadata['shanks'] = sorted(shanks)
+    metadata['has_masks'] = (('mask' in filenames 
+                                    and filenames['mask'] is not None) or (
+                                  'fmask' in filenames 
+                                    and filenames['fmask'] is not None
+                                  ))
     
     klusters_data['name'] = triplet[0]
     klusters_data['metadata'] = metadata
@@ -143,6 +148,7 @@ def metadata_to_prm(metadata):
         sample_rate=metadata['freq'],
         waveforms_nsamples=metadata['nsamples'],
         nfeatures_per_channel=metadata['fetdim'],
+        has_masks=metadata['has_masks'],
     )
    
 
