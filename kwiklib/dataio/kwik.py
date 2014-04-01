@@ -219,6 +219,7 @@ def create_kwx(path, prb=None, prm=None, has_masks=True):
     nfeatures_per_channel = prm.get('nfeatures_per_channel', None)
     nfeatures = prm.get('nfeatures', None)
     waveforms_nsamples = prm.get('waveforms_nsamples', None)
+    has_masks = prm.get('has_masks', has_masks)
         
     file = tb.openFile(path, mode='w')
     file.createGroup('/', 'channel_groups')
@@ -590,17 +591,22 @@ def add_spikes(fd, channel_group_id=None,
         # masks.shape is however  (nchannels,)
         if features.ndim == 1:
             features = np.expand_dims(features, axis=0)
-        if masks.ndim == 1:
-            masks = np.expand_dims(masks, axis=0)
-        
-        # masks.shape is now    (1,nchannels,)
-        # Tile the masks if needed: same mask value on each channel.
-        if masks.shape[1] < features.shape[1]:
-            nfeatures_per_channel = features.shape[1] // masks.shape[1]
-            masks = np.repeat(masks, nfeatures_per_channel, axis = 1)
-        # masks.shape is (1, nfeatures) - what we want
-        # Concatenate features and masks
-        features_masks = np.dstack((features, masks))
+            
+        if masks is not None:
+            if masks.ndim == 1:
+                masks = np.expand_dims(masks, axis=0)
+            
+            # masks.shape is now    (1,nchannels,)
+            # Tile the masks if needed: same mask value on each channel.
+            if masks.shape[1] < features.shape[1]:
+                nfeatures_per_channel = features.shape[1] // masks.shape[1]
+                masks = np.repeat(masks, nfeatures_per_channel, axis = 1)
+            # masks.shape is (1, nfeatures) - what we want
+            # Concatenate features and masks
+            features_masks = np.dstack((features, masks))
+            
+        else:
+            features_masks = features
     
     time_fractional = ensure_vector(time_fractional, size=nspikes)
     recording = ensure_vector(recording, size=nspikes)

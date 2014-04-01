@@ -20,7 +20,7 @@ from kwiklib.dataio.kwik import *
 DIRPATH = tempfile.mkdtemp()
 
 def setup_create():
-    prm = {'nfeatures': 3, 'waveforms_nsamples': 20}
+    prm = {'nfeatures': 3, 'waveforms_nsamples': 20, 'has_masks': False}
     prb = {0:
         {
             'channels': [4, 6, 8],
@@ -286,6 +286,25 @@ def test_add_spikes():
     spikes = files['kwx'].root.channel_groups.__getattr__('0')
     assert spikes.waveforms_raw.shape == (nspikes, 20, 3)
     assert spikes.waveforms_filtered.shape == (nspikes, 20, 3)
+    close_files(files)
+    
+@with_setup(setup_create, teardown_create)
+def test_add_spikes_fm():
+    files = open_files('myexperiment', dir=DIRPATH, mode='a')
+    nspikes = 7
+    
+    add_spikes(files, channel_group_id='0', 
+               time_samples=np.arange(nspikes),
+               features=np.random.randn(nspikes, 3),
+               fill_empty=False,
+               )
+               
+    spikes = files['kwx'].root.channel_groups.__getattr__('0')
+    
+    assert spikes.waveforms_raw.shape == (0, 20, 3)
+    assert spikes.waveforms_filtered.shape == (0, 20, 3)
+    assert spikes.features_masks.shape == (nspikes, 3)
+    
     close_files(files)
 
 @with_setup(setup_create, teardown_create)

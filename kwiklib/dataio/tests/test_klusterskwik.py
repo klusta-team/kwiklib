@@ -38,6 +38,10 @@ def test_conversion_1():
         
         fet_kwik = exp.channel_groups[1].spikes.features[:]
         
-        d = (fet / fet_kwik)
-        assert d.max() - d.min() <= 1
+        # Check equality between original and kwik (normalized) features array.
+        fet = fet.ravel()
+        fet_kwik = fet_kwik.ravel()
+        ind = fet !=0
+        d = (fet[ind] / fet_kwik[ind])
+        assert d.max() - d.min() <= .1
         

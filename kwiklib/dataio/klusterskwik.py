@@ -231,7 +231,7 @@ class KwikWriter(object):
             cluster=read['cluster'], 
             cluster_original=read['cluster'],
             features=read['fet'], 
-            masks=read['mask'],
+            masks=read.get('mask', None),
             waveforms_raw=wr, 
             waveforms_filtered=wf,
             fill_empty=False)
