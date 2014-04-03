@@ -104,6 +104,7 @@ class KwikLoader(Loader):
         if not shank in self.shanks:
             warn("Shank {0:d} is not in the list of shanks: {1:s}".format(
                 shank, str(self.shanks)))
+            return
         self.shank = shank        
         self.nchannels = len(self.experiment.channel_groups[self.shank].channels)
     

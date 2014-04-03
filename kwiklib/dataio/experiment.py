@@ -335,8 +335,9 @@ class Experiment(Node):
         self.recordings = self._gen_children('recordings', Recording)
         self.event_types = self._gen_children('event_types', EventType)
 
-        # Initialize the spike cache of the first channel group.
-        self.channel_groups.itervalues().next().spikes.init_cache()
+        # Initialize the spike cache of all channel groups.
+        for grp in self.channel_groups.itervalues():
+            grp.spikes.init_cache()
         
     def gen_filename(self, extension):
         if extension.startswith('.'):
