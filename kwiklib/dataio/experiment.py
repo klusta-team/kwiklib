@@ -153,10 +153,12 @@ class Node(object):
             container = self._node
         else:
             container = self._node._f_getChild(container_name)
-        return OrderedDict([
+        l = [
             (_get_child_id(child), child_class(self._files, child, root=self._root))
                 for child in container
-            ])
+            ]
+        l = sorted(l, key=lambda (x,y): x)
+        return OrderedDict(l)
     
     def _get_child(self, child_name):
         """Return the child specified by its name.
