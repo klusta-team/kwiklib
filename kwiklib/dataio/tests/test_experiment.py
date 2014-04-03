@@ -287,6 +287,7 @@ def test_experiment_copy_clusters():
         clusters.copy('original', 'main')
         assert np.all(clusters.main[1:10:2] == 123)
         
+@with_setup(setup,)
 def test_experiment_cluster_groups():
     with Experiment('myexperiment', dir=DIRPATH) as exp:
         chgrp = exp.channel_groups[0]

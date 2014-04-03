@@ -446,6 +446,11 @@ class Clusters(Node):
         clusters_to = self._node._f_getChild(clustering_to)
         clusters_to[:] = spike_clusters_from
         
+        group_from = self._node._v_parent._v_parent.clusters._f_getChild(clustering_from)
+        group_to = self._node._v_parent._v_parent.clusters._f_getChild(clustering_to)
+        
+        group_from._f_copy(newname=clustering_to, overwrite=True, recursive=True)
+        
 class Clustering(Node):
     """An actual clustering, with the cluster numbers for all spikes."""
     def __init__(self, files, node=None, root=None, child_class=None):
