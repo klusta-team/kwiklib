@@ -258,21 +258,25 @@ class KwikWriter(object):
             
             # Write cluster info.
             acluinfo = self.klusters_data[self.shank]['acluinfo']
-            for clu, info in acluinfo.iterrows():
-                add_cluster(self.files,
-                    channel_group_id=str(self.shank), 
-                    id=str(clu),
-                    cluster_group=info['group'],
-                    color=info['color'],)
-            
-            # Write cluster group info.
             groupinfo = self.klusters_data[self.shank]['groupinfo']
-            for clugrp, info in groupinfo.iterrows():
-                add_cluster_group(self.files,
-                    channel_group_id=str(self.shank), 
-                    id=str(clugrp), 
-                    name=info['name'], 
-                    color=info['color'])
+            
+            for clustering in ('main', 'original'):
+                for clu, info in acluinfo.iterrows():
+                    add_cluster(self.files,
+                        channel_group_id=str(self.shank), 
+                        id=str(clu),
+                        cluster_group=info['group'],
+                        color=info['color'],
+                        clustering=clustering)
+                
+                # Write cluster group info.
+                for clugrp, info in groupinfo.iterrows():
+                    add_cluster_group(self.files,
+                        channel_group_id=str(self.shank), 
+                        id=str(clugrp), 
+                        name=info['name'], 
+                        color=info['color'],
+                        clustering=clustering)
             
             # Write spike data.
             self.spike = 0

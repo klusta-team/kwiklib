@@ -1,7 +1,7 @@
 import os
 import tables as tb
 from mock_data import *
-from kwiklib.dataio import Experiment, read_features
+from kwiklib.dataio import Experiment, read_features, read_clusters
 from kwiklib.dataio.klusterskwik import klusters_to_kwik
 
 def test_conversion_1():
@@ -12,6 +12,8 @@ def test_conversion_1():
     fet = read_features(os.path.join(TEST_FOLDER, 'test.fet.1'), 
                         nchannels, fetdim, freq, do_process=False)
     
+    clu = read_clusters(os.path.join(TEST_FOLDER, 'test.clu.1'))
+    
     with Experiment('test', dir=TEST_FOLDER, mode='r') as exp:
         
         # Check cluster / cluster group metadata.
@@ -20,6 +22,28 @@ def test_conversion_1():
         assert np.allclose(exp.channel_groups[1].clusters.main.color[:],
             range(1, 21))
         assert np.all(exp.channel_groups[1].clusters.main.group[:] == 3)
+        
+        # Check original == main.
+        assert np.allclose(
+            sorted(exp.channel_groups[1].clusters.main.keys()),
+            sorted(exp.channel_groups[1].clusters.original.keys()),
+            )
+        assert np.allclose(
+            exp.channel_groups[1].clusters.main.color[:],
+            exp.channel_groups[1].clusters.original.color[:],
+            )
+        assert np.allclose(
+            exp.channel_groups[1].clusters.main.group[:],
+            exp.channel_groups[1].clusters.original.group[:],
+        )
+        
+        # Test spike clusters.
+        assert np.allclose(
+            exp.channel_groups[1].spikes.clusters.main[:],
+            clu)
+        assert np.allclose(
+            exp.channel_groups[1].spikes.clusters.main[:],
+            exp.channel_groups[1].spikes.clusters.original[:])
         
         # Ensure features masks is contiguous.
         assert isinstance(exp.channel_groups[1].spikes.features_masks, tb.Array)
