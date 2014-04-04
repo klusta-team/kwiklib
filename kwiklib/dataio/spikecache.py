@@ -132,6 +132,7 @@ class SpikeCache(object):
         # indices now contains some spike indices from the requested clusters
         if len(indices) > 0:
             indices = np.hstack(indices)
+        indices = np.unique(indices)
         return _select(w, indices)
         
         
