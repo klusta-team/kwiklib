@@ -330,6 +330,9 @@ class Experiment(Node):
         super(Experiment, self).__init__(self._files)
         self._root = self._node
         
+        # Ensure the version of the kwik format is exactly 2.
+        assert self._root._f_getAttr('kwik_version') == 2
+        
         self.application_data = NodeWrapper(self._root.application_data)
         self.user_data = NodeWrapper(self._root.user_data)
         
