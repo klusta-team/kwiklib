@@ -128,7 +128,7 @@ class SpikeCache(object):
                 continue
             nspikes = np.clip(count, min(cluster_size, 10),
                                      max(cluster_size, count))
-            indices.append(ind[::len(ind)//nspikes])
+            indices.append(ind[::max(1, len(ind)//nspikes)])
         # indices now contains some spike indices from the requested clusters
         if len(indices) > 0:
             indices = np.hstack(indices)
