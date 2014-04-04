@@ -396,10 +396,10 @@ class Spikes(Node):
         
         self.nsamples, self.nchannels = self.waveforms_raw.shape[1:]
         
-        if self.features_masks.ndim == 3:
+        if len(self.features_masks.shape) == 3:
             self.features = ArrayProxy(self.features_masks, col=0)
             self.masks = ArrayProxy(self.features_masks, col=1)
-        elif self.features_masks.ndim == 2:
+        elif len(self.features_masks.shape) == 2:
             self.features = self.features_masks
             self.masks = None  #np.ones_like(self.features)
 
