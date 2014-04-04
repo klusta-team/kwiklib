@@ -298,6 +298,10 @@ def read_xml(filename_xml, fileindex=1):
                 if ns is not None:
                     d['nsamples'] = int(ns.text)
     
+    # If no nFeatures, default to 3 (really old XML from Neuroscope).
+    if 'fetdim' not in d:
+        d['fetdim'] = 3
+    
     # klusters tests
     metadata = dict(
         nchannels=d['nchannels'],
