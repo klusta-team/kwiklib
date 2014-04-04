@@ -289,6 +289,15 @@ def read_xml(filename_xml, fileindex=1):
     if 'nchannels' not in d:
         d['nchannels'] = d['total_channels']
     
+    if 'nsamples' not in d:
+        ne = root.find('neuroscope')
+        if ne is not None:
+            sp = ne.find('spikes')
+            if sp is not None:
+                ns = sp.find('nSamples')
+                if ns is not None:
+                    d['nsamples'] = int(ns.text)
+    
     # klusters tests
     metadata = dict(
         nchannels=d['nchannels'],
