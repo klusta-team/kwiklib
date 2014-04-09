@@ -259,6 +259,31 @@ def test_add_cluster():
     close_files(files)
 
 @with_setup(setup_create, teardown_create)
+def test_add_clustering():
+    files = open_files('myexperiment', dir=DIRPATH, mode='a')
+    nspikes = 100
+    
+    add_spikes(files, channel_group_id='0', 
+               time_samples=np.arange(nspikes),
+               features=np.random.randn(nspikes, 3),
+               fill_empty=False,
+               )
+               
+    spike_clusters = np.random.randint(size=nspikes, low=3, high=20)
+    add_clustering(files, name='myclustering', spike_clusters=spike_clusters)
+    clusters = files['kwik'].root.channel_groups.__getattr__('0').spikes.clusters.myclustering[:]
+    
+    assert np.allclose(spike_clusters, clusters)
+    
+    clustering = files['kwik'].root.channel_groups.__getattr__('0').clusters.myclustering
+    assert not hasattr(clustering, '0')
+    for i in np.unique(spike_clusters):
+        assert clustering.__getattr__(str(i)).application_data. \
+                klustaviewa._f_getAttr('color') > 0
+    
+    close_files(files)
+
+@with_setup(setup_create, teardown_create)
 def test_add_spikes():
     files = open_files('myexperiment', dir=DIRPATH, mode='a')
     nspikes = 7

@@ -489,6 +489,34 @@ def add_cluster(fd, channel_group_id=None, id=None, clustering='main',
     kv = kwik.createGroup(app, 'klustaviewa')
     kv._f_setAttr('color', color or ((int(id) % (COLORS_COUNT - 1)) + 1))
     
+def add_clustering(fd, channel_group_id=None, name=None,
+                   spike_clusters=None):
+    """fd is returned by `open_files`: it is a dict {type: tb_file_handle}."""
+    if channel_group_id is None:
+        channel_group_id = '0'
+    kwik = fd.get('kwik', None)
+    # The KWIK needs to be there.
+    assert kwik is not None
+    # The channel group id containing the new cluster group must be specified.
+    assert channel_group_id is not None
+    assert name is not None
+    assert spike_clusters is not None
+    spikes_path = '/channel_groups/{0:s}/spikes/clusters'.format(channel_group_id)
+    clusters_path = '/channel_groups/{0:s}/clusters'.format(channel_group_id)
+    
+    # Create the HDF5 groups in /.../clusters.
+    clu_group = kwik.createGroup(clusters_path, name)
+    
+    # Create the HDF5 dataset with the spike clusters.
+    kwik.createEArray(spikes_path, name, tb.UInt32Atom(), 
+                      expectedrows=1000000, obj=spike_clusters.astype(np.uint32))
+    
+    # Create the cluster HDF5 groups under the new clustering group.
+    clusters_unique = np.unique(spike_clusters)
+    for cluster in clusters_unique:
+        add_cluster(fd, channel_group_id=channel_group_id, id=str(cluster), 
+                    clustering=name)
+    
 def remove_cluster(fd, channel_group_id=None, id=None, clustering='main',
                 ):
     """fd is returned by `open_files`: it is a dict {type: tb_file_handle}."""
