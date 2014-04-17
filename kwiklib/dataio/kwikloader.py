@@ -66,7 +66,7 @@ class KwikLoader(Loader):
         
         # Backup the .clu file.
         clu_original = find_filename_or_new(filename, 'clu_original')
-        if not os.path.exists(clu_original):
+        if os.path.exists(clu) and not os.path.exists(clu_original):
             shutil.copyfile(clu, clu_original)
         
         if not kwik:
