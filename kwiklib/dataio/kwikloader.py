@@ -87,7 +87,7 @@ class KwikLoader(Loader):
         self.shanks = sorted(self.experiment.channel_groups.keys())
         
         self.freq = self.experiment.application_data.spikedetekt.sample_rate
-        # TODO: read this info per shank
+        
         self.fetdim = self.experiment.application_data.spikedetekt.nfeatures_per_channel
         self.nsamples = self.experiment.application_data.spikedetekt.waveforms_nsamples
         

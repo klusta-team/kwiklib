@@ -57,15 +57,15 @@ class Probe(object):
     def __init__(self, prb, name=None):
         """prb is a dictionary."""
         self.name = name
-        channel_groups = prb.get('channel_groups', [])
         self.channel_groups = [ProbeChannelGroup(i, c) 
-            for i, c in enumerate(channel_groups)]
+            for i, c in prb.iteritems()]
         # Get the full adjacency graph, which is just the concatenation
         # of all graphs in all channel groups.
         graphs = [cg.graph for cg in self.channel_groups]
         self.channel_to_group = _get_channel_to_group(self.channel_groups)
         self.graph = list(itertools.chain(*graphs))
         self.adjacency_list = _get_adjacency_list(self.graph)
+        self.channels = sorted(set([val for subl in [cg.channels for cg in self.channel_groups] for val in subl]))
         self.nchannels = np.sum([cg.nchannels for cg in self.channel_groups])
         
     def __repr__(self):

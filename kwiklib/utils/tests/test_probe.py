@@ -11,24 +11,20 @@ from kwiklib.utils import Probe, python_to_pydict
 # -----------------------------------------------------------------------------
 # Tests
 # -----------------------------------------------------------------------------
-PRB = """
-channel_groups = [
+prb = {0:
             {
                 "channels": [0, 1, 2, 3],
                 "graph": [[0, 1], [2, 3]],
                 "geometry": {0: [0.1, 0.2], 1: [0.3, 0.4]}
-            },
+            }, 1:
             {
                 "channels": [4, 5, 6, 7],
                 "graph": [[4, 5], [6, 7]],
                 "geometry": {4: [0.1, 0.2], 5: [0.3, 0.4]}
             }
-        ]
-
-"""
+        }
 
 def test_probe():
-    prb = python_to_pydict(PRB)
     probe = Probe(prb, name="My test probe")
     
     assert len(probe.channel_groups) == 2
