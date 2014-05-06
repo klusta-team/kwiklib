@@ -470,7 +470,12 @@ def add_cluster(fd, channel_group_id=None, id=None, clustering='main',
             id = str(max([int(r) for r in clusters if r.isdigit()]) + 1)
         else:
             id = '0'
-    cluster = kwik.createGroup(clusters_path, id)
+    
+    try:
+        cluster = kwik.createGroup(clusters_path, id)
+    except:
+        # The cluster already exists.
+        return 
     
     cluster._f_setAttr('cluster_group', cluster_group)
     cluster._f_setAttr('mean_waveform_raw', mean_waveform_raw)
