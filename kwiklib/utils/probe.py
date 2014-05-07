@@ -43,8 +43,8 @@ def _get_channel_to_group(channel_groups):
     """Take a list of ChannelGroup instances, and return a mapping
     channel ==> channel_group index"""
     mapping = {}
-    channels_list = [cg.channels for cg in channel_groups]
-    for igroup, channels in enumerate(channels_list):
+    channels_list = [(cg.index, cg.channels) for cg in channel_groups]
+    for igroup, channels in channels_list:
         for channel in channels:
             mapping[channel] = igroup
     return mapping
@@ -58,7 +58,7 @@ class Probe(object):
         """prb is a dictionary."""
         self.name = name
         self.channel_groups = [ProbeChannelGroup(i, c) 
-            for i, c in prb.iteritems()]
+                               for i, c in prb.iteritems()]
         # Get the full adjacency graph, which is just the concatenation
         # of all graphs in all channel groups.
         graphs = [cg.graph for cg in self.channel_groups]
