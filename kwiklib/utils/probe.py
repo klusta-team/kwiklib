@@ -43,7 +43,7 @@ def _get_channel_to_group(channel_groups):
     """Take a list of ChannelGroup instances, and return a mapping
     channel ==> channel_group index"""
     mapping = {}
-    channels_list = [(cg.index, cg.channels) for cg in channel_groups]
+    channels_list = [(i, cg.channels) for i, cg in channel_groups.iteritems()]
     for igroup, channels in channels_list:
         for channel in channels:
             mapping[channel] = igroup
@@ -57,16 +57,16 @@ class Probe(object):
     def __init__(self, prb, name=None):
         """prb is a dictionary."""
         self.name = name
-        self.channel_groups = [ProbeChannelGroup(i, c) 
-                               for i, c in prb.iteritems()]
+        self.channel_groups = {i: ProbeChannelGroup(i, c) 
+                               for i, c in prb.iteritems()}
         # Get the full adjacency graph, which is just the concatenation
         # of all graphs in all channel groups.
-        graphs = [cg.graph for cg in self.channel_groups]
+        graphs = [cg.graph for cg in sorted(self.channel_groups.values())]
         self.channel_to_group = _get_channel_to_group(self.channel_groups)
         self.graph = list(itertools.chain(*graphs))
         self.adjacency_list = _get_adjacency_list(self.graph)
-        self.channels = sorted(set([val for subl in [cg.channels for cg in self.channel_groups] for val in subl]))
-        self.nchannels = np.sum([cg.nchannels for cg in self.channel_groups])
+        self.channels = sorted(set([val for subl in [cg.channels for cg in sorted(self.channel_groups.values())] for val in subl]))
+        self.nchannels = np.sum([cg.nchannels for cg in sorted(self.channel_groups.values())])
         
     def __repr__(self):
         name = "'{0:s}' ".format(self.name) if self.name else ''
