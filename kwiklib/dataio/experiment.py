@@ -389,6 +389,8 @@ class Spikes(Node):
         self.recording = self._node.recording
         self.clusters = Clusters(self._files, self._node.clusters, root=self._root)
         
+        self.channel_group_id = self._node._v_parent._v_name
+        
         # Get large datasets, that may be in external files.
         self.features_masks = self._get_child('features_masks')
         self.waveforms_raw = self._get_child('waveforms_raw')
@@ -407,7 +409,7 @@ class Spikes(Node):
        
     def add(self, **kwargs):
         """Add a spike. Only `time_samples` is mandatory."""
-        add_spikes(self._files, **kwargs)
+        add_spikes(self._files, channel_group_id=self.channel_group_id, **kwargs)
     
     def init_cache(self):
         """Initialize the cache for the features & masks."""
