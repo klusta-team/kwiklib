@@ -103,7 +103,7 @@ class SpikeCache(object):
                    if self.cache_fraction == 1. else self.features_masks)
             return _select(arr, indices)
            
-    def load_waveforms(self, clusters=None, count=20, filtered=True):
+    def load_waveforms(self, clusters=None, count=50, filtered=True):
         """Load some waveforms from the requested clusters.
         
         Arguments:
