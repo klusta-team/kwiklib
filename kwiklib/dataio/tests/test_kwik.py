@@ -19,7 +19,7 @@ from kwiklib.dataio.kwik import *
 # -----------------------------------------------------------------------------
 DIRPATH = tempfile.mkdtemp()
 
-def setup_create():
+def setup_create(create_default=False):
     prm = {'nfeatures': 3, 'waveforms_nsamples': 20, 'has_masks': False}
     prb = {0:
         {
@@ -29,8 +29,12 @@ def setup_create():
         }
     }
     
-    create_files('myexperiment', dir=DIRPATH, prm=prm, prb=prb)
+    create_files('myexperiment', dir=DIRPATH, prm=prm, prb=prb,
+                 create_default_info=create_default)
 
+def setup_create_default():
+    setup_create(True)
+                 
 def teardown_create():
     files = get_filenames('myexperiment', dir=DIRPATH)
     [os.remove(path) for path in itervalues(files)]
@@ -169,6 +173,29 @@ def test_create_kwd():
 def test_create_empty():
     files = create_files('myexperiment', dir=DIRPATH)
     [os.remove(path) for path in itervalues(files)]
+    
+@with_setup(setup_create_default, teardown_create)
+def test_create_default():
+    path = os.path.join(DIRPATH, 'myexperiment.kwik')
+    
+    prm = {
+        'waveforms_nsamples': 20,
+        'nfeatures': 3*32,
+    }
+    prb = {0:
+        {
+            'channels': [4, 6, 8],
+            'graph': [[4, 6], [8, 4]],
+            'geometry': {4: [0.4, 0.6], 6: [0.6, 0.8], 8: [0.8, 0.0]},
+        }
+    }
+    
+    files = open_files('myexperiment', dir=DIRPATH)
+    f = files['kwik']
+    assert f.root.channel_groups.__getattr__('0').cluster_groups.main.__getattr__('0')._f_getAttr('name') == 'Noise'
+    assert hasattr(f.root.channel_groups.__getattr__('0').clusters.main, '0')
+    
+    close_files(files)
     
     
 # -----------------------------------------------------------------------------

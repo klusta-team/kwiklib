@@ -313,7 +313,27 @@ def to_contiguous(node, nspikes=None):
     node_new._f_rename(name)
     return node_new
 
-def create_files(name, dir=None, prm=None, prb=None):
+def add_default_cluster_groups(files, dir=None, prm=None, prb=None):
+    if prb is None:
+        return
+    cluster_groups = [
+        ('0', 'Noise'),
+        ('1', 'MUA'),
+        ('2', 'Good'),
+        ('3', 'Unsorted'),
+    ]
+    for igroup, group_info in prb.iteritems():
+        for cluster_group_id, name in cluster_groups:
+            add_cluster_group(files, channel_group_id=str(igroup),
+                              id=cluster_group_id, name=name)
+    
+def add_default_cluster(files, dir=None, prm=None, prb=None):
+    if prb is None:
+        return
+    for igroup, group_info in prb.iteritems():
+        add_cluster(files, id='0', channel_group_id=str(igroup),)
+    
+def create_files(name, dir=None, prm=None, prb=None, create_default_info=False):
     
     filenames = get_filenames(name, dir=dir)
     
@@ -323,6 +343,19 @@ def create_files(name, dir=None, prm=None, prb=None):
     create_kwd(filenames['raw.kwd'], 'raw', prm=prm)
     create_kwd(filenames['high.kwd'], 'high', prm=prm)
     create_kwd(filenames['low.kwd'], 'low', prm=prm)
+    
+    if create_default_info:
+        # TODO
+        # add_recording(filenames, 
+                      # sample_rate=prm.get('sample_rate'),
+                      # nchannels=prm.get('nchannels'))
+                      
+        files = open_files(name, dir=dir, mode='a')
+        
+        add_default_cluster_groups(files, dir=dir, prm=prm, prb=prb)
+        add_default_cluster(files, dir=dir, prm=prm, prb=prb)
+        
+        close_files(files, dir=dir)
     
     return filenames
 
