@@ -209,10 +209,10 @@ def test_experiment_add_spikes():
         spikes.add(time_samples=2000)
         
         assert len(spikes) == 2
-        assert spikes.features_masks.shape == (0, 3, 2)
+        assert spikes.features_masks.shape == (2, 3, 2)
         
         assert isinstance(spikes.features, ArrayProxy)
-        assert spikes.features.shape == (0, 3)
+        assert spikes.features.shape == (2, 3)
         
 @with_setup(setup_nomasks, teardown_nomasks)  # Create brand new files.
 def test_experiment_add_spikes_nomasks():
@@ -228,10 +228,10 @@ def test_experiment_add_spikes_nomasks():
         spikes.add(time_samples=2000)
         
         assert len(spikes) == 2
-        assert spikes.features_masks.shape == (0, 3)
+        assert spikes.features_masks.shape == (2, 3)
         
         assert isinstance(spikes.features, tb.Array)
-        assert spikes.features.shape == (0, 3)
+        assert spikes.features.shape == (2, 3)
         
 @with_setup(setup2, teardown2)  # Create brand new files.
 def test_experiment_add_cluster():

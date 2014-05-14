@@ -664,36 +664,42 @@ def add_spikes(fd, channel_group_id=None,
         
     nfeatures = ds_features_masks.shape[1]
     
-    if features_masks is None and features is not None:
-        if fill_empty and masks is None:
-            masks = np.zeros((features.shape[0], nfeatures), dtype=np.float32)
-        
-        # Ensure features and masks have the right number of dimensions.
-        # features.shape is (1, nfeatures)
-        # masks.shape is however  (nchannels,)
-        if features.ndim == 1:
-            features = np.expand_dims(features, axis=0)
-            
-        if masks is not None:
+    if features_masks is None:
+        # Deal with masks only if they're supported in the file.
+        if ds_features_masks.ndim == 2:
+            features_masks = features
+        # Otherwise, deal with masks.
+        # Fill features masks only if features OR masks is specified.
+        elif not(features is None and masks is None):
+            # Unless features and masks are both None,
+            # make sure features AND masks are filled.
+            if features is None:
+                features = np.zeros((nspikes, nfeatures), dtype=np.float32)
+            if masks is None:
+                masks = np.zeros((features.shape[0], nfeatures), dtype=np.float32)
+                
+            # Ensure both have 2 dimensions.
+            if features.ndim == 1:
+                features = np.expand_dims(features, axis=0)
             if masks.ndim == 1:
                 masks = np.expand_dims(masks, axis=0)
-            
-            # masks.shape is now    (1,nchannels,)
+                
             # Tile the masks if needed: same mask value on each channel.
             if masks.shape[1] < features.shape[1]:
                 nfeatures_per_channel = features.shape[1] // masks.shape[1]
-                masks = np.repeat(masks, nfeatures_per_channel, axis = 1)
-            # masks.shape is (1, nfeatures) - what we want
-            # Concatenate features and masks
+                masks = np.repeat(masks, nfeatures_per_channel, axis=1)
+                
+            # Concatenate features and masks.
             features_masks = np.dstack((features, masks))
-            
-        else:
-            features_masks = features
-    
     time_fractional = ensure_vector(time_fractional, size=nspikes)
     recording = ensure_vector(recording, size=nspikes)
     cluster = ensure_vector(cluster, size=nspikes)
     cluster_original = ensure_vector(cluster_original, size=nspikes)
+    
+    if fill_empty and features_masks is None:
+        features_masks = empty_row(ds_features_masks, nrows=nspikes)
+    if features_masks is not None and features_masks.ndim < ds_features_masks.ndim:
+        features_masks = np.expand_dims(features_masks, axis=0)
     
     if fill_empty and waveforms_raw is None:
         waveforms_raw = empty_row(ds_waveforms_raw, nrows=nspikes)
