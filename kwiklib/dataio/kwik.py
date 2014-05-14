@@ -313,7 +313,7 @@ def to_contiguous(node, nspikes=None):
     node_new._f_rename(name)
     return node_new
 
-def add_default_cluster_groups(files, dir=None, prm=None, prb=None):
+def add_default_cluster_groups(files, prm=None, prb=None):
     if prb is None:
         return
     cluster_groups = [
@@ -327,11 +327,20 @@ def add_default_cluster_groups(files, dir=None, prm=None, prb=None):
             add_cluster_group(files, channel_group_id=str(igroup),
                               id=cluster_group_id, name=name)
     
-def add_default_cluster(files, dir=None, prm=None, prb=None):
+def add_default_cluster(files, prm=None, prb=None):
     if prb is None:
         return
     for igroup, group_info in prb.iteritems():
         add_cluster(files, id='0', channel_group_id=str(igroup),)
+    
+def add_default_recordings(files, prm=None, prb=None):
+    raw_data_files = prm.get('raw_data_files')
+    if isinstance(raw_data_files, list):
+        for id in range(len(raw_data_files)):
+            add_recording(files, id=id,
+                          sample_rate=prm.get('sample_rate'),
+                          nchannels=prm.get('nchannels'))
+                  
     
 def create_files(name, dir=None, prm=None, prb=None, create_default_info=False):
     
@@ -345,15 +354,11 @@ def create_files(name, dir=None, prm=None, prb=None, create_default_info=False):
     create_kwd(filenames['low.kwd'], 'low', prm=prm)
     
     if create_default_info:
-        # TODO
-        # add_recording(filenames, 
-                      # sample_rate=prm.get('sample_rate'),
-                      # nchannels=prm.get('nchannels'))
-                      
         files = open_files(name, dir=dir, mode='a')
         
-        add_default_cluster_groups(files, dir=dir, prm=prm, prb=prb)
-        add_default_cluster(files, dir=dir, prm=prm, prb=prb)
+        add_default_cluster_groups(files, prm=prm, prb=prb)
+        add_default_cluster(files, prm=prm, prb=prb)
+        add_default_recordings(files, prm=prm, prb=prb)
         
         close_files(files, dir=dir)
     
