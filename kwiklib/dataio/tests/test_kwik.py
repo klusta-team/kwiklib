@@ -20,7 +20,8 @@ from kwiklib.dataio.kwik import *
 DIRPATH = tempfile.mkdtemp()
 
 def setup_create(create_default=False):
-    prm = {'nfeatures': 3, 'waveforms_nsamples': 20, 'has_masks': False}
+    prm = {'nfeatures': 3, 'waveforms_nsamples': 20, 'has_masks': False,
+           'nchannels': 3}
     prb = {0:
         {
             'channels': [4, 6, 8],

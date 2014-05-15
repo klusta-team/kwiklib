@@ -333,11 +333,12 @@ def add_default_cluster(files, prm=None, prb=None):
     
 def add_default_recordings(files, prm=None, prb=None):
     raw_data_files = prm.get('raw_data_files')
-    if isinstance(raw_data_files, list):
-        for id in range(len(raw_data_files)):
-            add_recording(files, id=id,
-                          sample_rate=prm.get('sample_rate'),
-                          nchannels=prm.get('nchannels'))
+    if not isinstance(raw_data_files, list):
+        raw_data_files = [raw_data_files]
+    for id in range(len(raw_data_files)):
+        add_recording(files, id=id,
+                      sample_rate=prm.get('sample_rate'),
+                      nchannels=prm.get('nchannels'))
        
 def create_files(name, dir=None, prm=None, prb=None, create_default_info=False):
     
@@ -390,6 +391,7 @@ def add_recording(fd, id=None, name=None, sample_rate=None, start_time=None,
             id = '0'
     # Default name: recording_X if X is an integer, or the id.
     if name is None:
+        id = str(id)
         if id.isdigit():
             name = 'recording_{0:s}'.format(id)
         else:
@@ -736,5 +738,4 @@ def add_spikes(fd, channel_group_id=None,
         ds_waveforms_raw.append(convert_dtype(waveforms_raw, np.int16))
     if waveforms_filtered is not None:
         ds_waveforms_filtered.append(convert_dtype(waveforms_filtered, np.int16))
-    
         
