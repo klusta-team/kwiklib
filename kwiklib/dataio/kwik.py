@@ -179,8 +179,6 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
         wf._f_setAttr('hdf5_path', '{{kwx}}/channel_groups/{0:d}/waveforms_filtered'. \
             format(igroup))
         
-        # TODO: add clusters 0, 1, 2, 3 by default
-        
         # Create clusters.
         clusters = file.createGroup(group, 'clusters')
         file.createGroup(clusters, 'main')
@@ -340,8 +338,7 @@ def add_default_recordings(files, prm=None, prb=None):
             add_recording(files, id=id,
                           sample_rate=prm.get('sample_rate'),
                           nchannels=prm.get('nchannels'))
-                  
-    
+       
 def create_files(name, dir=None, prm=None, prb=None, create_default_info=False):
     
     filenames = get_filenames(name, dir=dir)
@@ -410,9 +407,9 @@ def add_recording(fd, id=None, name=None, sample_rate=None, start_time=None,
     kwik_high = kwik.createGroup('/recordings/' + id, 'high')
     kwik_low = kwik.createGroup('/recordings/' + id, 'low')
     
-    kwik_raw._f_setAttr('hdf5_path', '{raw.kwd}/recordings/' + id)
-    kwik_high._f_setAttr('hdf5_path', '{high.kwd}/recordings/' + id)
-    kwik_low._f_setAttr('hdf5_path', '{low.kwd}/recordings/' + id)
+    kwik_raw._f_setAttr('hdf5_path', '{raw.kwd}/recordings/' + id + '/data')
+    kwik_high._f_setAttr('hdf5_path', '{high.kwd}/recordings/' + id + '/data')
+    kwik_low._f_setAttr('hdf5_path', '{low.kwd}/recordings/' + id + '/data')
     
     kwik.createGroup('/recordings/' + id, 'user_data')
         

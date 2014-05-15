@@ -311,7 +311,7 @@ def test_experiment_recordings():
         assert rec.band_high == 100.
         assert rec.band_low == 500.
         
-        rd = rec.raw.data
+        rd = rec.raw
         assert isinstance(rd, tb.EArray)
         assert rd.shape == (0, 3)
         assert rd.dtype == np.int16
