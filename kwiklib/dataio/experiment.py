@@ -315,6 +315,7 @@ class Experiment(Node):
         """`name` must correspond to the basename of the files."""
         self.name = name
         self._dir = dir
+        self.dir = dir
         self._mode = mode
         self._files = files
         self._prm = prm
