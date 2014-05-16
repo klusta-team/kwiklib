@@ -43,7 +43,7 @@ def convert_dtype(data, dtype=None, factor=None):
     key = (_get_dtype(dtype_old), _get_dtype(dtype))
     factor = factor or _dtype_factors.get(key, 1)
     if dtype_old in (np.float32, np.float64):
-        factor = factor/data.max()
+        factor = factor/np.abs(data).max()
     # We avoid unnecessary array copy when factor == 1
     if factor != 1:
         return (data * factor).astype(dtype)
