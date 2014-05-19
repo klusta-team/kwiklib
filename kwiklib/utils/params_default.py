@@ -13,6 +13,12 @@ filter_lfp_high = 300.  # High pass frequency for the LFP filter (.low.kwd file)
 chunk_size = int(1. * sample_rate)  # 1 second
 chunk_overlap = int(.015 * sample_rate)  # 15 ms
 
+# Saving raw/filtered data
+# ------------------------
+save_raw = False
+save_high = False
+save_low = True
+
 # Spike detection
 # ---------------
 # Uniformly scattered chunks, for computing the threshold from the std of the
