@@ -568,7 +568,8 @@ def add_clustering(fd, channel_group_id=None, name=None,
     clusters_unique = np.unique(spike_clusters)
     for cluster in clusters_unique:
         add_cluster(fd, channel_group_id=channel_group_id, id=str(cluster), 
-                    clustering=name)
+                    clustering=name, 
+                    cluster_group=3)  # default cluster group = unsorted
     
 def remove_cluster(fd, channel_group_id=None, id=None, clustering='main',
                 ):
