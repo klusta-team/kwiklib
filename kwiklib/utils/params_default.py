@@ -5,8 +5,6 @@
 filter_low = 500. # Low pass frequency (Hz)
 filter_high = 0.95 * .5 * sample_rate
 filter_butter_order = 3  # Order of Butterworth filter.
-filter_lfp_low = 0.  # Low pass frequency for the LFP filter (.low.kwd file)
-filter_lfp_high = 300.  # High pass frequency for the LFP filter (.low.kwd file)
 
 # Chunks
 # ------
