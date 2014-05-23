@@ -62,7 +62,7 @@ def excerpts(nsamples, nexcerpts=None, excerpt_size=None):
 # -----------------------------------------------------------------------------
 class Chunk(object):
     def __init__(self, data=None, nsamples=None, nchannels=None,
-                 bounds=None, dtype=None, recording=0):
+                 bounds=None, dtype=None, recording=0, nrecordings=1):
         self._data = data
         if nsamples is None and nchannels is None:
             nsamples, nchannels = data.shape
@@ -70,6 +70,7 @@ class Chunk(object):
         self.nchannels = nchannels
         self.dtype = dtype
         self.recording = recording
+        self.nrecordings = nrecordings
         self.s_start, self.s_end, self.keep_start, self.keep_end = bounds
         self.window_full = self.s_start, self.s_end
         self.window_keep = self.keep_start, self.keep_end
@@ -96,7 +97,7 @@ class Chunk(object):
 # -----------------------------------------------------------------------------
 class Excerpt(object):
     def __init__(self, data=None, nsamples=None, nchannels=None,
-                 bounds=None, dtype=None, recording=0):
+                 bounds=None, dtype=None, recording=0, nrecordings=1):
         self._data = data
         if nsamples is None and nchannels is None:
             nsamples, nchannels = data.shape

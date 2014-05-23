@@ -39,7 +39,7 @@ class BaseRawDataReader(object):
                                        chunk_size=chunk_size, 
                                        overlap=chunk_overlap):
                 yield Chunk(data, bounds=bounds, dtype=self.dtype_to, 
-                            recording=recording)
+                            recording=recording, nrecordings=self.nrecordings)
         
     def excerpts(self, nexcerpts=None, excerpt_size=None):
         for recording, data in self.next_recording():
@@ -47,7 +47,7 @@ class BaseRawDataReader(object):
                                    nexcerpts=nexcerpts, 
                                    excerpt_size=excerpt_size):
                 yield Excerpt(data, bounds=bounds, dtype=self.dtype_to, 
-                              recording=recording)
+                              recording=recording, nrecordings=self.nrecordings)
         
     def __enter__(self):
         return self
@@ -91,7 +91,8 @@ class KwdRawDataReader(BaseRawDataReader):
         else:
             self.to_close = False
 
-        self._kwd = kwd    
+        self._kwd = kwd
+        nrecordings = self._kwd.root.recordings._v_nchildren
         super(KwdRawDataReader, self).__init__(dtype_to=dtype_to)
         
     def get_recording_data(self, recording):
@@ -169,7 +170,7 @@ def read_raw(raw, nchannels=None):
         return NumPyRawDataReader(raw)
     elif isinstance(raw, Experiment):
         return ExperimentRawDataReader(raw)
-    elif isinstance(raw, (string_types, list)):
+    elif isinstance(raw, string_types):
         if raw.endswith('.dat'):
             assert nchannels > 0, ("The number of channels must be specified "
                 "in order to read from a .dat file.")
@@ -178,6 +179,13 @@ def read_raw(raw, nchannels=None):
             return KwdRawDataReader(raw)
         else:
             raise ArgumentError("Unknown file extension for the raw data.")
+    elif isinstance(raw, list):
+        # List of .dat files.
+        for _ in raw:
+            assert _.endswith('.dat')
+        assert nchannels > 0, ("The number of channels must be specified "
+            "in order to read from a .dat file.")
+        return DatRawDataReader(raw, dtype=np.int16, shape=(0, nchannels))
             
 def convert_dat_to_kwd(dat_reader, kwd_file, chunk_size=20000):
     with open_file(kwd_file, 'a') as kwd:

@@ -37,6 +37,8 @@ def _get_dtype(dtype):
 def convert_dtype(data, dtype=None, factor=None):
     if not dtype:
         return data
+    if data.shape[0] == 0:
+        return data.astype(dtype)
     dtype_old = data.dtype
     if dtype_old == dtype:
         return data

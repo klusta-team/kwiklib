@@ -1,5 +1,7 @@
 """Contain default parameters."""
 
+assert sample_rate > 0
+
 # Filtering
 # ---------
 filter_low = 500. # Low pass frequency (Hz)
