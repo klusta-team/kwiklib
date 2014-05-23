@@ -13,7 +13,7 @@ chunk_overlap = int(.015 * sample_rate)  # 15 ms
 
 # Saving raw/filtered data
 # ------------------------
-save_raw = False
+save_raw = True
 save_high = False
 save_low = True
 
