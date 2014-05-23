@@ -85,8 +85,8 @@ class Chunk(object):
         return convert_dtype(chunk, self.dtype)
     
     def __repr__(self):
-        return "<Chunk [{0:d}|{1:d}|{2:d}|{3:d}], maxlen={4:d}, recording {recording}>".format(
-            self.s_start, self.keep_start, self.keep_end, self.s_end,
+        return "<Chunk ({0:d}/{1:d}), recording {recording}>".format(
+            self.s_start,
             self._data.shape[0], recording=self.recording,
         )
         
