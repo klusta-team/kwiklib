@@ -143,12 +143,11 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
             channel = file.createGroup(group.channels, str(channel_idx))
             channel._f_setAttr('name', 'channel_{0:d}'.format(channel_idx))
             
-            ############### TODO
-            channel._f_setAttr('kwd_index', 0)
-            channel._f_setAttr('ignored', False)
+            channel._f_setAttr('ignored', False)  # "channels" only contains 
+                                                  # not-ignored channels here
             channel._f_setAttr('position', group_info.get('geometry', {}). \
                 get(channel_idx, None))
-            channel._f_setAttr('voltage_gain', 0.)
+            channel._f_setAttr('voltage_gain', prm.get('voltage_gain', 0.))
             channel._f_setAttr('display_threshold', 0.)
             file.createGroup(channel, 'application_data')
             file.createGroup(channel.application_data, 'spikedetekt')
@@ -422,11 +421,28 @@ def add_recording(fd, id=None, name=None, sample_rate=None, start_time=None,
                                  downsample_factor=downsample_factor,
                                  nchannels=nchannels, 
                                  nsamples=nsamples, 
-                                 data=data)
+                                 data=data,
+                                 
+                                 # Copy parameters in kwd file.
+                                 name=name,
+                                 start_time=start_time,
+                                 start_sample=start_sample,
+                                 sample_rate=sample_rate,
+                                 bit_depth=bit_depth,
+                                 band_high=band_high,
+                                 band_low=band_low,
+                                 filter_name=type,
+                                 )
     
 def add_recording_in_kwd(kwd, recording_id=0,
                          downsample_factor=None, nchannels=None, 
-                         nsamples=None, data=None):
+                         nsamples=None, data=None,
+                         
+                         name=None, sample_rate=None, start_time=None, 
+                         start_sample=None, bit_depth=None, band_high=None,
+                         band_low=None, 
+                         
+                         filter_name=''):
     if isinstance(kwd, string_types):
         kwd = open_file(kwd, 'a')
         to_close = True
@@ -449,8 +465,20 @@ def add_recording_in_kwd(kwd, recording_id=0,
         data_int16 = convert_dtype(data, np.int16)
         dataset.append(data_int16)
             
-    kwd.createGroup(recording, 'filter')
-    # TODO: filter
+    # Add filter info.
+    fil = kwd.createGroup(recording, 'filter')
+    fil._f_setAttr('name', filter_name)
+    
+    # Copy recording info from kwik to kwd.
+    recording._f_setAttr('name', name)
+    recording._f_setAttr('start_time', start_time)
+    recording._f_setAttr('start_sample', start_sample)
+    recording._f_setAttr('sample_rate', sample_rate)
+    recording._f_setAttr('bit_depth', bit_depth)
+    recording._f_setAttr('band_high', band_high)
+    recording._f_setAttr('band_low', band_low)
+    
+    
     if to_close:
         kwd.close()
     
