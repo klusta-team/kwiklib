@@ -27,8 +27,6 @@ def get_params(filename=None, **kwargs):
     if 'sample_rate' not in kwargs:
         kwargs['sample_rate'] = sample_rate
     default = load_default_params(kwargs)
-    from pprint import pprint
-    pprint (kwargs)
     return get_pydict(filename=filename, 
                       pydict_default=default,
                       **kwargs)
