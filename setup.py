@@ -20,5 +20,5 @@ setup(
     url='http://klusta-team.github.io',
     license='LICENSE.txt',
     description='Kwiklib, part of the KlustaSuite',
-    long_description=open('README.md').read(),
+    # long_description=open('README.md').read(),
 )
