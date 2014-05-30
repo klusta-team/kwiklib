@@ -51,6 +51,8 @@ def get_basename(path):
 def open_file(path, mode=None):
     if mode is None:
         mode = 'r'
+    if mode == 'a':
+        assert os.path.exists(path)
     try:
         f = tb.openFile(path, mode)
         return f
