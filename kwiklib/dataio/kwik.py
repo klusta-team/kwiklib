@@ -133,7 +133,8 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
         group = file.createGroup('/channel_groups', str(igroup))
         # group_info: channel, graph, geometry
         group._f_setAttr('name', 'channel_group_{0:d}'.format(igroup))
-        group._f_setAttr('adjacency_graph', group_info.get('graph', np.zeros((0, 2))))
+        group._f_setAttr('adjacency_graph', 
+            np.array(group_info.get('graph', np.zeros((0, 2))), dtype=np.int32))
         file.createGroup(group, 'application_data')
         file.createGroup(group, 'user_data')
         
@@ -142,7 +143,7 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
         channels = group_info.get('channels', [])
         
         # Add the channel order.
-        group._f_setAttr('channel_order', channels)
+        group._f_setAttr('channel_order', np.array(channels, dtype=np.int32))
         
         for channel_idx in channels:
             # channel is the absolute channel index.
@@ -151,8 +152,11 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
             
             channel._f_setAttr('ignored', False)  # "channels" only contains 
                                                   # not-ignored channels here
-            channel._f_setAttr('position', group_info.get('geometry', {}). \
-                get(channel_idx, None))
+            pos = group_info.get('geometry', {}). \
+                get(channel_idx, None)
+            if pos is not None:
+                pos = np.array(pos, dtype=np.float32)
+            channel._f_setAttr('position', pos)
             channel._f_setAttr('voltage_gain', prm.get('voltage_gain', 0.))
             channel._f_setAttr('display_threshold', 0.)
             file.createGroup(channel, 'application_data')

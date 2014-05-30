@@ -96,7 +96,7 @@ def test_experiment_channels():
         # Channel group.
         chgrp = exp.channel_groups[0]
         assert chgrp.name == 'channel_group_0'
-        assert chgrp.adjacency_graph == [[4, 6], [8, 4]]
+        assert np.array_equal(chgrp.adjacency_graph, [[4, 6], [8, 4]])
         assert chgrp.application_data
         assert chgrp.user_data
         
@@ -109,7 +109,8 @@ def test_experiment_channels():
         assert ch.name == 'channel_4'
         ch.kwd_index 
         ch.ignored 
-        assert ch.position == [.4, .6]
+        
+        assert np.allclose(ch.position, [.4, .6])
         ch.voltage_gain 
         ch.display_threshold 
         assert ch.application_data
