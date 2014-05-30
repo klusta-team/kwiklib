@@ -370,8 +370,6 @@ class ChannelGroup(Node):
     def __init__(self, files, node=None, root=None):
         super(ChannelGroup, self).__init__(files, node, root=root)
         
-        # self.name = self._node._v_attrs.name
-        # self.adjacency_graph = self._node._v_attrs.adjacency_graph
         self.application_data = NodeWrapper(self._node.application_data)
         self.user_data = NodeWrapper(self._node.user_data)
         
@@ -556,13 +554,6 @@ class Channel(Node):
     def __init__(self, files, node=None, root=None):
         super(Channel, self).__init__(files, node, root=root)
         
-        # self.name = self._node._v_attrs.name
-        # self.kwd_index = self._node._v_attrs.kwd_index
-        # self.ignored = self._node._v_attrs.ignored
-        # self.position = self._node._v_attrs.position
-        # self.voltage_gain = self._node._v_attrs.voltage_gain
-        # self.display_threshold = self._node._v_attrs.display_threshold
-        
         self.application_data = NodeWrapper(self._node.application_data)
         self.user_data = NodeWrapper(self._node.user_data)
     
@@ -582,11 +573,9 @@ class Cluster(Node):
 class ClusterGroup(Node):
     def __init__(self, files, node=None, root=None):
         super(ClusterGroup, self).__init__(files, node, root=root)
-        # self.name = self._node._v_attrs.name
         
         self.application_data = NodeWrapper(self._node.application_data)
         self.user_data = NodeWrapper(self._node.user_data)
-        # self.color = self.application_data.klustaviewa.color
         
 class Recording(Node):
     def __init__(self, files, node=None, root=None):

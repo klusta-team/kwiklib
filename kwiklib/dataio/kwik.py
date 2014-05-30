@@ -140,6 +140,10 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
         # Create channels.
         file.createGroup(group, 'channels')
         channels = group_info.get('channels', [])
+        
+        # Add the channel order.
+        group._f_setAttr('channel_order', channels)
+        
         for channel_idx in channels:
             # channel is the absolute channel index.
             channel = file.createGroup(group.channels, str(channel_idx))
