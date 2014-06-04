@@ -11,7 +11,7 @@ import numpy as np
 # -----------------------------------------------------------------------------
 # Data type conversions
 # -----------------------------------------------------------------------------
-_maxint16 = 2.**12
+_maxint16 = 2.**15
 _maxint16inv = 1./_maxint16
 _maxint8 = 127
 _maxint8inv = 1./255
@@ -44,8 +44,8 @@ def convert_dtype(data, dtype=None, factor=None):
         return data
     key = (_get_dtype(dtype_old), _get_dtype(dtype))
     factor = factor or _dtype_factors.get(key, 1)
-    if dtype_old in (np.float32, np.float64):
-        factor = factor/np.abs(data).max()
+    # if dtype_old in (np.float32, np.float64):
+        # factor = factor/np.abs(data).max()
     # We avoid unnecessary array copy when factor == 1
     if factor != 1:
         return (data * factor).astype(dtype)
