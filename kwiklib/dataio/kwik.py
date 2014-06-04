@@ -774,7 +774,7 @@ def add_spikes(fd, channel_group_id=None,
         ds_features_masks.append(features_masks)
     
     if waveforms_raw is not None:
-        ds_waveforms_raw.append(convert_dtype(waveforms_raw, np.int16))
+        ds_waveforms_raw.append(waveforms_raw.astype(np.int16))
     if waveforms_filtered is not None:
-        ds_waveforms_filtered.append(convert_dtype(waveforms_filtered, np.int16))
+        ds_waveforms_filtered.append(waveforms_filtered.astype(np.int16))
         
