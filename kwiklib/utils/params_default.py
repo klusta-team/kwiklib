@@ -45,3 +45,29 @@ nfeatures_per_channel = 3  # Number of features per channel.
 pca_nwaveforms_max = 10000
 features_contiguous = True  # Whether to make the features array contiguous
 
+
+
+#########################
+# KlustaKwik parameters #
+#########################
+MaskStarts = 100
+#MinClusters = 100 
+#MaxClusters = 110
+MaxPossibleClusters =  500
+FullStepEvery =  10
+MaxIter = 10000
+RandomSeed =  654
+Debug = 0
+SplitFirst = 20 
+SplitEvery = 100 
+PenaltyK = 0
+PenaltyKLogN = 1
+Subset = 1
+PriorPoint = 1
+SaveSorted = 0
+SaveCovarianceMeans = 0
+UseMaskedInitialConditions = 1 
+AssignToFirstClosestMask = 1
+UseDistributional = 1
+
+

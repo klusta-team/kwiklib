@@ -27,14 +27,16 @@ warnings.simplefilter('ignore', tb.NaturalNameWarning)
 RAW_TYPES = ('raw.kwd', 'high.kwd', 'low.kwd')
 FILE_TYPES = ('kwik', 'kwx') + RAW_TYPES
 
-def get_filenames(name, dir=None):
+def get_filenames(name, dir=None, types=None):
     """Generate a list of filenames for the different files in a given 
     experiment, which name is given."""
+    if types is None:
+        types = FILE_TYPES
     # Default directory: working directory.
     if dir is None:
         dir = os.getcwd()
     name = os.path.splitext(name)[0]
-    return {type: os.path.join(dir, name + '.' + type) for type in FILE_TYPES}
+    return {type: os.path.join(dir, name + '.' + type) for type in types}
     
 def get_basename(path):
     bn = os.path.basename(path)
@@ -73,12 +75,12 @@ def close_files(name, dir=None):
         files = itervalues(name)
     [file.close() for file in files if file is not None]
     
-def files_exist(name, dir=None):
-    files = get_filenames(name, dir=dir)
+def files_exist(name, dir=None, types=None):
+    files = get_filenames(name, dir=dir, types=types)
     return os.path.exists(files['kwik'])
     
-def delete_files(name, dir=None):
-    files = get_filenames(name, dir=dir)
+def delete_files(name, dir=None, types=None):
+    files = get_filenames(name, dir=dir, types=types)
     [os.remove(path) for path in itervalues(files) if os.path.exists(path)]
       
 def get_row_shape(arr, nrows=1):
@@ -93,7 +95,7 @@ def empty_row(arr, dtype=None, nrows=1):
 # -----------------------------------------------------------------------------
 # HDF5 file creation
 # -----------------------------------------------------------------------------
-def create_kwik(path, experiment_name=None, prm=None, prb=None):
+def create_kwik(path, experiment_name=None, prm=None, prb=None, overwrite=True):
     """Create a KWIK file.
     
     Arguments:
@@ -110,6 +112,9 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
         prm = {}
     if prb is None:
         prb = {}
+    
+    if not overwrite and os.path.exists(path):
+        return
     
     file = tb.openFile(path, mode='w')
     
@@ -206,7 +211,7 @@ def create_kwik(path, experiment_name=None, prm=None, prb=None):
             
     file.close()
 
-def create_kwx(path, prb=None, prm=None, has_masks=True):
+def create_kwx(path, prb=None, prm=None, has_masks=True, overwrite=True):
     """Create an empty KWX file.
     
     Arguments:
@@ -228,6 +233,9 @@ def create_kwx(path, prb=None, prm=None, has_masks=True):
     waveforms_nsamples = prm.get('waveforms_nsamples', None)
     has_masks = prm.get('has_masks', has_masks)
         
+    if not overwrite and os.path.exists(path):
+        return
+    
     file = tb.openFile(path, mode='w')
     file.createGroup('/', 'channel_groups')
     
@@ -276,7 +284,7 @@ def create_kwx(path, prb=None, prm=None, has_masks=True):
                                                    
     file.close()
             
-def create_kwd(path, type='raw', prm=None,):#recordings=None,):
+def create_kwd(path, type='raw', prm=None, overwrite=True):
     """Create an empty KWD file.
     
     Arguments:
@@ -287,6 +295,9 @@ def create_kwd(path, type='raw', prm=None,):#recordings=None,):
     if prm is None:
         prm = {}
         
+    if not overwrite and os.path.exists(path):
+        return
+    
     file = tb.openFile(path, mode='w')
     file.createGroup('/', 'recordings')
     
@@ -462,7 +473,12 @@ def add_recording_in_kwd(kwd, recording_id=0,
     if data is not None:
         nsamples, nchannels = data.shape
     
-    recording = kwd.createGroup('/recordings', str(recording_id))
+    try:
+        recording = kwd.createGroup('/recordings', str(recording_id))
+    except tb.NodeError:
+        if to_close:
+            kwd.close()
+        return kwd
     recording._f_setAttr('downsample_factor', downsample_factor)
     
     dataset = kwd.createEArray(recording, 'data', 
