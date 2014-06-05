@@ -15,7 +15,7 @@ import numpy as np
 loglevel = logging.INFO
 
 # Level of the logging file. DEBUG, INFO or WARNING, or just None to disable.
-loglevel_file = logging.DEBUG
+loglevel_file = logging.INFO
 
 
 # -----------------------------------------------------------------------------
