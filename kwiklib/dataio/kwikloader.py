@@ -63,6 +63,9 @@ class KwikLoader(Loader):
         xml = self._filenames['xml']
         clu = self._filenames['clu']
         
+        self.log_filename = find_filename_or_new(filename, 'kvlog', dir=dir)
+        
+        
         # Backup the .clu file.
         clu_original = find_filename_or_new(filename, 'clu_original')
         if os.path.exists(clu) and not os.path.exists(clu_original):
