@@ -360,16 +360,17 @@ def add_default_recordings(files, prm=None, prb=None):
                       sample_rate=prm.get('sample_rate'),
                       nchannels=prm.get('nchannels'))
        
-def create_files(name, dir=None, prm=None, prb=None, create_default_info=False):
+def create_files(name, dir=None, prm=None, prb=None, create_default_info=False,
+                 overwrite=True):
     
     filenames = get_filenames(name, dir=dir)
     
-    create_kwik(filenames['kwik'], prm=prm, prb=prb)
-    create_kwx(filenames['kwx'], prb=prb, prm=prm)
+    create_kwik(filenames['kwik'], prm=prm, prb=prb, overwrite=overwrite)
+    create_kwx(filenames['kwx'], prb=prb, prm=prm, overwrite=overwrite)
     
-    create_kwd(filenames['raw.kwd'], 'raw', prm=prm)
-    create_kwd(filenames['high.kwd'], 'high', prm=prm)
-    create_kwd(filenames['low.kwd'], 'low', prm=prm)
+    create_kwd(filenames['raw.kwd'], 'raw', prm=prm, overwrite=overwrite)
+    create_kwd(filenames['high.kwd'], 'high', prm=prm, overwrite=overwrite)
+    create_kwd(filenames['low.kwd'], 'low', prm=prm, overwrite=overwrite)
     
     if create_default_info:
         files = open_files(name, dir=dir, mode='a')
