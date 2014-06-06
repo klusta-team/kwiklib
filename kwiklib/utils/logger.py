@@ -13,15 +13,12 @@ import traceback
 # Utility functions
 # -----------------------------------------------------------------------------
 def get_log_format(debug=False):
-    # if debug:
-        # return ('%(asctime)s,%(msecs)03d  %(levelname)-7s  %(message)s')
-    # else:
     return '%(asctime)s  %(message)s'
 
 def get_caller():
     tb = traceback.extract_stack()[-5]
-    module = os.path.splitext(os.path.basename(tb[0]))[0]#.ljust(24)
-    line = str(tb[1])#.ljust(4)
+    module = os.path.splitext(os.path.basename(tb[0]))[0]
+    line = str(tb[1])
     caller = "{0:s}:{1:s}".format(module, line)
     return caller.ljust(24)
 
@@ -59,8 +56,6 @@ class Logger(object):
             print_caller=True, handler=None):
         if stream is None:
             stream = sys.stdout
-        # if name is None:
-            # name = APPNAME
         self.name = name
         self.print_caller = print_caller
         if handler is None:
@@ -176,5 +171,6 @@ def set_level(msg):
 # Capture all exceptions.
 def handle_exception(exc_type, exc_value, exc_traceback):
     msg = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-    exception(msg)
+    if msg:
+        exception(msg)
 
