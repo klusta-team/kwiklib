@@ -352,14 +352,29 @@ def add_default_cluster(files, prm=None, prb=None):
     for igroup, group_info in prb.iteritems():
         add_cluster(files, id='0', channel_group_id=str(igroup),)
     
-def add_default_recordings(files, prm=None, prb=None):
+def add_default_recordings(files, dir=None, prm=None, prb=None):
     raw_data_files = prm.get('raw_data_files')
     if not isinstance(raw_data_files, list):
         raw_data_files = [raw_data_files]
+    total_size = 0
+    sr = prm.get('sample_rate')
+    nchannels=prm.get('nchannels')
+    nbytes = prm.get('nbits', 16)//8
     for id in range(len(raw_data_files)):
-        add_recording(files, id=id,
-                      sample_rate=prm.get('sample_rate'),
-                      nchannels=prm.get('nchannels'))
+        if sr is not None:
+            st = total_size/float(sr)
+        else:
+            st = None
+        add_recording(files, id=id, 
+                      start_sample=total_size,
+                      start_time=st,
+                      sample_rate=sr,
+                      bit_depth=nbytes*8,
+                      nchannels=nchannels)
+        if raw_data_files[id] is not None:
+            f = os.path.join(dir, raw_data_files[id])
+            size = os.path.getsize(f)//(nbytes*nchannels)
+            total_size += size
        
 def create_files(name, dir=None, prm=None, prb=None, create_default_info=False,
                  overwrite=True):
@@ -378,7 +393,7 @@ def create_files(name, dir=None, prm=None, prb=None, create_default_info=False,
         
         add_default_cluster_groups(files, prm=prm, prb=prb)
         add_default_cluster(files, prm=prm, prb=prb)
-        add_default_recordings(files, prm=prm, prb=prb)
+        add_default_recordings(files, dir=dir, prm=prm, prb=prb)
         
         close_files(files, dir=dir)
     
