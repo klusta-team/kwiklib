@@ -124,6 +124,11 @@ def test_experiment_spikes():
         assert spikes.time_samples.dtype == np.uint64
         assert spikes.time_samples.ndim == 1
         
+        t = spikes.concatenated_time_samples
+        # assert isinstance(t, np.ndarray)
+        assert t.dtype == np.uint64
+        assert t.ndim == 1
+        
         assert isinstance(spikes.time_fractional, tb.EArray)
         assert spikes.time_fractional.dtype == np.uint8
         assert spikes.time_fractional.ndim == 1

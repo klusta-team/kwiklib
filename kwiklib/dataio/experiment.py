@@ -388,6 +388,9 @@ class Spikes(Node):
         self.recording = self._node.recording
         self.clusters = Clusters(self._files, self._node.clusters, root=self._root)
         
+        # Add concatenated time samples
+        self.concatenated_time_samples = self._compute_concatenated_time_samples()
+        
         self.channel_group_id = self._node._v_parent._v_name
         
         # Get large datasets, that may be in external files.
@@ -405,6 +408,25 @@ class Spikes(Node):
             self.masks = None  #np.ones_like(self.features)
 
         self.nfeatures = self.features.shape[1]
+       
+    def _compute_concatenated_time_samples(self):
+        t_rel = self.time_samples[:]
+        recordings = self.recording[:]
+        if len(recordings) == 0 and len(t_rel) > 0:
+            recordings = np.zeros_like(t_rel)
+        # Get list of recordings.
+        recs = self._root.recordings
+        recs = sorted([int(_._v_name) for _ in recs._f_listNodes()])
+        # Get their start times.
+        if not recs:
+            return t_rel
+        start_times = np.zeros(max(recs)+1, dtype=np.uint64)
+        for r in recs:
+            recgrp = getattr(self._root.recordings, str(r))
+            sample_rate = recgrp._f_getAttr('sample_rate')
+            start_time = recgrp._f_getAttr('start_time')
+            start_times[r] = int(start_time * sample_rate)
+        return t_rel + start_times[recordings]
        
     def add(self, **kwargs):
         """Add a spike. Only `time_samples` is mandatory."""

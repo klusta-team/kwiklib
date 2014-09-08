@@ -121,7 +121,9 @@ class KwikLoader(Loader):
         nfet = self.features.shape[1]
         self.nextrafet = (nfet - self.nchannels * self.fetdim)
         
-        spiketimes = self.experiment.channel_groups[self.shank].spikes.time_samples[:] * (1. / self.freq)
+        # Load concatenated time samples: those are the time samples +
+        # the start time of the corresponding recordings.
+        spiketimes = self.experiment.channel_groups[self.shank].spikes.concatenated_time_samples[:] * (1. / self.freq)
         self.spiketimes = pd.Series(spiketimes, dtype=np.float64)
         self.duration = spiketimes[-1]
     
