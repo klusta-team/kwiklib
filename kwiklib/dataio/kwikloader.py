@@ -118,8 +118,11 @@ class KwikLoader(Loader):
         self.masks = self.experiment.channel_groups[self.shank].spikes.masks
         self.waveforms = self.experiment.channel_groups[self.shank].spikes.waveforms_filtered
         
-        nfet = self.features.shape[1]
-        self.nextrafet = (nfet - self.nchannels * self.fetdim)
+        if self.features is not None:
+            nfet = self.features.shape[1]
+            self.nextrafet = (nfet - self.nchannels * self.fetdim)
+        else:
+            self.nextrafet = 0
         
         # Load concatenated time samples: those are the time samples +
         # the start time of the corresponding recordings.

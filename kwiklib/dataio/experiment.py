@@ -398,15 +398,20 @@ class Spikes(Node):
         self.waveforms_raw = self._get_child('waveforms_raw')
         self.waveforms_filtered = self._get_child('waveforms_filtered')
         
-        self.nsamples, self.nchannels = self.waveforms_raw.shape[1:]
+        nspikes = len(self.time_samples)
         
+        if self.waveforms_raw is not None:
+            self.nsamples, self.nchannels = self.waveforms_raw.shape[1:]
+        
+        if self.features_masks is None:
+            self.features_masks = np.zeros((nspikes, 1, 1), dtype=np.float32)
+            
         if len(self.features_masks.shape) == 3:
             self.features = ArrayProxy(self.features_masks, col=0)
             self.masks = ArrayProxy(self.features_masks, col=1)
         elif len(self.features_masks.shape) == 2:
             self.features = self.features_masks
             self.masks = None  #np.ones_like(self.features)
-
         self.nfeatures = self.features.shape[1]
        
     def _compute_concatenated_time_samples(self):

@@ -61,6 +61,8 @@ class SpikeCache(object):
         self.spike_clusters = self.spike_clusters_dataset[:]
         
     def cache_features_masks(self, offset=0):
+        if self.features_masks is None:
+            return
         k = np.clip(int(1. / self.cache_fraction), 1, self.nspikes)
         # Load and save subset in feature_masks.
         self.features_masks_cached = self.features_masks[offset::k,...]
@@ -82,6 +84,9 @@ class SpikeCache(object):
             
         """
         assert fraction is not None or clusters is not None
+        
+        if self.features_masks is None:
+            return [], []
         
         # Cache susbet of features masks and save them in an array.
         if self.features_masks_cached is None:
@@ -113,6 +118,10 @@ class SpikeCache(object):
         
         """
         assert count > 0
+        
+        if self.waveforms_raw is None and self.waveforms_filtered is None:
+            return [], []
+        
         w = self.waveforms_filtered if filtered else self.waveforms_raw
         if w is None or len(w) == 0:
             return np.array([[[]]])
