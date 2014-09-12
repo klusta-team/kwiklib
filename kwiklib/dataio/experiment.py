@@ -597,6 +597,18 @@ class Cluster(Node):
         self.user_data = NodeWrapper(self._node.user_data)
         self.quality_measures = NodeWrapper(self._node.quality_measures)
 
+    def __getattr__(self, name):
+        if name == 'cluster_group':
+            def _process(cg):
+                if hasattr(cg, '__len__'):
+                    if len(cg) > 0:
+                        return cg[0]
+                    else:
+                        return 0
+                return cg
+            return _process(self._node._v_attrs.cluster_group)
+        return super(Cluster, self).__getattr__(name)
+        
 class ClusterGroup(Node):
     def __init__(self, files, node=None, root=None):
         super(ClusterGroup, self).__init__(files, node, root=root)

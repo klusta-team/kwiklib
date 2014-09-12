@@ -150,6 +150,7 @@ class KwikLoader(Loader):
         # Read the cluster info.
         clusters = self.experiment.channel_groups[self.shank].clusters.main.keys()
         cluster_groups = [c.cluster_group or 0 for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
+        
         cluster_colors = [c.application_data.klustaviewa.color 
             if c.application_data.klustaviewa.color is not None
             else 1
