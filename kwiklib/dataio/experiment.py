@@ -424,7 +424,7 @@ class Spikes(Node):
         for r in recs:
             recgrp = getattr(self._root.recordings, str(r))
             sample_rate = recgrp._f_getAttr('sample_rate')
-            start_time = recgrp._f_getAttr('start_time')
+            start_time = recgrp._f_getAttr('start_time') or 0.
             start_times[r] = int(start_time * sample_rate)
         return t_rel + start_times[recordings]
        
