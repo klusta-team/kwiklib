@@ -45,6 +45,9 @@ nfeatures_per_channel = 3  # Number of features per channel.
 pca_nwaveforms_max = 10000
 features_contiguous = True  # Whether to make the features array contiguous
 
+#Waveform alignment
+# -----------------
+weight_power = 2
 
 
 #########################
