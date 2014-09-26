@@ -583,6 +583,7 @@ def add_cluster(fd, channel_group_id=None, id=None, clustering='main',
         cluster = kwik.createGroup(clusters_path, id)
     except:
         # The cluster already exists.
+        warn("Cluster %d already exists." % int(id))
         return 
     
     cluster._f_setAttr('cluster_group', cluster_group)
