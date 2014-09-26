@@ -26,6 +26,7 @@ from selection import (select, select_pairs, get_spikes_in_clusters,
 from kwiklib.utils.logger import (debug, info, warn, exception, FileLogger,
     register, unregister)
 from kwiklib.utils.colors import COLORS_COUNT, generate_colors
+from kwiklib.dataio.kwik import add_cluster
 from kwiklib.dataio.klusterskwik import klusters_to_kwik
 from .experiment import Experiment
 
@@ -46,6 +47,25 @@ class KwikLoader(Loader):
         n = nshanks * 100
         self.report_progress(i, n)
     
+    def _consistency_check(self):
+        exp = self.experiment
+        chgrp = self.shank
+
+        cg = exp.channel_groups[chgrp]
+        clusters = cg.clusters.main.keys()
+        clusters_unique = np.unique(cg.spikes.clusters.main[:])
+
+        # Find missing clusters in the kwik file.
+        missing = sorted(set(clusters_unique)-set(clusters))
+
+        # Add all missing clusters with a default color and "Unsorted" cluster group (group #3).
+        for idx in missing:
+            warn("Consistency check: adding cluster %d in the kwik file" % idx)
+            add_cluster(exp._files, channel_group_id='%d' % chgrp,
+                        id=idx,
+                        clustering='main',
+                        cluster_group=3)
+
     def open(self, filename=None):
         """Open everything."""
         if filename is None:
@@ -77,6 +97,7 @@ class KwikLoader(Loader):
                 progress_report=self._report_progress_open)
         
         self.experiment = Experiment(basename, dir=dir, mode='a')
+
         # TODO
         # self.initialize_logfile()
         # Load the similarity measure chosen by the user in the preferences
@@ -108,6 +129,10 @@ class KwikLoader(Loader):
                 shank, str(self.shanks)))
             return
         self.shank = shank        
+
+        # CONSISTENCY CHECK
+        # self._consistency_check()
+
         self.nchannels = len(self.experiment.channel_groups[self.shank].channels)
     
         clusters = self.experiment.channel_groups[self.shank].spikes.clusters.main[:]
