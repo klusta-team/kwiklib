@@ -340,7 +340,7 @@ class Experiment(Node):
         self.channel_groups = self._gen_children('channel_groups', ChannelGroup)
         self.recordings = self._gen_children('recordings', Recording)
         self.event_types = self._gen_children('event_types', EventType)
-
+        
         # Initialize the spike cache of all channel groups.
         for grp in self.channel_groups.itervalues():
             grp.spikes.init_cache()
@@ -376,7 +376,7 @@ class ChannelGroup(Node):
         self.channels = self._gen_children('channels', Channel)
         self.clusters = ClustersNode(self._files, self._node.clusters, root=self._root)
         self.cluster_groups = ClusterGroupsNode(self._files, self._node.cluster_groups, root=self._root)
-        
+                
         self.spikes = Spikes(self._files, self._node.spikes, root=self._root)
         
 class Spikes(Node):
