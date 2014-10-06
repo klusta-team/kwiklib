@@ -114,6 +114,10 @@ class KwikLoader(Loader):
         self.fetdim = self.experiment.application_data.spikedetekt.nfeatures_per_channel
         self.nsamples = self.experiment.application_data.spikedetekt.waveforms_nsamples
         
+        self.raw = self.experiment.recordings[0].raw
+        
+        print self.raw
+        
         self.set_shank(self.shanks[0])
         
     # Shank functions.
@@ -166,7 +170,7 @@ class KwikLoader(Loader):
         
         
     # Read contents.
-    # --------------
+    # ---------------------
     def get_probe_geometry(self):
         return np.array([c.position 
             for c in self.experiment.channel_groups[self.shank].channels])

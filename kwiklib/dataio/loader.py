@@ -341,7 +341,15 @@ class Loader(QtCore.QObject):
 
     def get_channel_group_names(self, channel_groups=None):
         return select(self.channel_group_names, channel_groups)
+
+    # Access to the data: channel traces
+    # ----------------------------------
+    def get_traces(self):
+        return select(self.raw)
         
+    def get_freq(self):
+        return select(self.freq)
+    
     # Access to the data: misc
     # ------------------------
     def get_probe(self):
