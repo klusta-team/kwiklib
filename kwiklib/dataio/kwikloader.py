@@ -30,6 +30,27 @@ from kwiklib.dataio.kwik import add_cluster
 from kwiklib.dataio.klusterskwik import klusters_to_kwik
 from .experiment import Experiment
 
+
+def add_missing_clusters(exp):
+
+    shanks = sorted(exp.channel_groups.keys())
+
+    for shank in shanks:
+        cg = exp.channel_groups[shank]
+        clusters = cg.clusters.main.keys()
+        clusters_unique = np.unique(cg.spikes.clusters.main[:])
+        # Find missing clusters in the kwik file.
+        missing = sorted(set(clusters_unique)-set(clusters))
+
+        # Add all missing clusters with a default color and "Unsorted" cluster group (group #3).
+        for idx in missing:
+            info("Adding missing cluster %d in shank %d." % (idx, shank))
+            add_cluster(exp._files, channel_group_id='%d' % shank,
+                        id=str(idx),
+                        clustering='main',
+                        cluster_group=3)
+
+
 # -----------------------------------------------------------------------------
 # HDF5 Loader
 # -----------------------------------------------------------------------------
@@ -97,6 +118,10 @@ class KwikLoader(Loader):
                 progress_report=self._report_progress_open)
         
         self.experiment = Experiment(basename, dir=dir, mode='a')
+
+        # CONSISTENCY CHECK
+        # add missing clusters
+        add_missing_clusters(self.experiment)
 
         # TODO
         # self.initialize_logfile()
