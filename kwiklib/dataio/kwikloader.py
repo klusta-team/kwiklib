@@ -139,9 +139,20 @@ class KwikLoader(Loader):
         self.fetdim = self.experiment.application_data.spikedetekt.nfeatures_per_channel
         self.nsamples = self.experiment.application_data.spikedetekt.waveforms_nsamples
         
-        self.raw = self.experiment.recordings[0].raw
+        try:
+            self.raw = self.experiment.recordings[0].raw
+        except KeyError:
+            self.raw = None
+            
+        try:
+            self.high = self.experiment.recordings[0].high
+        except KeyError:
+            self.high = None
         
-        print self.raw
+        try:
+            self.low = self.experiment.recordings[0].low
+        except KeyError:
+            self.low = None
         
         self.set_shank(self.shanks[0])
         
