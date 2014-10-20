@@ -86,7 +86,6 @@ def renumber_clusters(clusters, cluster_info):
         index=(np.arange(nclusters) + 2))
     return clusters_renumbered, cluster_info_reordered
 
-
 # -----------------------------------------------------------------------------
 # Generic Loader class
 # -----------------------------------------------------------------------------

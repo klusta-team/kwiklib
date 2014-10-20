@@ -36,7 +36,7 @@ similarity_measure = 'gaussian'  # or 'kl' for KL divergence
 # -----------------------------------------------------------------------------
 # Waveform view
 # -----------------------------------------------------------------------------
-# Approximate maximum number of spikes to show. Should be
+# Approximate maximum number of spikes pper cluster to show. Should be
 # about 100 for low-end graphics cards, 1000 for high-end ones.
 waveforms_nspikes_max_expected = 100
 
