@@ -81,6 +81,8 @@ features_info_time_unit = 'second'
 # -----------------------------------------------------------------------------
 # Maximum number of clusters to show in the correlograms view.
 correlograms_max_nclusters = 20
+correlograms_nexcerpts = 100
+correlograms_excerpt_size = 20000
 
 
 # -----------------------------------------------------------------------------
