@@ -53,14 +53,15 @@ def find_indices(filename, dir='', files=[]):
             break
     
     # get the full path
+    dir = dir.strip()
     if not dir:
-        dir = os.path.dirname(filename)
+        dir = os.path.dirname(os.path.realpath(filename))
     filename = os.path.basename(filename)
     # try obtaining the list of all files in the directory
     if not files:
         try:
             files = os.listdir(dir)
-        except (WindowsError, OSError, IOError):
+        except (OSError, IOError):
             raise IOError("Error when accessing '{0:s}'.".format(dir))
     
     # If the requested filename does not have a file index, then get the 
@@ -104,14 +105,15 @@ def find_filename(filename, extension_requested, dir='', files=[]):
             break
     
     # get the full path
+    dir = dir.strip()
     if not dir:
-        dir = os.path.dirname(filename)
+        dir = os.path.dirname(os.path.realpath(filename))
     filename = os.path.basename(filename)
     # try obtaining the list of all files in the directory
     if not files:
         try:
             files = os.listdir(dir)
-        except (WindowsError, OSError, IOError):
+        except (OSError, IOError):
             raise IOError("Error when accessing '{0:s}'.".format(dir))
     
     # If the requested filename does not have a file index, then get the 
@@ -155,14 +157,15 @@ def find_filename(filename, extension_requested, dir='', files=[]):
 
 def find_any_filename(filename, extension_requested, dir='', files=[]):
     # get the full path
+    dir = dir.strip()
     if not dir:
-        dir = os.path.dirname(filename)
+        dir = os.path.dirname(os.path.realpath(filename))
     
     # try obtaining the list of all files in the directory
     if not files:
         try:
             files = os.listdir(dir)
-        except (WindowsError, OSError, IOError):
+        except (OSError, IOError):
             raise IOError("Error when accessing '{0:s}'.".format(dir))
     
     filtered = filter(lambda f: f.endswith('.' + extension_requested), files)
