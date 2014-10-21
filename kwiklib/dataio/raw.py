@@ -30,7 +30,7 @@ class BaseRawDataReader(object):
     def get_recording_data(self, recording):
         # TO BE OVERRIDEN
         # return data
-        pass
+        raise NotImplementedError()
     
     def chunks(self, chunk_size=None, chunk_overlap=0):
         for recording, data in self.next_recording():
@@ -75,7 +75,7 @@ class ExperimentRawDataReader(BaseRawDataReader):
         super(ExperimentRawDataReader, self).__init__(dtype_to=dtype_to)
         
     def get_recording_data(self, recording):
-        data = self.experiment.recordings[recording].data
+        data = self.experiment.recordings[recording].raw
         return data
 
     def __repr__(self):
