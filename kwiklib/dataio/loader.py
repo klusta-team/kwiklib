@@ -419,6 +419,10 @@ class Loader(QtCore.QObject):
             self.cluster_colors = self.cluster_colors.append(
                 pd.Series([color], index=[cluster])).sort_index()
         
+    def add_clusters(self, clusters, groups, colors):
+        for cluster, group, color in zip(clusters, groups, colors):
+            self.add_cluster(cluster, group, color)
+
     def add_group(self, group, name, color):
         if group not in self.group_colors.index:
             self.group_colors = self.group_colors.append(

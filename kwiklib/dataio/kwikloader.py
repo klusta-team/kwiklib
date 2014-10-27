@@ -311,6 +311,18 @@ class KwikLoader(Loader):
             id=cluster, color=color, cluster_group=group)
         
         self.read_clusters()
+
+    def add_clusters(self, clusters, groups, colors):
+        # if cluster not in self.cluster_groups.index:
+            # self.cluster_groups = self.cluster_groups.append(
+                # pd.Series([group], index=[cluster])).sort_index()
+        # if cluster not in self.cluster_colors.index:
+            # self.cluster_colors = self.cluster_colors.append(
+                # pd.Series([color], index=[cluster])).sort_index()
+        for cluster, group, color in zip(clusters, groups, colors):
+            self.experiment.channel_groups[self.shank].clusters.main.add_cluster(
+                id=cluster, color=color, cluster_group=group)
+        self.read_clusters()
         
     def add_group(self, group, name, color):
         # if group not in self.group_colors.index:
