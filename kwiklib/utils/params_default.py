@@ -25,6 +25,7 @@ save_low = True
 # signal across the whole recording.
 nexcerpts = 50
 excerpt_size = int(1. * sample_rate)
+use_single_threshold = True
 threshold_strong_std_factor = 4.5
 threshold_weak_std_factor = 2.
 detect_spikes = 'negative'
@@ -45,6 +46,12 @@ nfeatures_per_channel = 3  # Number of features per channel.
 pca_nwaveforms_max = 10000
 features_contiguous = True  # Whether to make the features array contiguous
 
+# Put a NumPy array here if you don't want the PCs to be computed
+# automatically from the filtered waveforms. This is normally obtained with
+# compute_pcs(waveforms, npcs=npcs). This array size should be
+# (npcs, nsamples, nchannels).
+canonical_pcs = None
+
 #Waveform alignment
 # -----------------
 weight_power = 2
@@ -54,22 +61,22 @@ weight_power = 2
 # KlustaKwik parameters #
 #########################
 MaskStarts = 100
-#MinClusters = 100 
+#MinClusters = 100
 #MaxClusters = 110
 MaxPossibleClusters =  500
 FullStepEvery =  10
 MaxIter = 10000
 RandomSeed =  654
 Debug = 0
-SplitFirst = 20 
-SplitEvery = 100 
+SplitFirst = 20
+SplitEvery = 100
 PenaltyK = 0
 PenaltyKLogN = 1
 Subset = 1
 PriorPoint = 1
 SaveSorted = 0
 SaveCovarianceMeans = 0
-UseMaskedInitialConditions = 1 
+UseMaskedInitialConditions = 1
 AssignToFirstClosestMask = 1
 UseDistributional = 1
 
