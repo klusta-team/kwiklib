@@ -15,7 +15,7 @@ import tempfile
 from kwiklib.utils.colors import COLORS_COUNT
 from kwiklib.dataio import (save_binary, save_text, check_dtype, 
     check_shape, save_cluster_info, save_group_info)
-import kwiklib.utils.logger as log
+from kwiklib.utils import logger as log
 
 
 # -----------------------------------------------------------------------------
@@ -37,9 +37,9 @@ fetdim = 3
 duration = 1.
 freq = 20000.
 
-TEST_FOLDER = os.path.join(tempfile.gettempdir(), 'kwik')
-if not os.path.exists(TEST_FOLDER):
-    os.mkdir(TEST_FOLDER)
+TEST_FOLDER = tempfile.mkdtemp()
+# if not os.path.exists(TEST_FOLDER):
+    # os.mkdir(TEST_FOLDER)
 
 
 # -----------------------------------------------------------------------------
@@ -218,34 +218,15 @@ def setup():
              'name': group_names}, 
          index=np.arange(ngroups))
          
-    # channel_colors = create_channel_colors(nchannels)
-    # channel_groups = create_channel_groups(nchannels)
-    # channel_names = create_channel_names(nchannels)
-    # channel_info = pd.DataFrame(
-    #      {'color': channel_colors, 
-    #       'group': channel_groups}, 
-    #   dtype=np.int32,
-    #   index=np.unique(channels))
-    # 
-    # channel_group_colors = create_channel_group_colors(ngroups)
-    # channel_group_names = create_channel_group_names(ngroups)
-    # channel_group_info = pd.DataFrame(
-    #      {'color': channel_group_colors, 
-    #       'name': channel_group_names}, 
-    #   index=np.arange(ngroups))
-         
     masks = create_masks(nspikes, nchannels, fetdim)
     xml = create_xml(nchannels, nsamples, fetdim)
     probe = create_probe(nchannels)
-    
     
     # Create mock files.
     save_binary(os.path.join(dir, 'test.spk.1'), waveforms)
     save_text(os.path.join(dir, 'test.fet.1'), features,
         header=nchannels * fetdim + 1)
     save_text(os.path.join(dir, 'test.aclu.1'), clusters, header=nclusters)
-    # save_cluster_info(os.path.join(dir, 'test.acluinfo.1'), cluster_info)
-    # save_group_info(os.path.join(dir, 'test.groupinfo.1'), group_info)
     save_text(os.path.join(dir, 'test.clu.1'), clusters, header=nclusters)
     save_text(os.path.join(dir, 'test.fmask.1'), masks, header=nclusters,
         fmt='%.6f')

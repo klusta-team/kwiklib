@@ -86,7 +86,6 @@ def renumber_clusters(clusters, cluster_info):
         index=(np.arange(nclusters) + 2))
     return clusters_renumbered, cluster_info_reordered
 
-
 # -----------------------------------------------------------------------------
 # Generic Loader class
 # -----------------------------------------------------------------------------
@@ -341,7 +340,15 @@ class Loader(QtCore.QObject):
 
     def get_channel_group_names(self, channel_groups=None):
         return select(self.channel_group_names, channel_groups)
+
+    # Access to the data: channel traces
+    # ----------------------------------
+    def get_traces(self):
+        return select(self.raw)
         
+    def get_freq(self):
+        return select(self.freq)
+    
     # Access to the data: misc
     # ------------------------
     def get_probe(self):
@@ -355,7 +362,7 @@ class Loader(QtCore.QObject):
     
     def get_next_cluster(self, cluster):
         cluster_groups = self.get_cluster_groups('all')
-        group = self.get_cluster_groups(cluster)
+        group = get_array(self.get_cluster_groups(cluster))
         clusters = get_indices(cluster_groups)
         cluster_groups = get_array(cluster_groups)
         samegroup = (cluster_groups == group) & (clusters > cluster)
@@ -412,6 +419,10 @@ class Loader(QtCore.QObject):
             self.cluster_colors = self.cluster_colors.append(
                 pd.Series([color], index=[cluster])).sort_index()
         
+    def add_clusters(self, clusters, groups, colors):
+        for cluster, group, color in zip(clusters, groups, colors):
+            self.add_cluster(cluster, group, color)
+
     def add_group(self, group, name, color):
         if group not in self.group_colors.index:
             self.group_colors = self.group_colors.append(

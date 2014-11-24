@@ -15,7 +15,7 @@ import numpy as np
 loglevel = logging.INFO
 
 # Level of the logging file. DEBUG, INFO or WARNING, or just None to disable.
-loglevel_file = logging.DEBUG
+loglevel_file = logging.INFO
 
 
 # -----------------------------------------------------------------------------
@@ -36,7 +36,7 @@ similarity_measure = 'gaussian'  # or 'kl' for KL divergence
 # -----------------------------------------------------------------------------
 # Waveform view
 # -----------------------------------------------------------------------------
-# Approximate maximum number of spikes to show. Should be
+# Approximate maximum number of spikes pper cluster to show. Should be
 # about 100 for low-end graphics cards, 1000 for high-end ones.
 waveforms_nspikes_max_expected = 100
 
@@ -81,6 +81,8 @@ features_info_time_unit = 'second'
 # -----------------------------------------------------------------------------
 # Maximum number of clusters to show in the correlograms view.
 correlograms_max_nclusters = 20
+correlograms_nexcerpts = 100
+correlograms_excerpt_size = 20000
 
 
 # -----------------------------------------------------------------------------

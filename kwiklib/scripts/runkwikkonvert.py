@@ -6,12 +6,7 @@ import os
 import sys
 import re
 
-import numpy as np
-
-from kwiklib.dataio import (paramspy_to_json, load_params_json, load_prm, 
-    params_to_json, load_prb)
-from kwiklib.dataio.kwikkonvert import kwikkonvert
-import kwiklib.utils.logger as log
+from kwiklib.dataio import klusters_to_kwik
 
 
 # -----------------------------------------------------------------------------
@@ -24,29 +19,35 @@ Kwik format.
 
 """
 
+# -----------------------------------------------------------------------------
+# Function
+# -----------------------------------------------------------------------------
+def progress_report(spike, nspikes, shank, nshanks):
+    if spike == 1:
+        sys.stdout.write("Shank {0:d}/{0:d}...\n".format(shank+1, nshanks))
+    if spike < nspikes:
+        sys.stdout.write("\r%d%%" % (100*float(spike)/nspikes))
+    else:
+        sys.stdout.write("\r\n")
+    sys.stdout.flush()
 
-# -----------------------------------------------------------------------------
-# Main function
-# -----------------------------------------------------------------------------
 def main():
     # Parse the arguments.
     parser = argparse.ArgumentParser(description=DESCRIPTION)
-    parser.add_argument('prm', metavar='PRM_filename', type=str, nargs=1,
-                       help=("The (absolute or relative) path to the "
-                             "PRM file, containing all parameters"))
-    parser.add_argument('--overwrite', action='store_true',
-                       help='Overwrite the KWD file if it already exists')
-    parser.add_argument('--verbose', action='store_true',
-                       help='Display information during the conversion')
+    parser.add_argument('xmlpath', type=str, #nargs=1,
+                       help=("The path to the XML file"))
     args = parser.parse_args()
+    filename = args.xmlpath
     
-    # Get the PRM filename.
-    assert len(args.prm) == 1
-    prm_filename = os.path.abspath(args.prm[0])
+    assert filename, ArgumentError("Please provide the path to the XML file.")
     
-    kwikkonvert(prm_filename, overwrite=args.overwrite, verbose=True)
-
+    dir, filename = os.path.split(filename)
+    base, ext = os.path.splitext(filename)
+    
+    assert ext == '.xml', ArgumentError("The file needs to be a valid XML file.")
+    
+    klusters_to_kwik(filename=filename, dir=dir, progress_report=progress_report)
+    
 if __name__ == '__main__':
     main()
-
 

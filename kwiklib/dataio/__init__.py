@@ -1,11 +1,15 @@
-from params import *
-from probe import *
+# FROM KWIK
 from tools import *
-from selection import *
-from loader import *
 from klustersloader import *
-from hdf5tools import *
-from hdf5loader import *
-from auxtools import *
-from tracetools import *
+from kwikloader import *
 
+from probe import *
+from kwik import *
+from klusterskwik import *
+from utils import *
+from raw import *
+from chunks import *
+from selection import *
+from spikecache import *
+from experiment import *
+from tests import *

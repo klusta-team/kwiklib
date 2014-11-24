@@ -1,4 +1,6 @@
-Shared features
-===============
+Kwiklib
+=======
 
-Shared features between the projects (files, statistics, utils...)
+Functionality related to the Kwik file format, part of the KlustaSuite.
+
+

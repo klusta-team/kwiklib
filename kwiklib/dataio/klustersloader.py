@@ -11,7 +11,6 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 import pandas as pd
-from qtools import QtGui, QtCore
 
 from loader import (Loader, default_group_info, reorder, renumber_clusters,
     default_cluster_info)
@@ -54,14 +53,15 @@ def find_indices(filename, dir='', files=[]):
             break
     
     # get the full path
+    dir = dir.strip()
     if not dir:
-        dir = os.path.dirname(filename)
+        dir = os.path.dirname(os.path.realpath(filename))
     filename = os.path.basename(filename)
     # try obtaining the list of all files in the directory
     if not files:
         try:
             files = os.listdir(dir)
-        except (WindowsError, OSError, IOError):
+        except (OSError, IOError):
             raise IOError("Error when accessing '{0:s}'.".format(dir))
     
     # If the requested filename does not have a file index, then get the 
@@ -105,14 +105,15 @@ def find_filename(filename, extension_requested, dir='', files=[]):
             break
     
     # get the full path
+    dir = dir.strip()
     if not dir:
-        dir = os.path.dirname(filename)
+        dir = os.path.dirname(os.path.realpath(filename))
     filename = os.path.basename(filename)
     # try obtaining the list of all files in the directory
     if not files:
         try:
             files = os.listdir(dir)
-        except (WindowsError, OSError, IOError):
+        except (OSError, IOError):
             raise IOError("Error when accessing '{0:s}'.".format(dir))
     
     # If the requested filename does not have a file index, then get the 
@@ -156,14 +157,15 @@ def find_filename(filename, extension_requested, dir='', files=[]):
 
 def find_any_filename(filename, extension_requested, dir='', files=[]):
     # get the full path
+    dir = dir.strip()
     if not dir:
-        dir = os.path.dirname(filename)
+        dir = os.path.dirname(os.path.realpath(filename))
     
     # try obtaining the list of all files in the directory
     if not files:
         try:
             files = os.listdir(dir)
-        except (WindowsError, OSError, IOError):
+        except (OSError, IOError):
             raise IOError("Error when accessing '{0:s}'.".format(dir))
     
     filtered = filter(lambda f: f.endswith('.' + extension_requested), files)
@@ -183,10 +185,10 @@ def find_filename_or_new(filename, extension_requested,
             file, fileindex = os.path.splitext(filename)
             try:
                 fileindex = int(fileindex[1:])
+                file = '.'.join(file.split('.')[:-1])
             except:
                 # We request a filename with a file index but none exists.
                 fileindex = 1
-            file = '.'.join(file.split('.')[:-1])
             filename_new = "{0:s}.{1:s}.{2:d}".format(file, 
                 extension_requested, int(fileindex))
         else:
@@ -289,6 +291,19 @@ def read_xml(filename_xml, fileindex=1):
     if 'nchannels' not in d:
         d['nchannels'] = d['total_channels']
     
+    if 'nsamples' not in d:
+        ne = root.find('neuroscope')
+        if ne is not None:
+            sp = ne.find('spikes')
+            if sp is not None:
+                ns = sp.find('nSamples')
+                if ns is not None:
+                    d['nsamples'] = int(ns.text)
+    
+    # If no nFeatures, default to 3 (really old XML from Neuroscope).
+    if 'fetdim' not in d:
+        d['fetdim'] = 3
+    
     # klusters tests
     metadata = dict(
         nchannels=d['nchannels'],
@@ -314,8 +329,6 @@ def process_features(features, fetdim, nchannels, freq, nfet=None):
     # normalize normal features while keeping symmetry
     features_normal = normalize(features[:,:fetdim * nchannels],
                                         symmetric=True)
-    # TODO: put the following line in FeatureView: it is necessary for correct
-    # normalization of the times.
     features_time = spiketimes.reshape((-1, 1)) * 1. / spiketimes[-1] * 2 - 1
     # features_time = spiketimes.reshape((-1, 1)) * 1. / spiketimes[-1]# * 2 - 1
     # normalize extra features without keeping symmetry

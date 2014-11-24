@@ -4,7 +4,7 @@ format."""
 # -----------------------------------------------------------------------------
 # Imports
 # -----------------------------------------------------------------------------
-import json
+# import json
 import os
 import tables
 import time
@@ -12,54 +12,26 @@ import shutil
 from collections import OrderedDict
 
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-from probe import probe_to_json, all_to_all_probe, load_probe_json
-from params import paramsxml_to_json
+from probe import old_to_new
+# from params import paramsxml_to_json
 from klustersloader import (find_filenames, find_index, read_xml,
     filename_to_triplet, triplet_to_filename, find_indices,
     find_hdf5_filenames, find_filename, find_any_filename, 
     find_filename_or_new,
     read_clusters, read_cluster_info, read_group_info,)
 from loader import (default_cluster_info, default_group_info)
-from auxtools import kwa_to_json, write_kwa
+# from auxtools import kwa_to_json, write_kwa
 from tools import MemMappedText, MemMappedBinary
+from utils import convert_dtype
+from kwik import (create_files, open_files, close_files, add_spikes, 
+    to_contiguous, add_cluster, add_cluster_group)
+from probe import generate_probe
 
-
-# Table descriptions.
-# -------------------
-def get_spikes_description(fetcol=None):
-    spikes_description = OrderedDict([
-        ('time', tables.UInt64Col()),
-        ('features', tables.Float32Col(shape=(fetcol,))),
-        ('cluster_auto', tables.UInt32Col()),
-        ('cluster_manual', tables.UInt32Col()),
-        ('masks', tables.UInt8Col(shape=(fetcol,))),])
-    return spikes_description
-    
-def get_waveforms_description(nsamples=None, nchannels=None, has_umask=None):
-    waveforms_description = OrderedDict([
-        ('waveform_filtered', tables.Int16Col(shape=(nsamples * nchannels))),
-        ('waveform_unfiltered', tables.Int16Col(shape=(nsamples * nchannels))),
-        ])
-    return waveforms_description
-    
-def get_clusters_description():
-    clusters_description = OrderedDict([
-        ('cluster', tables.UInt32Col()),
-        ('group', tables.UInt8Col()),])
-    return clusters_description
-    
-def get_groups_description():
-    groups_description = OrderedDict([
-        ('group', tables.UInt8Col()),
-        # ('color', tables.UInt8Col()),
-        ('name', tables.StringCol(64)),])
-    return groups_description
-    
 
 # -----------------------------------------------------------------------------
-# HDF5 helper functions
+# Klusters files readers
 # -----------------------------------------------------------------------------
 def open_klusters_oneshank(filename):
     filenames = find_filenames(filename)
@@ -134,11 +106,17 @@ def open_klusters(filename):
     metadata.update({shank: read_xml(filenames['xml'], shank)
         for shank in shanks})
     metadata['shanks'] = sorted(shanks)
+    metadata['has_masks'] = (('mask' in filenames 
+                                    and filenames['mask'] is not None) or (
+                                  'fmask' in filenames 
+                                    and filenames['fmask'] is not None
+                                  ))
     
+    klusters_data['name'] = triplet[0]
     klusters_data['metadata'] = metadata
     klusters_data['shanks'] = shanks
     klusters_data['filenames'] = filenames
-
+    
     # Load probe file.
     filename_probe = filenames['probe']
     # It no probe file exists, create a default, linear probe with the right
@@ -149,134 +127,48 @@ def open_klusters(filename):
             have_file_index=False)
         shanks = {shank: klusters_data[shank]['nchannels']
             for shank in filenames_shanks.keys()}
-        probe_python = all_to_all_probe(shanks)
-        with open(filename_probe, 'w') as f:
-            f.write(probe_python)
-        
-    probe_ns = {}
-    execfile(filename_probe, {}, probe_ns)
-    klusters_data['probe'] = probe_ns
-
+        probe_python = generate_probe(shanks, 'complete')
+        # with open(filename_probe, 'w') as f:
+            # f.write(probe_python)
+        # save_probe(filename_probe, probe_python)
+        klusters_data['prb'] = probe_python
+    else:
+        probe_ns = {}
+        execfile(filename_probe, {}, probe_ns)
+        klusters_data['probe'] = probe_ns
+    
     return klusters_data
 
-def write_metadata(file, params_json='', probe_json=''):
-    assert file.isopen
+def probe_to_prb(probe):
+    return old_to_new(probe)
     
-    # Create the group only if necessary.
-    if '/metadata' not in file:
-        file.createGroup('/', 'metadata')
+def metadata_to_prm(metadata):
+    return dict(
+        nchannels=metadata['nchannels'],
+        sample_rate=metadata['freq'],
+        waveforms_nsamples=metadata['nsamples'],
+        nfeatures_per_channel=metadata['fetdim'],
+        has_masks=metadata['has_masks'],
+    )
+   
 
-    # Put the version number.
-    file.setNodeAttr('/', 'VERSION', 1)
-
-    file.setNodeAttr('/metadata', 'PRB_JSON', probe_json)
-    file.setNodeAttr('/metadata', 'PRM_JSON', params_json)
-
-    # Get and set the list of shanks.
-    probe = load_probe_json(probe_json)
-    if probe:
-        shanks = np.unique(probe['shanks_list'])
-    else:
-        shanks = np.zeros(0, dtype=np.int32)
-    file.setNodeAttr('/metadata', 'SHANKS', shanks)
-    
-def create_hdf5_files(filename, klusters_data):
-    hdf5 = {}
-    
-    hdf5_filenames = find_hdf5_filenames(filename)
-    
-    # Create the HDF5 file.
-    hdf5['kwik'] = tables.openFile(hdf5_filenames['hdf5_kwik'], mode='w')
-    
-    # Write metadata.
-    for file in [hdf5['kwik']]:#, hdf5['raw.kwd']]:
-        write_metadata(file, 
-            probe_json=probe_to_json(klusters_data['probe']), 
-            params_json=paramsxml_to_json(klusters_data['metadata']))
-
-    file = hdf5['kwik']
-    file.createGroup('/', 'shanks')
-    
-    shanks = klusters_data['shanks']
-    # Create groups and tables for each shank.
-    for shank in shanks:
-        data = klusters_data[shank]
-        
-        shank_path = '/shanks/shank{0:d}'.format(shank)
-        
-        # Create the /shanks/shank<X> groups in each file.
-        file = hdf5['kwik']
-        file.createGroup('/shanks', 'shank{0:d}'.format(shank))
-        
-        
-        # Create the cluster table.
-        # -------------------------
-        hdf5['cluster_table', shank] = hdf5['kwik'].createTable(
-            shank_path, 'clusters', 
-            get_clusters_description())
-            
-        # Fill the table.
-        if 'acluinfo' in data:
-            for cluster, clusterinfo in data['acluinfo'].iterrows():
-                row = hdf5['cluster_table', shank].row
-                row['cluster'] = cluster
-                # row['color'] = clusterinfo['color']
-                row['group'] = clusterinfo['group']
-                row.append()
-            
-            
-        # Create the group table.
-        # -----------------------
-        hdf5['group_table', shank] = hdf5['kwik'].createTable(
-            shank_path, 'groups_of_clusters', 
-            get_groups_description())
-            
-        # Fill the table.
-        if 'groupinfo' in data:
-            for group, groupinfo in data['groupinfo'].iterrows():
-                row = hdf5['group_table', shank].row
-                row['group'] = group
-                # row['color'] = groupinfo['color']
-                row['name'] = groupinfo['name']
-                row.append()
-               
-               
-        # Create the spike table.
-        # -----------------------
-        hdf5['spike_table', shank] = hdf5['kwik'].createTable(
-            shank_path, 'spikes', 
-            get_spikes_description(
-                fetcol=data['fetcol'],
-                ))
-                
-                
-        # Create the wave table.
-        # ----------------------
-        hdf5['wave_table', shank] = hdf5['kwik'].createTable(
-            shank_path, 'waveforms', 
-            get_waveforms_description(
-                nsamples=data['nsamples'],
-                nchannels=data['nchannels'],
-                # has_umask=('uspk' in data)
-                ))
-        
-    return hdf5
-
-def klusters_to_hdf5(filename, progress_report=None):
-    with HDF5Writer(filename) as f:
+# -----------------------------------------------------------------------------
+# HDF5 writer
+# ----------------------------------------------------------------------------- 
+def klusters_to_kwik(filename=None, dir='.', progress_report=None):
+    with KwikWriter(filename, dir=dir) as f:
         # Callback function for progress report.
         if progress_report is not None:
             f.progress_report(progress_report)
         f.convert()
-    
-   
-# -----------------------------------------------------------------------------
-# HDF5 writer
-# ----------------------------------------------------------------------------- 
-class HDF5Writer(object):
-    def __init__(self, filename=None):
+
+class KwikWriter(object):
+    def __init__(self, filename=None, dir=None):
         self._progress_callback = None
         self.filename = filename
+        self.dir = dir
+        if dir:
+            self.filename = os.path.join(dir, filename)
         
     def __enter__(self):
         if self.filename:
@@ -288,12 +180,24 @@ class HDF5Writer(object):
             self.filename = filename
         self.klusters_data = open_klusters(self.filename)
         self.filenames = self.klusters_data['filenames']
+        self.name = self.klusters_data['name']
         
         # Backup the original CLU file.
         filename_clu_original = find_filename_or_new(self.filename, 'clu_original')
         shutil.copyfile(self.filenames['clu'], filename_clu_original)
         
-        self.hdf5_data = create_hdf5_files(self.filename, self.klusters_data)
+        if 'probe' in self.klusters_data:
+            prb = probe_to_prb(self.klusters_data['probe'])
+        else:
+            prb = self.klusters_data['prb']
+        prm = metadata_to_prm(self.klusters_data['metadata'])
+        
+        for chgrp in prb.keys():
+            prb[chgrp]['nfeatures'] = self.klusters_data[chgrp]['fetcol']
+        
+        self.filenames_kwik = create_files(self.name, prm=prm, prb=prb)
+        self.files = open_files(self.name, mode='a')
+        
         self.shanks = sorted([key for key in self.klusters_data.keys() 
             if isinstance(key, (int, long))])
         self.shank = self.shanks[0]
@@ -305,39 +209,38 @@ class HDF5Writer(object):
         data = self.klusters_data[self.shank]
         read = {}
         read['cluster'] = data['aclu'][self.spike]
-        read['fet'] = data['fet'].next()
-        read['time'] = read['fet'][-1]
+        fet = data['fet'].next()
+        read['time'] = fet[-1]
+        read['fet'] = convert_dtype(fet, np.float32)
         if 'spk' in data:
             read['spk'] = data['spk'].next()
+        if 'uspk' in data:
+            read['uspk'] = data['uspk'].next()
         if 'mask' in data:
             read['mask'] = data['mask'].next()
-        else:
-            read['mask'] = np.ones_like(read['fet'])
+        # else:
+            # read['mask'] = np.ones_like(read['fet'])
         self.spike += 1
         return read
         
     def write_spike(self, read):
+        wr = read.get('uspk', None)
+        wf = read.get('spk', None)
         
-        # Create the rows.
-        row_main = self.hdf5_data['spike_table', self.shank].row
-        row_wave = self.hdf5_data['wave_table', self.shank].row
-
-        # Fill the main row.
-        # We set both manual and auto clustering to the current CLU file.
-        row_main['cluster_manual'] = read['cluster']
-        row_main['cluster_auto'] = read['cluster']
-        row_main['features'] = read['fet']
-        row_main['time'] = read['time']
-        # if 'mask' in read:
-        row_main['masks'] = (read['mask'] * 255).astype(np.uint8)
-        row_main.append()
+        if wr is not None:
+            wr = wr.reshape((1, -1, self.nchannels))
+        if wf is not None:
+            wf = wf.reshape((1, -1, self.nchannels))
         
-        # Fill the wave row.
-        if 'spk' in read:
-            row_wave['waveform_filtered'] = read['spk']
-        if 'uspk' in read:
-            row_wave['waveform_unfiltered'] = read['uspk']
-        row_wave.append()
+        add_spikes(self.files, channel_group_id=str(self.shank),
+            time_samples=read['time'],
+            cluster=read['cluster'], 
+            cluster_original=read['cluster'],
+            features=read['fet'], 
+            masks=read.get('mask', None),
+            waveforms_raw=wr, 
+            waveforms_filtered=wf,
+            fill_empty=False)
 
     def report_progress(self):
         if self._progress_callback:
@@ -347,22 +250,35 @@ class HDF5Writer(object):
                 self.shanks.index(self.shank),
                 len(self.shanks))
         
-    def write_kwa(self):
-        kwa = {}
-        kwa['shanks'] = {
-            shank: dict(
-                cluster_colors=self.klusters_data[shank]['acluinfo']['color'],
-                group_colors=self.klusters_data[shank]['groupinfo']['color'],
-            ) for shank in self.shanks
-        }
-        write_kwa(self.filenames['hdf5_kwa'], kwa)
-        
     def convert(self):
         """Convert the old file format to the new HDF5-based format."""
-        # Write the KWA file.
-        self.write_kwa()
         # Convert in HDF5 by going through all spikes.
         for self.shank in self.shanks:
+            self.nchannels = self.klusters_data[self.shank]['nchannels']
+            
+            # Write cluster info.
+            acluinfo = self.klusters_data[self.shank]['acluinfo']
+            groupinfo = self.klusters_data[self.shank]['groupinfo']
+            
+            for clustering in ('main', 'original'):
+                for clu, info in acluinfo.iterrows():
+                    add_cluster(self.files,
+                        channel_group_id=str(self.shank), 
+                        id=str(clu),
+                        cluster_group=info['group'],
+                        color=info['color'],
+                        clustering=clustering)
+                
+                # Write cluster group info.
+                for clugrp, info in groupinfo.iterrows():
+                    add_cluster_group(self.files,
+                        channel_group_id=str(self.shank), 
+                        id=str(clugrp), 
+                        name=info['name'], 
+                        color=info['color'],
+                        clustering=clustering)
+            
+            # Write spike data.
             self.spike = 0
             read = self.read_next_spike()
             self.report_progress()
@@ -370,6 +286,10 @@ class HDF5Writer(object):
                 self.write_spike(read)
                 read = self.read_next_spike()
                 self.report_progress()
+                
+            # Convert features masks array from chunked to contiguous
+            node = self.files['kwx'].root.channel_groups.__getattr__(str(self.shank)).features_masks
+            to_contiguous(node, self.spike)
         
     def progress_report(self, fun):
         self._progress_callback = fun
@@ -385,21 +305,12 @@ class HDF5Writer(object):
                     if isinstance(data, (MemMappedBinary, MemMappedText)):
                         data.close()
         
-        # # Close the KWA file.
-        # if self.hdf5_data['kwa']:
-            # self.hdf5_data['kwa'].close()
-        
-        # Close the HDF5 files.
-        if self.hdf5_data['kwik'].isopen:
-            self.hdf5_data['kwik'].flush()
-            self.hdf5_data['kwik'].close()
+        close_files(self.files)
         
     def __del__(self):
         self.close()
         
     def __exit__(self, exception_type, exception_val, trace):
         self.close()
-
-
 
 

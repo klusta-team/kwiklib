@@ -1,21 +1,12 @@
-"""This module provides functions used to load probe files."""
+"""This module provides functions used to generate and load probe files."""
 
 # -----------------------------------------------------------------------------
 # Imports
 # -----------------------------------------------------------------------------
-import json
 import os
 import pprint
-import tables
-import time
+import itertools
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-from klustersloader import (find_filenames, find_index, read_xml,
-    filename_to_triplet, triplet_to_filename, find_indices,
-    find_hdf5_filenames,
-    read_clusters, read_cluster_info, read_group_info,)
 from tools import MemMappedText, MemMappedBinary
 
 
@@ -25,44 +16,48 @@ from tools import MemMappedText, MemMappedBinary
 def flatten(l):
     return sorted(set([item for sublist in l for item in sublist]))
 
-def linear_probe(shanks):
-    """shanks is a dict {shank: nchannels}."""
-    # Linear graph.
-    graph = {shank: [(i, (i + 1)) for i in xrange(nchannels - 1)] 
-        for shank, nchannels in shanks.iteritems()}
-    # Linear geometry.
-    geometry = {
-        shank:
-            {channel: (0., float(channel)) for channel in xrange(nchannels)}
-                for shank, nchannels in shanks.iteritems()}
+def generate_probe(channel_groups, topology='linear'):
+    """channel_groups is a dict {channel_group: nchannels}."""
     
-    probe_python = "probes = {0:s}\ngeometry = {1:s}\n".format(
-        pprint.pformat(graph, indent=4),
-        pprint.pformat(geometry, indent=4),
-    )
-    return probe_python
+    if not isinstance(channel_groups, dict):
+        channel_groups = {0: channel_groups}
     
-def all_to_all_probe(shanks):
-    """shanks is a dict {shank: nchannels}."""
-    # All-to-all graph.
-    graph = {shank: [(i, j) 
-        for i in xrange(nchannels) 
-            for j in xrange(i + 1, nchannels)] 
-                for shank, nchannels in shanks.iteritems()}
-    # Linear geometry.
-    geometry = {
-        shank:
-            {channel: (0., float(channel)) for channel in xrange(nchannels)}
-                for shank, nchannels in shanks.iteritems()}
+    groups = sorted(channel_groups.keys())
+    r = {}
+    curchannel = 0
+    for i in range(len(groups)):
+        id = groups[i]  # channel group index
+        n = channel_groups[id]  # number of channels
+        
+        channels = range(curchannel, curchannel + n)
+        
+        if topology == 'linear':
+            graph = [[ch, ch + 1] for ch in channels[:-1]]
+        elif topology == 'complete':
+            graph = map(list, list(itertools.product(channels, repeat=2)))
+        
+        geometry = {channels[_]: [float(i), float(_)]
+                    for _ in range(n)}
+        
+        d = {'channels': channels,
+             'graph': graph,
+             'geometry': geometry,
+            }
+        r[id] = d
+        curchannel += n
+    return r     
     
-    probe_python = "probes = {0:s}\ngeometry = {1:s}\n".format(
-        pprint.pformat(graph, indent=4),
-        pprint.pformat(geometry, indent=4),
-    )
-    return probe_python
+def load_probe(filename):
+    prb = {}
+    execfile(filename, {}, prb)
+    return prb['channel_groups']
     
-def probe_to_json(probe_ns):
-    """Convert from the old Python .probe file to the new JSON format."""
+def save_probe(filename, prb):
+    with open(filename, 'w') as f:
+        f.write('channel_groups = ' + str(prb))
+    
+def old_to_new(probe_ns):
+    """Convert from the old Python .probe format to the new .PRB format."""
     graph = probe_ns['probes']
     shanks = sorted(graph.keys())
     if 'geometry' in probe_ns:
@@ -75,63 +70,23 @@ def probe_to_json(probe_ns):
     channels = flatten(shank_channels.values())
     nchannels = len(channels)
     # Create JSON dictionary.
-    json_dict = {
-        # 'nchannels': nchannels,
-        # 'channel_names': {channel: 'ch{0:d}'.format(channel) 
-            # for channel in channels},
-        # 'ignored_channels': [],
-        'shanks': [
-                    {
-                        'shank_index': shank,
-                        'channels': shank_channels[shank],
-                        'graph': graph[shank],
-                    }
-                    for shank in shanks
-                  ]
+    channel_groups = {
+        shank: {
+                    'channels': shank_channels[shank],
+                    'graph': graph[shank],
+                }
+                for shank in shanks
             }
     # Add the geometry if it exists.
     if geometry:
         # Find out if there's one geometry per shank, or a common geometry
         # for all shanks.
-        multiple = shank in geometry and isinstance(geometry[shank], dict)
-        for shank_dict in json_dict['shanks']:
-            shank = shank_dict['shank_index']
+        for k, d in channel_groups.iteritems():
+            multiple = k in geometry and isinstance(geometry[k], dict)
             if multiple:
-                shank_dict['geometry'] = geometry[shank]
+                d['geometry'] = geometry[k]
             else:
-                shank_dict['geometry'] = geometry
-    return json.dumps(json_dict, indent=4)
-    
-def load_probe_json(probe_json):
-    if not probe_json:
-        return None
-    probe_dict = json.loads(probe_json)
-    probe = {}
-    probe['shanks'] = []
-    # Process all shanks.
-    for shank_dict in probe_dict['shanks']:
-        # Convert the geometry dictionary into an array.
-        if 'geometry' in shank_dict:
-            # Convert the keys from strings to integers.
-            shank_dict['geometry'] = {int(key): val 
-                for key, val in shank_dict['geometry'].iteritems()}
-            # Create the geometry array with alive channels only.
-            shank_dict['geometry_array'] = np.array(
-                [shank_dict['geometry'][key] 
-                    for key in sorted(shank_dict['geometry'].keys())
-                            ], 
-                dtype=np.float32)
-        shank_index = shank_dict['shank_index']
-        probe[shank_index] = shank_dict
-        probe['shanks'].append(shank_index)
-    probe['shanks_list'] = sorted(probe['shanks'])
-    return probe
-    
-def load_prb(prb_filename):
-    with open(prb_filename, 'r') as f:
-        probe_json = f.read()
-    # Parse the JSON parameters file.
-    return load_probe_json(probe_json)
+                d['geometry'] = geometry
+    return channel_groups
     
     
-

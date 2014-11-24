@@ -7,86 +7,98 @@ from collections import Counter
 
 import numpy as np
 import pandas as pd
+import tables as tb
 
 
 # -----------------------------------------------------------------------------
 # Selection functions
 # -----------------------------------------------------------------------------
-def select_numpy(data, spikes):
-    """Select a portion of an array with the corresponding spike indices.
-    The first axis of data corresponds to the spikes."""
+def select_numpy(data, indices):
+    """Select a portion of an array with the corresponding indices.
+    The first axis of data corresponds to the indices."""
     
-    if not hasattr(spikes, '__len__'):
-        return data[spikes, ...]
+    if not hasattr(indices, '__len__'):
+        return data[indices, ...]
     
-    if type(spikes) == list:
-        spikes = np.array(spikes)
+    if type(indices) == list:
+        indices = np.array(indices)
     
     assert isinstance(data, np.ndarray)
-    assert isinstance(spikes, np.ndarray)
+    assert isinstance(indices, np.ndarray)
     
-    # spikes can contain boolean masks...
-    if spikes.dtype == np.bool:
-        data_selection = np.compress(spikes, data, axis=0)
-    # or spike indices.
+    # indices can contain boolean masks...
+    if indices.dtype == np.bool:
+        data_selection = np.compress(indices, data, axis=0)
+    # or indices.
     else:
-        data_selection = np.take(data, spikes, axis=0)
+        data_selection = np.take(data, indices, axis=0)
     return data_selection
 
-def select_pandas(data, spikes, drop_empty_rows=True):
-    
-    if isinstance(spikes, slice):
-        return np.array(data.iloc[spikes]).squeeze()
-    elif not hasattr(spikes, '__len__'):
+def select_pandas(data, indices, drop_empty_rows=True):
+    if isinstance(indices, slice):
+        return np.array(data.iloc[indices]).squeeze()
+    elif not hasattr(indices, '__len__'):
         try:
-            return np.array(data.ix[spikes]).squeeze()
+            return np.array(data.ix[indices]).squeeze()
         except KeyError:
             raise IndexError("Index {0:d} is not in the data.".format(
-                spikes))
-        
+                indices))
+    
     try:
         # Remove empty rows.
-        data_selected = data.ix[spikes]
+        data_selected = data.ix[indices]
     except IndexError:
         # This exception happens if the data is a view of the whole array,
-        # and `spikes` is an array of booleans adapted to the whole array and 
-        # not to the view. So we convert `spikes` into an array of indices,
+        # and `indices` is an array of booleans adapted to the whole array and 
+        # not to the view. So we convert `indices` into an array of indices,
         # so that Pandas can handle missing values.
-        data_selected = data.ix[np.nonzero(spikes)[0]]
+        data_selected = data.ix[np.nonzero(indices)[0]]
     if drop_empty_rows:
         data_selected = data_selected.dropna()
     return data_selected
-
-def pandaize(values, spikes):
-    """Convert a NumPy array to a Pandas object, with the spikes indices."""
-    # Get the spike indices.
-    if isinstance(spikes, slice):
-        spike_indices = np.arange(spikes.start, spikes.stop, spikes.step)
-    elif spikes.dtype == np.bool:
-        spike_indices = np.nonzero(spikes)[0]
-    else:
-        spike_indices = spikes
     
-    # Create the Pandas object with the spike indices.
+def slice_to_indices(indices, stop=None, lenindices=None, keys=None):
+    start, step = (indices.start or 0), (indices.step or 1)
+    if not stop:
+        assert lenindices is not None
+        # Infer stop such that indices and values have the same size.
+        stop = np.floor(start + step*lenindices)
+    indices = np.arange(start, stop, step).astype(np.int32)
+    if keys is not None:
+        indices = np.array(keys)[indices]
+    if not lenindices:
+        lenindices = len(indices)
+    assert len(indices) == lenindices
+    return indices
+
+def pandaize(values, indices):
+    """Convert a NumPy array to a Pandas object, with the indices indices.
+    values contains already selected data."""
+    if isinstance(indices, (int, long)):
+        indices = [indices]
+    if isinstance(indices, list):
+        indices = np.array(indices)
+    # Get the indices.
+    if isinstance(indices, slice):
+        indices = slice_to_indices(indices, lenindices=len(values))
+    elif indices.dtype == np.bool:
+        indices = np.nonzero(indices)[0]
+    
+    # Create the Pandas object with the indices.
     if values.ndim == 1:
-        pd_arr = pd.Series(values, index=spike_indices)
+        pd_arr = pd.Series(values, index=indices)
     elif values.ndim == 2:
-        pd_arr = pd.DataFrame(values, index=spike_indices)
+        pd_arr = pd.DataFrame(values, index=indices)
     elif values.ndim == 3:
-        pd_arr = pd.Panel(values, items=spike_indices)
+        pd_arr = pd.Panel(values, items=indices)
     return pd_arr
     
-def select_pytables(data, spikes):
-    if len(data) == 2:
-        table, column = data
-        process_fun = None
-    elif len(data) == 3:
-        table, column, process_fun = data
-    values = table[spikes][column]
+def select_pytables(data, indices, process_fun=None):
+    values = data[indices,...]
     # Process the NumPy array.
     if process_fun:
         values = process_fun(values)
-    return pandaize(values, spikes)
+    return pandaize(values, indices)
     
 def select(data, indices=None):
     """Select portion of the data, with the only assumption that indices are
@@ -102,9 +114,9 @@ def select(data, indices=None):
         else:
             return data
         
-    indices_argument = indices
     if not hasattr(indices, '__len__') and not isinstance(indices, slice):
         indices = [indices]
+    indices_argument = indices
         
     # Ensure indices is an array of indices or boolean masks.
     if not isinstance(indices, np.ndarray) and not isinstance(indices, slice):
@@ -129,13 +141,44 @@ def select(data, indices=None):
         if data.size == 0:
             return data
         return select_numpy(data, indices_argument)
-    elif type(data) == tuple:
-        return select_pytables(data, indices_argument)
-    else:
+    elif type(data) in (tuple, tb.EArray):
+        if type(data) == tuple:
+            data, process_fun = data
+        else:
+            process_fun = None
+        return select_pytables(data, indices_argument,
+                               process_fun=process_fun)
+    elif hasattr(data, 'values'):
         if data.values.size == 0:
             return data
         return select_pandas(data, indices_argument)
+    else:
+        return select_pytables(data, indices_argument)
+        
+        
+        
+        
+        
+# FROM KWIKLIB
 
+
+def get_indices(data):
+    # Convert list to array.
+    if type(data) == list:
+        data = np.array(data)
+    if type(data) == np.ndarray:
+        return np.arange(data.shape[0], dtype=np.int32)
+    elif type(data) == pd.Series:
+        return data.index
+    elif type(data) == pd.DataFrame:
+        return data.index
+    elif type(data) == pd.Panel:
+        return data.items
+        
+def to_array(data):
+    """Convert a Pandas object to a NumPy array."""
+    return np.atleast_1d(np.array(data).squeeze())
+    
 def select_pairs(data, indices=None, conjunction='and'):
     """Select all items in data where at least one of the key index is in 
     indices.
@@ -171,6 +214,8 @@ def get_some_spikes_in_clusters(clusters_selected, clusters, counter=None,
         nspikes_max_expected = 100
     if nspikes_per_cluster_min is None:
         nspikes_per_cluster_min = 5
+    if counter is None:
+        counter = np.bincount(clusters)
     
     nspikes = len(clusters)
     spikes = np.zeros(nspikes, dtype=np.bool)
@@ -235,21 +280,4 @@ def get_some_spikes(clusters,
     p = nspikes_max / float(len(spikes))
     k = max(int(1. / p), 1)
     return slice(0, len(spikes), k)
-    
-def get_indices(data):
-    # Convert list to array.
-    if type(data) == list:
-        data = np.array(data)
-    if type(data) == np.ndarray:
-        return np.arange(data.shape[0], dtype=np.int32)
-    elif type(data) == pd.Series:
-        return data.index
-    elif type(data) == pd.DataFrame:
-        return data.index
-    elif type(data) == pd.Panel:
-        return data.items
-        
-def to_array(data):
-    """Convert a Pandas object to a NumPy array."""
-    return np.atleast_1d(np.array(data).squeeze())
     
