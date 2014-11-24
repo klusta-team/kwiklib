@@ -55,8 +55,7 @@ hsv = hsv[perm, ...]
 hsv = np.clip(hsv, 0, 1)
 COLORMAP = hsv_to_rgb(hsv)
 COLORMAP = np.clip(COLORMAP, 0, 1)
-COLORMAP = np.vstack(((1., 1., 1.), COLORMAP, (0.4, 0.4, 0.4)))
-print COLORMAP[COLORS_COUNT+1,:]
+COLORMAP = np.vstack(((1., 1., 1.), COLORMAP))
 
 # HSV shifts
 k = .15
