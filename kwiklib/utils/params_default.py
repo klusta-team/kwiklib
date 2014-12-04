@@ -61,28 +61,4 @@ weight_power = 2
 # Full path to a debug script.
 diagnostics_script_path = None
 
-
-#########################
-# KlustaKwik parameters #
-#########################
-MaskStarts = 100
-#MinClusters = 100
-#MaxClusters = 110
-MaxPossibleClusters =  500
-FullStepEvery =  10
-MaxIter = 10000
-RandomSeed =  654
-Debug = 0
-SplitFirst = 20
-SplitEvery = 100
-PenaltyK = 0
-PenaltyKLogN = 1
-Subset = 1
-PriorPoint = 1
-SaveSorted = 0
-SaveCovarianceMeans = 0
-UseMaskedInitialConditions = 1
-AssignToFirstClosestMask = 1
-UseDistributional = 1
-
-
+# KlustaKwik default parameters are now left to KlustaKwik in parameters.h
