@@ -56,4 +56,9 @@ canonical_pcs = None
 # -----------------
 weight_power = 2
 
+# DEBUG: diagnostics
+# ------------------
+# Full path to a debug script.
+diagnostics_script_path = None
+
 # KlustaKwik default parameters are now left to KlustaKwik in parameters.h
