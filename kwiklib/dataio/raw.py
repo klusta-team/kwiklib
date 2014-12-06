@@ -73,7 +73,8 @@ class ExperimentRawDataReader(BaseRawDataReader):
     def __init__(self, experiment, dtype_to=None):
         self.experiment = experiment
         super(ExperimentRawDataReader, self).__init__(dtype_to=dtype_to)
-        
+        self.nrecordings = len(experiment.recordings)
+
     def get_recording_data(self, recording):
         data = self.experiment.recordings[recording].raw
         return data

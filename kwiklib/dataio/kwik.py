@@ -360,7 +360,24 @@ def add_default_recordings(files, dir=None, prm=None, prb=None):
     sr = prm.get('sample_rate')
     nchannels=prm.get('nchannels')
     nbytes = prm.get('nbits', 16)//8
-    for id in range(len(raw_data_files)):
+    nrecordings = 0
+    rsizes = []
+    for fn in raw_data_files:
+        #WARNING: I don't know if it is actually possible to deal with multiple raw.kwd files.
+        if fn.endswith('raw.kwd'):
+            assert len(raw_data_files) == 1
+            f = files['raw.kwd']
+            nrecordings += f.root.recordings._v_nchildren
+            for rec in f.root.recordings:
+               rsizes.append(rec.data.shape[0])
+        else:
+            if fn is not None:
+                ffn = os.path.join(dir, fn)
+                size = os.path.getsize(ffn)//(nbytes*nchannels)
+                rsizes.append(size)
+                nrecordings += 1
+
+    for id in xrange(nrecordings):
         if sr is not None:
             st = total_size/float(sr)
         else:
@@ -371,10 +388,7 @@ def add_default_recordings(files, dir=None, prm=None, prb=None):
                       sample_rate=sr,
                       bit_depth=nbytes*8,
                       nchannels=nchannels)
-        if raw_data_files[id] is not None:
-            f = os.path.join(dir, raw_data_files[id])
-            size = os.path.getsize(f)//(nbytes*nchannels)
-            total_size += size
+        total_size += rsizes[id]
        
 def create_files(name, dir=None, prm=None, prb=None, create_default_info=False,
                  overwrite=True):
