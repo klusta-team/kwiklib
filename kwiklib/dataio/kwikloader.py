@@ -16,7 +16,7 @@ import tables as tb
 
 from loader import (Loader, default_group_info, reorder, renumber_clusters,
     default_cluster_info)
-from klustersloader import (find_filenames, save_clusters, convert_to_clu, 
+from klustersloader import (find_filenames, save_clusters, convert_to_clu,
     find_filename, find_filename_or_new)
 from tools import (load_text, normalize,
     load_binary, load_pickle, save_text, get_array,
@@ -56,18 +56,18 @@ def add_missing_clusters(exp):
 # -----------------------------------------------------------------------------
 class KwikLoader(Loader):
     # TODO: change the clustering ('main' by default)
-    
+
     def __init__(self, parent=None, filename=None, userpref=None):
         self.experiment = None
         super(KwikLoader, self).__init__(parent=parent, filename=filename, userpref=userpref)
-    
+
     # Read functions.
     # ---------------
     def _report_progress_open(self, spike, nspikes, shank, nshanks):
         i = shank * 100 + float(spike)/nspikes*100
         n = nshanks * 100
         self.report_progress(i, n)
-    
+
     def _consistency_check(self):
         exp = self.experiment
         chgrp = self.shank
@@ -94,7 +94,7 @@ class KwikLoader(Loader):
         else:
             self.filename = filename
         dir, basename = os.path.split(filename)
-        
+
         # Converting to kwik if needed
         # kwik = find_filename(basename, 'kwik', dir=dir)
         # xml = find_filename(basename, 'xml', dir=dir)
@@ -103,20 +103,20 @@ class KwikLoader(Loader):
         kwik = find_filename(basename, 'kwik', dir=dir)
         xml = self._filenames['xml']
         clu = self._filenames['clu']
-        
+
         self.log_filename = find_filename_or_new(filename, 'kvlog', dir=dir)
-        
-        
+
+
         # Backup the .clu file.
         clu_original = find_filename_or_new(filename, 'clu_original')
         if os.path.exists(clu) and not os.path.exists(clu_original):
             shutil.copyfile(clu, clu_original)
-        
+
         if not kwik:
             assert xml, ValueError("I need the .xml file!")
             klusters_to_kwik(filename=xml, dir=dir,
                 progress_report=self._report_progress_open)
-        
+
         self.experiment = Experiment(basename, dir=dir, mode='a')
 
         # CONSISTENCY CHECK
@@ -133,79 +133,79 @@ class KwikLoader(Loader):
         debug("Similarity measure: {0:s}.".format(self.similarity_measure))
         info("Opening {0:s}.".format(self.experiment.name))
         self.shanks = sorted(self.experiment.channel_groups.keys())
-        
+
         self.freq = self.experiment.application_data.spikedetekt.sample_rate
-        
+
         self.fetdim = self.experiment.application_data.spikedetekt.nfeatures_per_channel
         self.nsamples = self.experiment.application_data.spikedetekt.waveforms_nsamples
-        
+
         self.set_shank(self.shanks[0])
-        
+
     # Shank functions.
     # ----------------
     def get_shanks(self):
         """Return the list of shanks available in the file."""
         return self.shanks
-        
+
     def set_shank(self, shank):
         """Change the current shank and read the corresponding tables."""
         if not shank in self.shanks:
             warn("Shank {0:d} is not in the list of shanks: {1:s}".format(
                 shank, str(self.shanks)))
             return
-        self.shank = shank        
+        self.shank = shank
 
         # CONSISTENCY CHECK
         # self._consistency_check()
 
         self.nchannels = len(self.experiment.channel_groups[self.shank].channels)
-    
+
         clusters = self.experiment.channel_groups[self.shank].spikes.clusters.main[:]
         self.clusters = pd.Series(clusters, dtype=np.int32)
         self.nspikes = len(self.clusters)
-        
+
         self.features = self.experiment.channel_groups[self.shank].spikes.features
         self.masks = self.experiment.channel_groups[self.shank].spikes.masks
         self.waveforms = self.experiment.channel_groups[self.shank].spikes.waveforms_filtered
-        
+
         if self.features is not None:
             nfet = self.features.shape[1]
             self.nextrafet = (nfet - self.nchannels * self.fetdim)
         else:
             self.nextrafet = 0
-        
+
         # Load concatenated time samples: those are the time samples +
         # the start time of the corresponding recordings.
         spiketimes = self.experiment.channel_groups[self.shank].spikes.concatenated_time_samples[:] * (1. / self.freq)
         self.spiketimes = pd.Series(spiketimes, dtype=np.float64)
         self.duration = spiketimes[-1]
-    
+
         self._update_data()
-        
+
         self.read_clusters()
-        
-    def copy_clustering(self, clustering_from='original', 
+
+    def copy_clustering(self, clustering_from='original',
                         clustering_to='main'):
         clusters = self.experiment.channel_groups[self.shank].spikes.clusters
         clusters.copy(clustering_from, clustering_to)
-        
-        
+
+
     # Read contents.
     # ---------------------
     def get_probe_geometry(self):
-        return np.array([c.position 
+        return np.array([c.position
             for c in self.experiment.channel_groups[self.shank].channels])
-        
+
     def read_clusters(self):
         # Read the cluster info.
         clusters = self.experiment.channel_groups[self.shank].clusters.main.keys()
         cluster_groups = [c.cluster_group or 0 for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
-        
-        cluster_colors = [c.application_data.klustaviewa.color 
+
+        cluster_colors = [c.application_data.klustaviewa.color
             if c.application_data.klustaviewa.color is not None
             else 1
             for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
-        
+
         groups = self.experiment.channel_groups[self.shank].cluster_groups.main.keys()
         group_names = [g.name or 'Group' for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
         group_colors = [g.application_data.klustaviewa.color or 1 for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
@@ -225,42 +225,42 @@ class KwikLoader(Loader):
             ), index=groups)
         self.group_colors = self.group_info['color'].astype(np.int32)
         self.group_names = self.group_info['name']
-         
-    
+
+
     # Writing capabilities.
     # ---------------------
     def set_cluster(self, spikes, cluster):
         if not hasattr(spikes, '__len__'):
             spikes = [spikes]
-        
+
         self.experiment.channel_groups[self.shank].spikes.clusters.main[spikes] = cluster
         clusters = self.experiment.channel_groups[self.shank].spikes.clusters.main[:]
         self.clusters = pd.Series(clusters, dtype=np.int32)
-        
+
         self._update_data()
-        
+
     def set_cluster_groups(self, clusters, group):
         # self.cluster_groups.ix[clusters] = group
         if not hasattr(clusters, '__len__'):
             clusters = [clusters]
-        
+
         clusters_gr = self.experiment.channel_groups[self.shank].clusters.main
         for cl in clusters:
             clusters_gr[cl].cluster_group = group
-        
+
         self.read_clusters()
-        
+
     def set_cluster_colors(self, clusters, color):
         # self.cluster_colors.ix[clusters] = color
         if not hasattr(clusters, '__len__'):
             clusters = [clusters]
-        
+
         clusters_gr = self.experiment.channel_groups[self.shank].clusters.main
         for cl in clusters:
             clusters_gr[cl].application_data.klustaviewa.color = color
-        
+
         self.read_clusters()
-        
+
     def set_group_names(self, groups, name):
         # self.group_names.ix[groups] = name
         if not hasattr(groups, '__len__'):
@@ -268,21 +268,21 @@ class KwikLoader(Loader):
         groups_gr = self.experiment.channel_groups[self.shank].cluster_groups.main
         for gr in groups:
             groups_gr[gr].name = name
-        
+
         self.read_clusters()
-        
+
     def set_group_colors(self, groups, color):
         # self.group_colors.ix[groups] = color
         if not hasattr(groups, '__len__'):
             groups = [groups]
-        
+
         groups_gr = self.experiment.channel_groups[self.shank].cluster_groups.main
         for gr in groups:
             groups_gr[gr].application_data.klustaviewa.color = color
-        
+
         self.read_clusters()
-        
-        
+
+
     # Add.
     def add_cluster(self, cluster, group, color):
         # if cluster not in self.cluster_groups.index:
@@ -291,10 +291,10 @@ class KwikLoader(Loader):
         # if cluster not in self.cluster_colors.index:
             # self.cluster_colors = self.cluster_colors.append(
                 # pd.Series([color], index=[cluster])).sort_index()
-        
+
         self.experiment.channel_groups[self.shank].clusters.main.add_cluster(
             id=cluster, color=color, cluster_group=group)
-        
+
         self.read_clusters()
 
     def add_clusters(self, clusters, groups, colors):
@@ -308,7 +308,7 @@ class KwikLoader(Loader):
             self.experiment.channel_groups[self.shank].clusters.main.add_cluster(
                 id=cluster, color=color, cluster_group=group)
         self.read_clusters()
-        
+
     def add_group(self, group, name, color):
         # if group not in self.group_colors.index:
             # self.group_colors = self.group_colors.append(
@@ -316,23 +316,23 @@ class KwikLoader(Loader):
         # if group not in self.group_names.index:
             # self.group_names = self.group_names.append(
                 # pd.Series([name], index=[group])).sort_index()
-                
+
         groups = self.experiment.channel_groups[self.shank].cluster_groups.main
         groups.add_group(id=group, color=color, name=name,)
-        
+
         self.read_clusters()
-        
+
     # Remove.
     def remove_cluster(self, cluster):
         if np.any(np.in1d(cluster, self.clusters)):
             raise ValueError(("Cluster {0:d} is not empty and cannot "
             "be removed.").format(cluster))
-            
+
         self.experiment.channel_groups[self.shank].clusters.main.remove_cluster(
             id=cluster,)
-        
+
         self.read_clusters()
-            
+
     def remove_group(self, group):
         if np.any(np.in1d(group, self.cluster_groups)):
             raise ValueError(("Group {0:d} is not empty and cannot "
@@ -340,9 +340,9 @@ class KwikLoader(Loader):
 
         self.experiment.channel_groups[self.shank].cluster_groups.main.remove_group(
             id=group,)
-            
+
         self.read_clusters()
-    
+
     # Access to the data: spikes
     # --------------------------
     def select(self, spikes=None, clusters=None):
@@ -352,39 +352,43 @@ class KwikLoader(Loader):
             spikes = get_spikes_in_clusters(clusters, self.clusters)
         self.spikes_selected = spikes
         self.clusters_selected = clusters
-    
+
     # Log file.
     # ---------
     def initialize_logfile(self):
-        self.logfile = FileLogger(self.filename_log, name='datafile', 
+        self.logfile = FileLogger(self.filename_log, name='datafile',
             level=self.userpref['loglevel_file'])
         # Register log file.
         register(self.logfile)
-        
+
     # Save.
     # -----
     def save(self, renumber=False):
         self.report_progress_save(1, 4)
-        
+
         if renumber:
             self.renumber()
             self.clusters = self.clusters_renumbered
             self.cluster_info = self.cluster_info_renumbered
             self._update_data()
-            
+
         # Save the clusters in the .clu file.
-        save_clusters(self._filenames['clu'], 
+        clu = self._filenames['clu']
+        clu_split = clu.split('.')
+        clu_split[-1] = str(self.shank)
+        clu = '.'.join(clu_split)
+        save_clusters(clu,
             convert_to_clu(self.clusters, self.cluster_info['group']))
-            
+
         self.report_progress_save(2, 4)
-        
+
         # self.close()
         self.report_progress_save(3, 4)
-        
+
         # self.open()
         self.report_progress_save(4, 4)
-        
-    
+
+
     # Close functions.
     # ----------------
     def close(self):
@@ -397,5 +401,5 @@ class KwikLoader(Loader):
             self.experiment = None
         if hasattr(self, 'logfile'):
             unregister(self.logfile)
-       
-        
+
+
