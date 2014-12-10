@@ -364,18 +364,21 @@ def add_default_recordings(files, dir=None, prm=None, prb=None):
     rsizes = []
     for fn in raw_data_files:
         #WARNING: I don't know if it is actually possible to deal with multiple raw.kwd files.
-        if fn.endswith('raw.kwd'):
-            assert len(raw_data_files) == 1
-            f = files['raw.kwd']
-            nrecordings += f.root.recordings._v_nchildren
-            for rec in f.root.recordings:
-               rsizes.append(rec.data.shape[0])
-        else:
-            if fn is not None:
+        if isinstance(fn, str):
+            if fn.endswith('raw.kwd'):
+                assert len(raw_data_files) == 1
+                f = files['raw.kwd']
+                nrecordings += f.root.recordings._v_nchildren
+                for rec in f.root.recordings:
+                    rsizes.append(rec.data.shape[0])
+            else:
                 ffn = os.path.join(dir, fn)
                 size = os.path.getsize(ffn)//(nbytes*nchannels)
                 rsizes.append(size)
                 nrecordings += 1
+        elif fn is None:   # this will only happen if prm['raw_data_files'] is undefined or is None for testing.
+            rsizes.append(0)
+            nrecordings += 1
 
     for id in xrange(nrecordings):
         if sr is not None:
