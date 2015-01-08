@@ -615,8 +615,16 @@ def add_clustering(fd, channel_group_id=None, name=None,
     assert channel_group_id is not None
     assert name is not None
     assert spike_clusters is not None
+
+    spikes = kwik.root.channel_groups.__getattr__(channel_group_id).spikes.recording
     spikes_path = '/channel_groups/{0:s}/spikes/clusters'.format(channel_group_id)
     clusters_path = '/channel_groups/{0:s}/clusters'.format(channel_group_id)
+
+    # Check if clustering has the right number of spikes
+    if not spike_clusters.shape[0] == spikes.shape[0]:
+        print "\nERROR: Could not add clustering in group \"{0:s}\": wrong number of spikes".format(name)
+        print ("Expected {0:d}, got {1:d}".format(spike_clusters.shape[0], spikes.shape[0]))
+        return False
     
     # Create the HDF5 groups in /.../clusters.
     try:
