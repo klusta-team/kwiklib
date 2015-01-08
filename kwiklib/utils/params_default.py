@@ -38,7 +38,6 @@ connected_component_join_size = int(.00005 * sample_rate)
 # ----------------
 extract_s_before = 10
 extract_s_after = 10
-waveforms_nsamples = extract_s_before + extract_s_after
 
 # Features
 # --------
