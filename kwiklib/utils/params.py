@@ -27,9 +27,12 @@ def get_params(filename=None, **kwargs):
     if 'sample_rate' not in kwargs:
         kwargs['sample_rate'] = sample_rate
     default = load_default_params(kwargs)
-    return get_pydict(filename=filename, 
+    params = get_pydict(filename=filename, 
                       pydict_default=default,
                       **kwargs)
+    # Set waveforms_nsamples, which is defined as extract_s_before + extract_s_after
+    params['waveforms_nsamples'] = params['extract_s_before'] + params['extract_s_after']
+    return params
 
 
 # -----------------------------------------------------------------------------
