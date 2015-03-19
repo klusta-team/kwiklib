@@ -59,6 +59,6 @@ weight_power = 2
 # DEBUG: diagnostics
 # ------------------
 # Full path to a debug script.
-diagnostics_script_path = None
+diagnostics_path = None
 
 # KlustaKwik default parameters are now left to KlustaKwik in parameters.h
