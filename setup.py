@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='kwiklib',
-    version='0.3.0dev',
+    version='0.3.0',
     author='Klusta-Team',
     author_email='rossant@github',
     packages=[
