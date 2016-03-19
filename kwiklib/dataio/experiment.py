@@ -398,12 +398,32 @@ class Spikes(Node):
         # self.waveforms_raw = self._get_child('waveforms_raw')
         # self.waveforms_filtered = self._get_child('waveforms_filtered')
 
+        # Load features masks directly from KWX.
         g = self.channel_group_id
         path = '/channel_groups/{}/features_masks'.format(g)
         self.features_masks = files['kwx'].getNode(path)
+
+        # Load raw data directly from raw data.
+        # path = '/recordings/{}/raw/dat_path'.format(0)
+        # traces_path = files['kwik'].getNode(path)
+
+        # TODO: include here
+        # from phy.traces.waveform import WaveformLoader, SpikeLoader
+
+        # b = self._root.application_data.spikedetekt.extract_s_before
+        # a = self._root.application_data.spikedetekt.extract_s_after
+        # _waveform_loader = WaveformLoader(n_samples=(b + a),
+        #                                   # traces=traces,
+        #                                   # filter=the_filter,
+        #                                   # filter_margin=filter_margin,
+        #                                   # dc_offset=dc_offset,
+        #                                   # scale_factor=scale_factor,
+        #                                   )
+        # self.waveforms_raw = SpikeLoader(_waveform_loader, self.time_samples)
         # TODO
-        self.waveforms_raw = None
-        self.waveforms_filtered = None
+        # self.waveforms_filtered = None
+
+
 
         nspikes = len(self.time_samples)
 
