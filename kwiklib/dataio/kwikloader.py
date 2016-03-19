@@ -136,8 +136,8 @@ class KwikLoader(Loader):
 
         self.freq = self.experiment.application_data.spikedetekt.sample_rate
 
-        self.fetdim = self.experiment.application_data.spikedetekt.nfeatures_per_channel
-        self.nsamples = self.experiment.application_data.spikedetekt.waveforms_nsamples
+        self.fetdim = self.experiment.application_data.spikedetekt.n_features_per_channel
+        self.nsamples = self.experiment.application_data.spikedetekt.extract_s_before + self.experiment.application_data.spikedetekt.extract_s_after
 
         self.set_shank(self.shanks[0])
 
@@ -201,29 +201,29 @@ class KwikLoader(Loader):
         clusters = self.experiment.channel_groups[self.shank].clusters.main.keys()
         cluster_groups = [c.cluster_group or 0 for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
 
-        cluster_colors = [c.application_data.klustaviewa.color
-            if c.application_data.klustaviewa.color is not None
-            else 1
-            for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
+        # cluster_colors = [c.application_data.klustaviewa.color
+        #     if c.application_data.klustaviewa.color is not None
+        #     else 1
+        #     for c in self.experiment.channel_groups[self.shank].clusters.main.values()]
 
         groups = self.experiment.channel_groups[self.shank].cluster_groups.main.keys()
         group_names = [g.name or 'Group' for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
-        group_colors = [g.application_data.klustaviewa.color or 1 for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
+        # group_colors = [g.application_data.klustaviewa.color or 1 for g in self.experiment.channel_groups[self.shank].cluster_groups.main.values()]
 
         # Create the cluster_info DataFrame.
         self.cluster_info = pd.DataFrame(dict(
-            color=cluster_colors,
+            # color=cluster_colors,
             group=cluster_groups,
             ), index=clusters)
-        self.cluster_colors = self.cluster_info['color'].astype(np.int32)
+        # self.cluster_colors = self.cluster_info['color'].astype(np.int32)
         self.cluster_groups = self.cluster_info['group'].astype(np.int32)
 
         # Create the group_info DataFrame.
         self.group_info = pd.DataFrame(dict(
-            color=group_colors,
+            # color=group_colors,
             name=group_names,
             ), index=groups)
-        self.group_colors = self.group_info['color'].astype(np.int32)
+        # self.group_colors = self.group_info['color'].astype(np.int32)
         self.group_names = self.group_info['name']
 
 
@@ -256,8 +256,8 @@ class KwikLoader(Loader):
             clusters = [clusters]
 
         clusters_gr = self.experiment.channel_groups[self.shank].clusters.main
-        for cl in clusters:
-            clusters_gr[cl].application_data.klustaviewa.color = color
+        # for cl in clusters:
+        #     clusters_gr[cl].application_data.klustaviewa.color = color
 
         self.read_clusters()
 
@@ -277,8 +277,8 @@ class KwikLoader(Loader):
             groups = [groups]
 
         groups_gr = self.experiment.channel_groups[self.shank].cluster_groups.main
-        for gr in groups:
-            groups_gr[gr].application_data.klustaviewa.color = color
+        # for gr in groups:
+        #     groups_gr[gr].application_data.klustaviewa.color = color
 
         self.read_clusters()
 
@@ -293,23 +293,25 @@ class KwikLoader(Loader):
                 # pd.Series([color], index=[cluster])).sort_index()
 
         self.experiment.channel_groups[self.shank].clusters.main.add_cluster(
-            id=cluster, color=color, cluster_group=group)
+            id=cluster,
+            # color=color,
+            cluster_group=group)
 
         self.read_clusters()
 
-    def add_clusters(self, clusters, groups, colors):
+    def add_clusters(self, clusters, groups):
         # if cluster not in self.cluster_groups.index:
             # self.cluster_groups = self.cluster_groups.append(
                 # pd.Series([group], index=[cluster])).sort_index()
         # if cluster not in self.cluster_colors.index:
             # self.cluster_colors = self.cluster_colors.append(
                 # pd.Series([color], index=[cluster])).sort_index()
-        for cluster, group, color in zip(clusters, groups, colors):
+        for cluster, group in zip(clusters, groups):
             self.experiment.channel_groups[self.shank].clusters.main.add_cluster(
-                id=cluster, color=color, cluster_group=group)
+                id=cluster, cluster_group=group)
         self.read_clusters()
 
-    def add_group(self, group, name, color):
+    def add_group(self, group, name):
         # if group not in self.group_colors.index:
             # self.group_colors = self.group_colors.append(
                 # pd.Series([color], index=[group])).sort_index()
@@ -318,7 +320,7 @@ class KwikLoader(Loader):
                 # pd.Series([name], index=[group])).sort_index()
 
         groups = self.experiment.channel_groups[self.shank].cluster_groups.main
-        groups.add_group(id=group, color=color, name=name,)
+        groups.add_group(id=group, name=name,)
 
         self.read_clusters()
 

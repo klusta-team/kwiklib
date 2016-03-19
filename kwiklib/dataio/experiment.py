@@ -14,11 +14,11 @@ import tables as tb
 
 from selection import select, slice_to_indices
 from kwiklib.dataio.kwik import (get_filenames, open_files, close_files,
-    add_spikes, add_cluster, add_cluster_group, remove_cluster, 
+    add_spikes, add_cluster, add_cluster_group, remove_cluster,
     remove_cluster_group)
 from kwiklib.dataio.utils import convert_dtype
 from kwiklib.dataio.spikecache import SpikeCache
-from kwiklib.utils.six import (iteritems, string_types, iterkeys, 
+from kwiklib.utils.six import (iteritems, string_types, iterkeys,
     itervalues, next)
 from kwiklib.utils.wrap import wrap
 from kwiklib.utils.logger import warn
@@ -28,15 +28,15 @@ from kwiklib.utils.logger import warn
 # Utility functions
 # -----------------------------------------------------------------------------
 def _resolve_hdf5_path(files, path):
-    """Resolve a HDF5 external link. Return the referred node (group or 
+    """Resolve a HDF5 external link. Return the referred node (group or
     dataset), or None if it does not exist.
-    
+
     Arguments:
       * files: a dict {type: file_handle}.
       * path: a string like "{type}/path/to/node" where `type` is one of
         `kwx`, `raw.kwd`, etc.
-      
-    """  
+
+    """
     nodes = path.split('/')
     path_ext = '/' + '/'.join(nodes[1:])
     type = nodes[0]
@@ -51,7 +51,7 @@ def _resolve_hdf5_path(files, path):
         return file.getNode(path_ext)
     else:
         return None
-    
+
 def _get_child_id(child):
     id = child._v_name
     if id.isdigit():
@@ -71,7 +71,7 @@ def _print_instance(obj, depth=0, name=''):
             key = '0'
         elif isinstance(obj, dict):
             key, sobj = next(iteritems(obj))
-        if isinstance(sobj, (list, dict, int, long, string_types, np.ndarray, 
+        if isinstance(sobj, (list, dict, int, long, string_types, np.ndarray,
                       float)):
             r = []
         else:
@@ -83,20 +83,20 @@ def _print_instance(obj, depth=0, name=''):
     elif hasattr(obj, '__dict__'):
         vs = vars(obj)
         if hasattr(obj, '__dir__'):
-            vs.update({name: getattr(obj, name) 
+            vs.update({name: getattr(obj, name)
                         for name in dir(obj)
                             if name not in ('CLASS', 'TITLE', 'VERSION')})
-        fields = {k: v 
-            for k, v in iteritems(vs) 
+        fields = {k: v
+            for k, v in iteritems(vs)
                 if not k.startswith('_')}
-        r = list(chain(*[_print_instance(fields[n], depth=depth+1, name=str(n)) 
+        r = list(chain(*[_print_instance(fields[n], depth=depth+1, name=str(n))
                 for n in sorted(iterkeys(fields))]))
     else:
         r = []
     # Add the current object's display string.
     if name:
         if isinstance(obj, tb.EArray):
-            s = name + ' [{dtype} {shape}]'.format(dtype=obj.dtype, 
+            s = name + ' [{dtype} {shape}]'.format(dtype=obj.dtype,
                 shape=obj.shape)
         elif isinstance(obj, (string_types, int, long, float, tuple)) or obj is None:
             s = name + ' = ' + str(obj)
@@ -111,11 +111,11 @@ class ArrayProxy(object):
         self._arr = arr
         self._col = col
         self.dtype = arr.dtype
-    
+
     @property
     def shape(self):
         return self._arr.shape[:-1]
-    
+
     def __getitem__(self, item):
         if self._col is None:
             return self._arr[item]
@@ -125,8 +125,8 @@ class ArrayProxy(object):
                 return self._arr[item]
             else:
                 return self._arr[item, ..., self._col]
-        
-        
+
+
 # -----------------------------------------------------------------------------
 # Node wrappers
 # -----------------------------------------------------------------------------
@@ -135,7 +135,7 @@ class Node(object):
     _kwik = None
     _node = None
     _root = None
-    
+
     def __init__(self, files, node=None, root=None):
         self._files = files
         self._kwik = self._files.get('kwik', None)
@@ -144,7 +144,7 @@ class Node(object):
             node = self._kwik.root
         self._node = node
         self._root = root
-        
+
     def _gen_children(self, container_name=None, child_class=None):
         """Return a dictionary {child_id: child_instance}."""
         # The container with the children is either the current node, or
@@ -159,7 +159,7 @@ class Node(object):
             ]
         l = sorted(l, key=lambda (x,y): x)
         return OrderedDict(l)
-    
+
     def _get_child(self, child_name):
         """Return the child specified by its name.
         If this child has a `hdf5_path` special, then the path is resolved,
@@ -184,22 +184,22 @@ class Node(object):
                 warn(("{key} needs to be an attribute of "
                      "{node}").format(key=key, node=self._node._v_name))
                 return None
-            
+
     def __setattr__(self, key, value):
         try:
             self._node._f_getAttr(key)
             self._node._f_setAttr(key, value)
         except AttributeError:
             super(Node, self).__setattr__(key, value)
-            
+
 class NodeWrapper(object):
     """Like a PyTables node, but supports in addition: `node.attr`."""
     def __init__(self, node):
         self._node = node
-        
+
     def __getitem__(self, key):
         return self._node[key]
-        
+
     def __getattr__(self, key):
         # Do not override if key is an attribute of this class.
         if key.startswith('_'):
@@ -224,7 +224,7 @@ class NodeWrapper(object):
                 warn(("{key} needs to be an attribute of "
                      "{node}").format(key=key, node=self._node._v_name))
                 return None
-            
+
     def __setattr__(self, key, value):
         if key.startswith('_'):
             self.__dict__[key] = value
@@ -237,40 +237,40 @@ class NodeWrapper(object):
                 key=key, node=self._node._v_name)
         # Set the attribute.
         self._node._f_setAttr(key, value)
-            
+
     def __dir__(self):
         return sorted(dir(self._node) + self._node._v_attrs._v_attrnames)
-        
+
     def __repr__(self):
         return self._node.__repr__()
 
 class DictVectorizer(object):
-    """This object serves as a vectorized proxy for a dictionary of objects 
+    """This object serves as a vectorized proxy for a dictionary of objects
     that have individual fields of interest. For example: d={k: obj.attr1}.
     The object dv = DictVectorizer(d, 'attr1.subattr') can be used as:
-    
+
         dv[3]
         dv[[1,2,5]]
         dv[2:4]
-    
+
     """
     def __init__(self, dict, path):
         self._dict = dict
         self._path = path.split('.')
-        
+
     def keys(self):
         return self._dict.keys()
-        
+
     def values(self):
         return self._dict.values()
-        
+
     def _get_path(self, key):
         """Resolve the path recursively for a given key of the dictionary."""
         val = self._dict[key]
         for p in self._path:
             val = getattr(val, p)
         return val
-        
+
     def _set_path(self, key, value):
         """Resolve the path recursively for a given key of the dictionary,
         and set a value."""
@@ -278,16 +278,16 @@ class DictVectorizer(object):
         for p in self._path[:-1]:
             val = getattr(val, p)
         setattr(val, key, value)
-        
+
     def __getitem__(self, item):
         if isinstance(item, slice):
-            item = slice_to_indices(item, lenindices=len(self._dict), 
+            item = slice_to_indices(item, lenindices=len(self._dict),
                                     keys=sorted(self._dict.keys()))
         if hasattr(item, '__len__'):
             return np.array([self._get_path(k) for k in item])
         else:
             return self._get_path(item)
-            
+
     def __setitem__(self, item, value):
         if key.startswith('_'):
             self.__dict__[key] = value
@@ -301,7 +301,7 @@ class DictVectorizer(object):
                 self._set_path(k, value)
         else:
             return self._set_path(item, value)
-        
+
 
 # -----------------------------------------------------------------------------
 # Experiment class and sub-classes.
@@ -330,82 +330,89 @@ class Experiment(Node):
             for type, file in iteritems(self._files)}
         super(Experiment, self).__init__(self._files)
         self._root = self._node
-        
+
         # Ensure the version of the kwik format is exactly 2.
         assert self._root._f_getAttr('kwik_version') == 2
-        
+
         self.application_data = NodeWrapper(self._root.application_data)
-        self.user_data = NodeWrapper(self._root.user_data)
-        
+        # self.user_data = NodeWrapper(self._root.user_data)
+
         self.channel_groups = self._gen_children('channel_groups', ChannelGroup)
         self.recordings = self._gen_children('recordings', Recording)
-        self.event_types = self._gen_children('event_types', EventType)
-        
+        # self.event_types = self._gen_children('event_types', EventType)
+
         # Initialize the spike cache of all channel groups.
         for grp in self.channel_groups.itervalues():
             grp.spikes.init_cache()
-        
+
     def gen_filename(self, extension):
         if extension.startswith('.'):
             extension = extension[1:]
         return os.path.splitext(self._filenames['kwik'])[0] + '.' + extension
-        
+
     def __enter__(self):
         return self
-    
+
     def close(self):
         if self._files is not None:
             close_files(self._files)
-    
+
     def __repr__(self):
         n = "<Experiment '{name}'>".format(name=self.name)
         l = _print_instance(self, name=n)
         # print l
         return '\n'.join('    '*d + s for d, s in l)
-    
+
     def __exit__ (self, type, value, tb):
         self.close()
-        
+
 class ChannelGroup(Node):
     def __init__(self, files, node=None, root=None):
         super(ChannelGroup, self).__init__(files, node, root=root)
-        
-        self.application_data = NodeWrapper(self._node.application_data)
-        self.user_data = NodeWrapper(self._node.user_data)
-        
+
+        # self.application_data = NodeWrapper(self._node.application_data)
+        # self.user_data = NodeWrapper(self._node.user_data)
+
         self.channels = self._gen_children('channels', Channel)
         self.clusters = ClustersNode(self._files, self._node.clusters, root=self._root)
         self.cluster_groups = ClusterGroupsNode(self._files, self._node.cluster_groups, root=self._root)
-                
+
         self.spikes = Spikes(self._files, self._node.spikes, root=self._root)
-        
+
 class Spikes(Node):
     def __init__(self, files, node=None, root=None):
         super(Spikes, self).__init__(files, node, root=root)
-        
+
         self.time_samples = self._node.time_samples
         self.time_fractional = self._node.time_fractional
         self.recording = self._node.recording
         self.clusters = Clusters(self._files, self._node.clusters, root=self._root)
-        
+
         # Add concatenated time samples
         self.concatenated_time_samples = self._compute_concatenated_time_samples()
-        
+
         self.channel_group_id = self._node._v_parent._v_name
-        
+
         # Get large datasets, that may be in external files.
-        self.features_masks = self._get_child('features_masks')
-        self.waveforms_raw = self._get_child('waveforms_raw')
-        self.waveforms_filtered = self._get_child('waveforms_filtered')
-        
+        # self.features_masks = self._get_child('features_masks')
+        # self.waveforms_raw = self._get_child('waveforms_raw')
+        # self.waveforms_filtered = self._get_child('waveforms_filtered')
+
+        g = self.channel_group_id
+        path = '/channel_groups/{}/features_masks'.format(g)
+        self.features_masks = files['kwx'].getNode(path)
+        # TODO
+        self.waveforms_raw = None
+        self.waveforms_filtered = None
+
         nspikes = len(self.time_samples)
-        
+
         if self.waveforms_raw is not None:
             self.nsamples, self.nchannels = self.waveforms_raw.shape[1:]
-        
+
         if self.features_masks is None:
             self.features_masks = np.zeros((nspikes, 1, 1), dtype=np.float32)
-            
+
         if len(self.features_masks.shape) == 3:
             self.features = ArrayProxy(self.features_masks, col=0)
             self.masks = ArrayProxy(self.features_masks, col=1)
@@ -413,7 +420,7 @@ class Spikes(Node):
             self.features = self.features_masks
             self.masks = None  #np.ones_like(self.features)
         self.nfeatures = self.features.shape[1]
-       
+
     def _compute_concatenated_time_samples(self):
         t_rel = self.time_samples[:]
         recordings = self.recording[:]
@@ -432,70 +439,70 @@ class Spikes(Node):
             start_time = recgrp._f_getAttr('start_time') or 0.
             start_times[r] = int(start_time * sample_rate)
         return t_rel + start_times[recordings]
-       
+
     def add(self, **kwargs):
         """Add a spike. Only `time_samples` is mandatory."""
         add_spikes(self._files, channel_group_id=self.channel_group_id, **kwargs)
-    
+
     def init_cache(self):
         """Initialize the cache for the features & masks."""
         self._spikecache = SpikeCache(
             # TODO: handle multiple clusterings in the spike cache here
-            spike_clusters=self.clusters.main, 
+            spike_clusters=self.clusters.main,
             features_masks=self.features_masks,
             waveforms_raw=self.waveforms_raw,
             waveforms_filtered=self.waveforms_filtered,
             # TODO: put this value in the parameters
             cache_fraction=1.,)
-    
+
     def load_features_masks_bg(self, *args, **kwargs):
         return self._spikecache.load_features_masks_bg(*args, **kwargs)
-    
+
     def load_features_masks(self, *args, **kwargs):
         return self._spikecache.load_features_masks(*args, **kwargs)
-    
+
     def load_waveforms(self, *args, **kwargs):
         return self._spikecache.load_waveforms(*args, **kwargs)
-    
+
     def __getitem__(self, item):
-        raise NotImplementedError("""It is not possible to select entire spikes 
+        raise NotImplementedError("""It is not possible to select entire spikes
             yet.""")
-            
+
     def __len__(self):
         return self.time_samples.shape[0]
-        
+
 class Clusters(Node):
     """The parent of main, original, etc. Contains multiple clusterings."""
     def __init__(self, files, node=None, root=None):
-        super(Clusters, self).__init__(files, node, root=root)        
+        super(Clusters, self).__init__(files, node, root=root)
         # Each child of the Clusters group is assigned here.
         for node in self._node._f_iterNodes():
             setattr(self, node._v_name, node)
-        
+
     def copy(self, clustering_from, clustering_to):
         spike_clusters_from = self._node._f_getChild(clustering_from)[:]
         clusters_to = self._node._f_getChild(clustering_to)
         clusters_to[:] = spike_clusters_from
-        
+
         group_from = self._node._v_parent._v_parent.clusters._f_getChild(clustering_from)
         group_to = self._node._v_parent._v_parent.clusters._f_getChild(clustering_to)
-        
+
         group_from._f_copy(newname=clustering_to, overwrite=True, recursive=True)
-        
+
 class Clustering(Node):
     """An actual clustering, with the cluster numbers for all spikes."""
     def __init__(self, files, node=None, root=None, child_class=None):
         super(Clustering, self).__init__(files, node, root=root)
         self._child_class = child_class
         self._update()
-        
+
     def _update(self):
         self._dict = self._gen_children(child_class=self._child_class)
         self.color = DictVectorizer(self._dict, 'application_data.klustaviewa.color')
 
     def __getitem__(self, item):
         return self._dict[item]
-        
+
     def __iter__(self):
         return self._dict.__iter__()
 
@@ -513,89 +520,89 @@ class Clustering(Node):
 
     def iteritems(self):
         return self._dict.iteritems()
-        
+
 class ClustersClustering(Clustering):
     """An actual clustering, with color and group."""
     # def __init__(self, *args, **kwargs):
         # super(ClustersClustering, self).__init__(*args, **kwargs)
         # self.group = DictVectorizer(self._dict, 'cluster_group')
-        
+
     def _update(self):
         self._dict = self._gen_children(child_class=self._child_class)
         self.color = DictVectorizer(self._dict, 'application_data.klustaviewa.color')
         self.group = DictVectorizer(self._dict, 'cluster_group')
-        
+
     def add_cluster(self, id=None, color=None, **kwargs):
         channel_group_id = self._node._v_parent._v_parent._v_name
         clustering = self._node._v_name
-        add_cluster(self._files, channel_group_id=channel_group_id, 
+        add_cluster(self._files, channel_group_id=channel_group_id,
                     color=color,
                     id=str(id), clustering=clustering, **kwargs)
         self._update()
-        
+
     def remove_cluster(self, id=None,):
         channel_group_id = self._node._v_parent._v_parent._v_name
         clustering = self._node._v_name
-        remove_cluster(self._files, channel_group_id=channel_group_id, 
+        remove_cluster(self._files, channel_group_id=channel_group_id,
                        id=str(id), clustering=clustering)
         self._update()
-        
+
 class ClusterGroupsClustering(Clustering):
     def _update(self):
         self._dict = self._gen_children(child_class=self._child_class)
         self.color = DictVectorizer(self._dict, 'application_data.klustaviewa.color')
         self.name = DictVectorizer(self._dict, 'name')
-        
+
     def add_group(self, id=None, color=None, name=None):
         channel_group_id = self._node._v_parent._v_parent._v_name
         clustering = self._node._v_name
-        add_cluster_group(self._files, channel_group_id=channel_group_id, 
+        add_cluster_group(self._files, channel_group_id=channel_group_id,
                     color=color, name=name,
                     id=str(id), clustering=clustering, )
         self._update()
-        
+
     def remove_group(self, id=None,):
         channel_group_id = self._node._v_parent._v_parent._v_name
         clustering = self._node._v_name
-        remove_cluster_group(self._files, channel_group_id=channel_group_id, 
+        remove_cluster_group(self._files, channel_group_id=channel_group_id,
                        id=str(id), clustering=clustering)
         self._update()
-        
+
 class ClustersNode(Node):
     """The parent of clustering types: main, original..."""
     def __init__(self, files, node=None, root=None):
         super(ClustersNode, self).__init__(files, node, root=root)
         # Each child of the group is assigned here.
         for node in self._node._f_iterNodes():
-            setattr(self, node._v_name, ClustersClustering(self._files, node, 
+            setattr(self, node._v_name, ClustersClustering(self._files, node,
                 child_class=Cluster, root=self._root))
-        
+
 class ClusterGroupsNode(Node):
     def __init__(self, files, node=None, root=None):
-        super(ClusterGroupsNode, self).__init__(files, node, root=root)        
+        super(ClusterGroupsNode, self).__init__(files, node, root=root)
         # Each child of the group is assigned here.
         for node in self._node._f_iterNodes():
             setattr(self, node._v_name, ClusterGroupsClustering(self._files, node, child_class=ClusterGroup))
-        
+
 class Channel(Node):
     def __init__(self, files, node=None, root=None):
         super(Channel, self).__init__(files, node, root=root)
-        
-        self.application_data = NodeWrapper(self._node.application_data)
-        self.user_data = NodeWrapper(self._node.user_data)
-    
+
+        # self.application_data = NodeWrapper(self._node.application_data)
+        # self.user_data = NodeWrapper(self._node.user_data)
+
 class Cluster(Node):
     def __init__(self, files, node=None, root=None):
         super(Cluster, self).__init__(files, node, root=root)
-        
+
         # self.cluster_group = self._node._v_attrs.cluster_group
         # self.mean_waveform_raw = self._node._v_attrs.mean_waveform_raw
         # self.mean_waveform_filtered = self._node._v_attrs.mean_waveform_filtered
-        
-        self.application_data = NodeWrapper(self._node.application_data)
+
+        # self.application_data = NodeWrapper(self._node.application_data)
         # self.color = self.application_data.klustaviewa.color
-        self.user_data = NodeWrapper(self._node.user_data)
-        self.quality_measures = NodeWrapper(self._node.quality_measures)
+        # self.user_data = NodeWrapper(self._node.user_data)
+        # self.quality_measures = NodeWrapper(self._node.quality_measures)
 
     def __getattr__(self, name):
         if name == 'cluster_group':
@@ -608,18 +615,18 @@ class Cluster(Node):
                 return cg
             return _process(self._node._v_attrs.cluster_group)
         return super(Cluster, self).__getattr__(name)
-        
+
 class ClusterGroup(Node):
     def __init__(self, files, node=None, root=None):
         super(ClusterGroup, self).__init__(files, node, root=root)
-        
-        self.application_data = NodeWrapper(self._node.application_data)
-        self.user_data = NodeWrapper(self._node.user_data)
-        
+
+        # self.application_data = NodeWrapper(self._node.application_data)
+        # self.user_data = NodeWrapper(self._node.user_data)
+
 class Recording(Node):
     def __init__(self, files, node=None, root=None):
         super(Recording, self).__init__(files, node, root=root)
-        
+
         # self.name = self._node._v_attrs.name
         # self.start_time = self._node._v_attrs.start_time
         # self.start_sample = self._node._v_attrs.start_sample
@@ -627,27 +634,27 @@ class Recording(Node):
         # self.bit_depth = self._node._v_attrs.bit_depth
         # self.band_high = self._node._v_attrs.band_high
         # self.band_low = self._node._v_attrs.band_low
-        
-        self.raw = self._get_child('raw')
-        self.high = self._get_child('high')
-        self.low = self._get_child('low')
-        
-        self.user_data = NodeWrapper(self._node.user_data)
-    
+
+        # self.raw = self._get_child('raw')
+        # self.high = self._get_child('high')
+        # self.low = self._get_child('low')
+
+        # self.user_data = NodeWrapper(self._node.user_data)
+
 class EventType(Node):
     def __init__(self, files, node=None, root=None):
         super(EventType, self).__init__(files, node, root=root)
-    
+
         self.events = Events(self._files, self._node.events)
-        
-        self.application_data = NodeWrapper(self._node.application_data)
-        self.user_data = NodeWrapper(self._node.user_data)
-    
+
+        # self.application_data = NodeWrapper(self._node.application_data)
+        # self.user_data = NodeWrapper(self._node.user_data)
+
 class Events(Node):
     def __init__(self, files, node=None, root=None):
         super(Events, self).__init__(files, node, root=root)
-        
+
         self.time_samples = self._node.time_samples
         self.recording = self._node.recording
-        
-        self.user_data = NodeWrapper(self._node.user_data)
+
+        # self.user_data = NodeWrapper(self._node.user_data)

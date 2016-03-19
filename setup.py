@@ -2,8 +2,8 @@ from setuptools import setup
 
 setup(
     name='kwiklib',
-    version='0.3.0',
-    author='Klusta-Team',
+    version='0.3.2',
+    author='KwikTeam',
     author_email='rossant@github',
     packages=[
               'kwiklib',
@@ -13,12 +13,12 @@ setup(
               'kwiklib.utils',
               'kwiklib.utils.tests',
               ],
-    entry_points={
-          'console_scripts':
-              ['kwikkonvert = kwiklib.scripts.runkwikkonvert:main',
-               ]},
+    # entry_points={
+          # 'console_scripts':
+              # ['kwikkonvert = kwiklib.scripts.runkwikkonvert:main',
+               # ]},
     url='http://klusta-team.github.io',
     license='LICENSE.txt',
-    description='Kwiklib, part of the KlustaSuite',
+    description='Kwiklib (legacy)',
     # long_description=open('README.md').read(),
 )
