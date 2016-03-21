@@ -13,7 +13,7 @@ import shutil
 import tempfile
 
 from kwiklib.utils.colors import COLORS_COUNT
-from kwiklib.dataio import (save_binary, save_text, check_dtype, 
+from kwiklib.dataio import (save_binary, save_text, check_dtype,
     check_shape, save_cluster_info, save_group_info)
 from kwiklib.utils import logger as log
 
@@ -30,7 +30,7 @@ nchannelgroups = 4
 cluster_offset = 2
 channel_offset = 2
 nsamples = 20
-ncorrbins = 100
+ncorrbins = 101
 corrbin = .001
 nchannels = 32
 fetdim = 3
@@ -53,38 +53,38 @@ def create_waveforms(nspikes, nsamples, nchannels):
         low=-32768 // 2, high=32768 // 2), dtype=np.int16) -
             np.array(32768 // 2 * (.5 + .5 * rnd.rand()) * np.cos(t),
             dtype=np.int16))
-    
+
 def create_trace(nsamples, nchannels):
     noise = np.array(rnd.randint(size=(nsamples, nchannels),
         low=-1000, high=1000), dtype=np.int16)
     t = np.linspace(0., 100., nsamples)
     low = np.array(10000 * np.cos(t), dtype=np.int16)
     return noise + low[:, np.newaxis]
-    
+
 def create_features(nspikes, nchannels, fetdim, duration, freq):
     features = np.array(rnd.randint(size=(nspikes, nchannels * fetdim + 1),
         low=-1e5, high=1e5), dtype=np.float32)
     features[:, -1] = np.sort(np.random.randint(size=nspikes, low=0,
         high=duration * freq))
     return features
-    
+
 def create_clusters(nspikes, nclusters, cluster_offset=cluster_offset):
     # Add shift in cluster indices to test robustness.
-    return rnd.randint(size=nspikes, low=cluster_offset, 
+    return rnd.randint(size=nspikes, low=cluster_offset,
         high=nclusters + cluster_offset)
 
 # ClusterView
 def create_cluster_colors(nclusters):
     return np.mod(np.arange(nclusters, dtype=np.int32), COLORS_COUNT) + 1
-   
+
 def create_group_colors(ngroups):
     return np.mod(np.arange(ngroups, dtype=np.int32), COLORS_COUNT) + 1
-    
+
 def create_group_names(ngroups):
     return ["Group {0:d}".format(group) for group in xrange(ngroups)]
-    
+
 def create_cluster_groups(nclusters):
-    return np.array(np.random.randint(size=nclusters, low=0, high=4), 
+    return np.array(np.random.randint(size=nclusters, low=0, high=4),
         dtype=np.int32)
 
 # ChannelView
@@ -93,23 +93,23 @@ def create_channel_names(nchannels):
 
 def create_channel_colors(nchannels):
     return np.mod(np.arange(nchannels, dtype=np.int32), COLORS_COUNT) + 1
-    
+
 def create_channel_group_names(nchannelgroups):
     return ["Group {0:d}".format(channelgroup) for channelgroup in xrange(nchannelgroups)]
 
 def create_channel_groups(nchannels):
-    return np.array(np.random.randint(size=nchannels, low=0, high=4), 
+    return np.array(np.random.randint(size=nchannels, low=0, high=4),
         dtype=np.int32)
-    
+
 def create_channel_group_colors(nchannelgroups):
     return np.mod(np.arange(nchannelgroups, dtype=np.int32), COLORS_COUNT) + 1
 
 def create_masks(nspikes, nchannels, fetdim):
     return np.clip(rnd.rand(nspikes, nchannels * fetdim + 1) * 1.5, 0, 1)
-    
+
 def create_similarity_matrix(nclusters):
     return np.random.rand(nclusters, nclusters)
-    
+
 def create_correlograms(clusters, ncorrbins):
     n = len(clusters)
     shape = (n, n, ncorrbins)
@@ -120,15 +120,15 @@ def create_correlograms(clusters, ncorrbins):
     # return IndexedMatrix(clusters, shape=shape,
         # data=data)
     return data
-    
+
 def create_baselines(clusters):
     baselines = np.clip(np.random.rand(len(clusters), len(clusters)), .75, 1)
     baselines[0, 0] /= 10
     baselines[1, 1] *= 10
     return baselines
-    
+
 def create_xml(nchannels, nsamples, fetdim):
-    channels = '\n'.join(["<channel>{0:d}</channel>".format(i) 
+    channels = '\n'.join(["<channel>{0:d}</channel>".format(i)
         for i in xrange(nchannels)])
     xml = """
     <parameters>
@@ -177,51 +177,51 @@ def create_probe(nchannels):
     geometry[:, 0] = np.arange(nchannels)
     geometry[::2, 0] *= -1
     geometry[:, 1] = np.arange(nchannels)
-    
+
     graph = [(i, (i + 1) % nchannels) for i in xrange(nchannels)]
-    
-    probe = {'probes': {1: graph}, 
+
+    probe = {'probes': {1: graph},
              'geometry': {i: tuple(geometry[i, :]) for i in xrange(nchannels)}}
-    
+
     probe_python = "probes = {0:s}\ngeometry = {{1: {1:s}}}\n".format(
         str(probe['probes']),
         str(probe['geometry']),
     )
     return probe_python
 
-    
+
 # -----------------------------------------------------------------------------
 # Fixtures
 # -----------------------------------------------------------------------------
 def setup():
-    
+
     # Create mock directory if needed.
     dir = TEST_FOLDER
-        
+
     # Create mock data.
     waveforms = create_waveforms(nspikes, nsamples, nchannels)
     features = create_features(nspikes, nchannels, fetdim, duration, freq)
     clusters = create_clusters(nspikes, nclusters)
-    
+
     cluster_colors = create_cluster_colors(nclusters)
     cluster_groups = create_cluster_groups(nclusters)
     cluster_info = pd.DataFrame(
-            {'color': cluster_colors, 
-             'group': cluster_groups}, 
+            {'color': cluster_colors,
+             'group': cluster_groups},
          dtype=np.int32,
          index=np.unique(clusters))
-    
+
     group_colors = create_group_colors(ngroups)
     group_names = create_group_names(ngroups)
     group_info = pd.DataFrame(
-            {'color': group_colors, 
-             'name': group_names}, 
+            {'color': group_colors,
+             'name': group_names},
          index=np.arange(ngroups))
-         
+
     masks = create_masks(nspikes, nchannels, fetdim)
     xml = create_xml(nchannels, nsamples, fetdim)
     probe = create_probe(nchannels)
-    
+
     # Create mock files.
     save_binary(os.path.join(dir, 'test.spk.1'), waveforms)
     save_text(os.path.join(dir, 'test.fet.1'), features,
@@ -232,10 +232,10 @@ def setup():
         fmt='%.6f')
     save_text(os.path.join(dir, 'test.xml'), xml)
     save_text(os.path.join(dir, 'test.probe'), probe)
-    
+
 def teardown():
     # log.debug("Erasing mock data for dataio subpackage.")
-    
+
     # Erase the temporary data directory.
     dir = TEST_FOLDER
     # if os.path.exists(dir):
@@ -248,6 +248,6 @@ def teardown():
             os.unlink(file_path)
         except:
             pass
-        
-        
-        
+
+
+
