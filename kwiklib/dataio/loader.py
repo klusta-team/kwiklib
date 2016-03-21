@@ -273,7 +273,8 @@ class Loader(QtCore.QObject):
             colors = pd.Series(group_colors[groups],
                 index=self.get_clusters_unique())
         else:
-            colors = self.cluster_colors
+            colors = pd.Series([self.get_cluster_color(c) for c in clusters],
+                               index=clusters)
         return select(colors, clusters)
 
     def get_cluster_color(self, cluster):
