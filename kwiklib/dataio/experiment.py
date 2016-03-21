@@ -4,6 +4,7 @@
 # Imports
 # -----------------------------------------------------------------------------
 import os
+import os.path as op
 import re
 from itertools import chain
 from collections import OrderedDict
@@ -11,6 +12,12 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import tables as tb
+
+from klusta.traces.waveform import WaveformLoader, SpikeLoader
+from klusta.kwik.model import (_concatenate_virtual_arrays,
+                               _dat_to_traces,
+                               )
+from klusta.traces.filter import apply_filter, bandpass_filter
 
 from selection import select, slice_to_indices
 from kwiklib.dataio.kwik import (get_filenames, open_files, close_files,
@@ -21,7 +28,7 @@ from kwiklib.dataio.spikecache import SpikeCache
 from kwiklib.utils.six import (iteritems, string_types, iterkeys,
     itervalues, next)
 from kwiklib.utils.wrap import wrap
-from kwiklib.utils.logger import warn
+from kwiklib.utils.logger import warn, debug, info
 
 
 # -----------------------------------------------------------------------------
@@ -303,6 +310,56 @@ class DictVectorizer(object):
             return self._set_path(item, value)
 
 
+def _read_traces(files, dtype=None, n_channels=None):
+    kwd_path = None
+    dat_path = None
+    kwik = files['kwik']
+
+    dtype = kwik.root.application_data.spikedetekt._v_attrs.dtype[0]
+    if dtype:
+        dtype = np.dtype(dtype)
+
+    n_channels = kwik.root.application_data.spikedetekt._v_attrs.n_channels
+    if n_channels:
+        n_channels = int(n_channels)
+
+    recordings = kwik.root.recordings
+    traces = []
+    # opened_files = []
+    for recording in recordings:
+        # Is there a path specified to a .raw.kwd file which exists in
+        # [KWIK]/recordings/[X]/raw? If so, open it.
+        raw = recording.raw
+        if 'hdf5_path' in raw._v_attrs:
+            kwd_path = raw._v_attrs.hdf5_path[:-8]
+            kwd = files['raw.kwd']
+            if kwd is None:
+                debug("%s not found, trying same basename in KWIK dir" %
+                      kwd_path)
+            else:
+                debug("Loading traces: %s" % kwd_path)
+                traces.append(kwd.root.recordings._f_getChild(recording).data)
+                # opened_files.append(kwd)
+                continue
+        # Is there a path specified to a .dat file which exists?
+        if 'dat_path' in raw._v_attrs:
+            assert dtype is not None
+            assert n_channels
+            dat_path = raw._v_attrs.dat_path
+            if not op.exists(dat_path):
+                debug("%s not found, trying same basename in KWIK dir" %
+                      dat_path)
+            else:
+                debug("Loading traces: %s" % dat_path)
+                dat = _dat_to_traces(dat_path, dtype=dtype,
+                                     n_channels=n_channels)
+                traces.append(dat)
+                # opened_files.append(dat)
+                continue
+
+    return _concatenate_virtual_arrays(traces)
+
+
 # -----------------------------------------------------------------------------
 # Experiment class and sub-classes.
 # -----------------------------------------------------------------------------
@@ -404,26 +461,36 @@ class Spikes(Node):
         self.features_masks = files['kwx'].getNode(path)
 
         # Load raw data directly from raw data.
-        # path = '/recordings/{}/raw/dat_path'.format(0)
-        # traces_path = files['kwik'].getNode(path)
+        traces = _read_traces(files)
 
-        # TODO: include here
-        # from phy.traces.waveform import WaveformLoader, SpikeLoader
+        b = self._root.application_data.spikedetekt._f_getAttr('extract_s_before')
+        a = self._root.application_data.spikedetekt._f_getAttr('extract_s_after')
 
-        # b = self._root.application_data.spikedetekt.extract_s_before
-        # a = self._root.application_data.spikedetekt.extract_s_after
-        # _waveform_loader = WaveformLoader(n_samples=(b + a),
-        #                                   # traces=traces,
-        #                                   # filter=the_filter,
-        #                                   # filter_margin=filter_margin,
-        #                                   # dc_offset=dc_offset,
-        #                                   # scale_factor=scale_factor,
-        #                                   )
-        # self.waveforms_raw = SpikeLoader(_waveform_loader, self.time_samples)
-        # TODO
-        # self.waveforms_filtered = None
+        order = self._root.application_data.spikedetekt._f_getAttr('filter_butter_order')
+        rate = self._root.application_data.spikedetekt._f_getAttr('sample_rate')
+        low = self._root.application_data.spikedetekt._f_getAttr('filter_low')
+        high = self._root.application_data.spikedetekt._f_getAttr('filter_high_factor') * rate
+        b_filter = bandpass_filter(rate=rate,
+                                   low=low,
+                                   high=high,
+                                   order=order)
 
+        debug("Enable waveform filter.")
 
+        def the_filter(x, axis=0):
+            return apply_filter(x, b_filter, axis=axis)
+
+        filter_margin = order * 3
+
+        _waveform_loader = WaveformLoader(n_samples=(b + a),
+                                          traces=traces,
+                                          filter=the_filter,
+                                          filter_margin=filter_margin,
+                                          scale_factor=.01,
+                                          )
+        self.waveforms_raw = SpikeLoader(_waveform_loader,
+                                         self.time_samples[:])
+        self.waveforms_filtered = self.waveforms_raw
 
         nspikes = len(self.time_samples)
 
