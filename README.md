@@ -1,6 +1,3 @@
-Kwiklib
-=======
+This legacy project is only used in KlustaViewa.
 
-Functionality related to the Kwik file format, part of the KlustaSuite.
-
-
+KlustaViewa will be replaced by [phy](https://github.com/kwikteam/phy) in the near future.
