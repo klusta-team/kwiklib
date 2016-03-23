@@ -361,6 +361,8 @@ def _read_traces(files, dtype=None, n_channels=None):
                 # opened_files.append(dat)
                 continue
 
+    if not traces:
+        warn("No traces found: the waveforms won't be available.")
     return _concatenate_virtual_arrays(traces)
 
 
