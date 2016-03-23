@@ -482,11 +482,13 @@ class Spikes(Node):
 
         filter_margin = order * 3
 
+        channels = self._root.channel_groups._f_getChild(self.channel_group_id)._f_getAttr('channel_order')
         _waveform_loader = WaveformLoader(n_samples=(b + a),
                                           traces=traces,
                                           filter=the_filter,
                                           filter_margin=filter_margin,
                                           scale_factor=.01,
+                                          channels=channels,
                                           )
         self.waveforms_raw = SpikeLoader(_waveform_loader,
                                          self.time_samples[:])
