@@ -228,6 +228,9 @@ class NodeWrapper(object):
             try:
                 return self._node._f_getAttr(key)
             except AttributeError:
+                # NOTE: old format
+                if key == 'n_features_per_channel':
+                    return self._node._f_getAttr('nfeatures_per_channel')
                 warn(("{key} needs to be an attribute of "
                      "{node}").format(key=key, node=self._node._v_name))
                 return None
@@ -315,14 +318,6 @@ def _read_traces(files, dtype=None, n_channels=None):
     dat_path = None
     kwik = files['kwik']
 
-    dtype = kwik.root.application_data.spikedetekt._v_attrs.dtype[0]
-    if dtype:
-        dtype = np.dtype(dtype)
-
-    n_channels = kwik.root.application_data.spikedetekt._v_attrs.n_channels
-    if n_channels:
-        n_channels = int(n_channels)
-
     recordings = kwik.root.recordings
     traces = []
     # opened_files = []
@@ -338,11 +333,20 @@ def _read_traces(files, dtype=None, n_channels=None):
                       kwd_path)
             else:
                 debug("Loading traces: %s" % kwd_path)
-                traces.append(kwd.root.recordings._f_getChild(recording).data)
+                traces.append(kwd.root.recordings._f_getChild(str(recording._v_name)).data)
                 # opened_files.append(kwd)
                 continue
         # Is there a path specified to a .dat file which exists?
         if 'dat_path' in raw._v_attrs:
+            dtype = kwik.root.application_data.spikedetekt._v_attrs.dtype[0]
+            if dtype:
+                dtype = np.dtype(dtype)
+
+            n_channels = kwik.root.application_data.spikedetekt._v_attrs. \
+                n_channels
+            if n_channels:
+                n_channels = int(n_channels)
+
             assert dtype is not None
             assert n_channels
             dat_path = raw._v_attrs.dat_path
@@ -469,7 +473,11 @@ class Spikes(Node):
         order = self._root.application_data.spikedetekt._f_getAttr('filter_butter_order')
         rate = self._root.application_data.spikedetekt._f_getAttr('sample_rate')
         low = self._root.application_data.spikedetekt._f_getAttr('filter_low')
-        high = self._root.application_data.spikedetekt._f_getAttr('filter_high_factor') * rate
+        if 'filter_high_factor' in self._root.application_data.spikedetekt._v_attrs:
+            high = self._root.application_data.spikedetekt._f_getAttr('filter_high_factor') * rate
+        else:
+            # NOTE: old format
+            high = self._root.application_data.spikedetekt._f_getAttr('filter_high')
         b_filter = bandpass_filter(rate=rate,
                                    low=low,
                                    high=high,
