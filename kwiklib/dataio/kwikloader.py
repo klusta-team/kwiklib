@@ -113,8 +113,9 @@ class KwikLoader(Loader):
             shutil.copyfile(clu, clu_original)
 
         if not kwik:
-            assert xml, ValueError("I need a valid .kwik file")
-            return
+            assert xml, ValueError("I need the .xml file!")
+            klusters_to_kwik(filename=xml, dir=dir,
+                progress_report=self._report_progress_open)
 
         self.experiment = Experiment(basename, dir=dir, mode='a')
 
@@ -253,10 +254,9 @@ class KwikLoader(Loader):
         # self.cluster_colors.ix[clusters] = color
         if not hasattr(clusters, '__len__'):
             clusters = [clusters]
-
         clusters_gr = self.experiment.channel_groups[self.shank].clusters.main
-        # for cl in clusters:
-        #     clusters_gr[cl].application_data.klustaviewa.color = color
+        for cl in clusters:
+            clusters_gr[cl].application_data.klustaviewa.color = color
 
         self.read_clusters()
 
