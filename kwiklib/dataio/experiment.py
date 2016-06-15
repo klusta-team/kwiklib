@@ -465,9 +465,9 @@ class Spikes(Node):
         g = self.channel_group_id
         path = '/channel_groups/{}/features_masks'.format(g)
         if files['kwx']:
--            self.features_masks = files['kwx'].getNode(path)
--        else:
--            self.features_masks = None
+            self.features_masks = files['kwx'].getNode(path)
+        else:
+            self.features_masks = None
 
         # Load raw data directly from raw data.
         traces = _read_traces(files)

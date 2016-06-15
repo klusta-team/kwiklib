@@ -113,8 +113,8 @@ class KwikLoader(Loader):
             shutil.copyfile(clu, clu_original)
 
         if not kwik:
--           assert xml, ValueError("I need a valid .kwik file")
--           return
+            assert xml, ValueError("I need a valid .kwik file")
+            return
 
         self.experiment = Experiment(basename, dir=dir, mode='a')
 
