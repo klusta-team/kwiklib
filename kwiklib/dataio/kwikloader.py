@@ -253,10 +253,9 @@ class KwikLoader(Loader):
         # self.cluster_colors.ix[clusters] = color
         if not hasattr(clusters, '__len__'):
             clusters = [clusters]
-
         clusters_gr = self.experiment.channel_groups[self.shank].clusters.main
-        # for cl in clusters:
-        #     clusters_gr[cl].application_data.klustaviewa.color = color
+        for cl in clusters:
+            clusters_gr[cl].application_data.klustaviewa.color = color
 
         self.read_clusters()
 

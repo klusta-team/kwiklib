@@ -701,7 +701,7 @@ class Cluster(Node):
         # self.mean_waveform_raw = self._node._v_attrs.mean_waveform_raw
         # self.mean_waveform_filtered = self._node._v_attrs.mean_waveform_filtered
 
-        # self.application_data = NodeWrapper(self._node.application_data)
+        self.application_data = NodeWrapper(self._node.application_data)
         # self.color = self.application_data.klustaviewa.color
         # self.user_data = NodeWrapper(self._node.user_data)
         # self.quality_measures = NodeWrapper(self._node.quality_measures)
