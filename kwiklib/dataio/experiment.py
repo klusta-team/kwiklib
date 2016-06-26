@@ -504,7 +504,7 @@ class Spikes(Node):
                                           channels=channels,
                                           )
         self.waveforms_raw = SpikeLoader(_waveform_loader,
-                                         self.time_samples[:])
+                                         self.concatenated_time_samples)
         self.waveforms_filtered = self.waveforms_raw
 
         nspikes = len(self.time_samples)
