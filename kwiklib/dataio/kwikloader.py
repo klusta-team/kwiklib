@@ -87,7 +87,7 @@ class KwikLoader(Loader):
                         clustering='main',
                         cluster_group=3)
 
-    def open(self, filename=None):
+    def open(self, filename=None, shank=None):
         """Open everything."""
         if filename is None:
             filename = self.filename
@@ -138,7 +138,7 @@ class KwikLoader(Loader):
         self.fetdim = self.experiment.application_data.spikedetekt.n_features_per_channel
         self.nsamples = self.experiment.application_data.spikedetekt.extract_s_before + self.experiment.application_data.spikedetekt.extract_s_after
 
-        self.set_shank(self.shanks[0])
+        self.set_shank(shank or self.shanks[0])
 
     # Shank functions.
     # ----------------
