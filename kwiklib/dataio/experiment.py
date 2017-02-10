@@ -321,6 +321,17 @@ def _read_traces(files, dtype=None, n_channels=None):
     recordings = kwik.root.recordings
     traces = []
     # opened_files = []
+
+    # HACK when there is no recordings: find a .dat file with the same
+    # base name in the current directory.
+    if not recordings:
+        name = op.splitext(op.basename(kwik.filename))[0]
+        p = op.join(op.dirname(op.realpath(kwik.filename)), name + '.dat')
+        if op.exists(p):
+            dat = _dat_to_traces(p, dtype=dtype or 'int16',
+                                 n_channels=n_channels)
+            traces.append(dat)
+
     for recording in recordings:
         # Is there a path specified to a .raw.kwd file which exists in
         # [KWIK]/recordings/[X]/raw? If so, open it.
@@ -353,7 +364,9 @@ def _read_traces(files, dtype=None, n_channels=None):
             if not op.exists(dat_path):
                 debug("%s not found, trying same basename in KWIK dir" %
                       dat_path)
-            else:
+                name = op.splitext(op.basename(kwik.filename))[0]
+                dat_path = op.join(op.dirname(op.realpath(kwik.filename)), name + '.dat')
+            if op.exists(dat_path):
                 debug("Loading traces: %s" % dat_path)
                 dat = _dat_to_traces(dat_path, dtype=dtype,
                                      n_channels=n_channels)
